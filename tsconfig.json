@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "baseUrl": "./unicampus-web",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": [
+    "unicampus-web/next-env.d.ts",
+    "unicampus-web/**/*.ts",
+    "unicampus-web/**/*.tsx",
+    "unicampus-web/.next/types/**/*.ts",
+    "unicampus-web/.next/dev/types/**/*.ts",
+    "unicampus-web/**/*.mts"
+  ],
+  "exclude": ["unicampus-web/node_modules", "unicampus-mobile"]
+}
+

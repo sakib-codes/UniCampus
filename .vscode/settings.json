@@ -1,0 +1,7 @@
+{
+  "cmake.sourceDirectory": "./unicampus-mobile/linux",
+  "typescript.tsdk": "unicampus-web/node_modules/typescript/lib",
+  "eslint.workingDirectories": [
+    "./unicampus-web"
+  ]
+}

@@ -1,0 +1,281 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  /* Global Layout Colors - Refined Frosted Studio Light Mode (User Reference: Slide 1 & 4 Ice-Blue Mist) */
+  --bg-canvas: #F0F4FA;       /* Studio ice-blue mist background */
+  --bg-surface: rgba(255, 255, 255, 0.78); /* Frosted glass elevated cards */
+  --bg-surface-secondary: rgba(255, 255, 255, 0.58); /* Secondary glass surface */
+  --bg-subtle: rgba(29, 91, 216, 0.035);  /* Subtle input & hover insets */
+  --bg-accent: rgba(29, 91, 216, 0.08); /* Brand-tinted glass */
+  --border-surface: rgba(255, 255, 255, 0.88); /* Specular white border */
+  --border-accent: rgba(255, 255, 255, 0.96);  /* Stronger glass border */
+  --text-primary: #0A192F;    /* Deep academic navy */
+  --text-secondary: #334155;  /* Slate body copy */
+  --text-muted: #64748B;      /* Muted metadata */
+
+  /* Universal Brand Theme Controller - Royal Academic Cobalt (#1D5BD8) */
+  --brand-primary: #1D5BD8;
+  --brand-hover: #1548B0;
+  --brand-light: #EBF2FE;
+  --brand-lighter: #F4F8FE;
+  --brand-shadow: rgba(29, 91, 216, 0.22);
+
+  /* Hero Button Controller */
+  --btn-primary-bg: #1D5BD8;
+  --btn-primary-text: #FFFFFF;
+  --btn-primary-hover: #1548B0;
+
+  /* Status Colors */
+  --color-success: #10B981;
+  --color-success-light: #D1FAE5;
+  --color-warning: #F59E0B;
+  --color-warning-light: #FEF3C7;
+  --color-error: #EF4444;
+  --color-error-light: #FEE2E2;
+  --color-info: #1D5BD8;
+  --color-info-light: #EBF2FE;
+
+  /* Clean Elevation Shadows for General Elements (Cards have their own dedicated specular highlights) */
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 8px 20px -4px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 16px 32px -8px rgba(15, 23, 42, 0.10);
+  --shadow-premium: 0 6px 20px -2px var(--brand-shadow);
+  --shadow-xl: 0 24px 48px -12px rgba(15, 23, 42, 0.14);
+}
+
+.dark {
+  /* Cosmic Midnight / Academic Sapphire Dark Mode */
+  --bg-canvas: #060A14;       /* Deep obsidian cosmic canvas */
+  --bg-surface: rgba(11, 18, 32, 0.75); /* Frosted dark surface cards */
+  --bg-surface-secondary: rgba(16, 26, 46, 0.65); /* Secondary dark glass */
+  --bg-subtle: rgba(255, 255, 255, 0.04); /* Subtle dark inset */
+  --bg-accent: rgba(37, 99, 235, 0.16); /* Dark brand wash */
+  --border-surface: rgba(255, 255, 255, 0.12); /* Luminous dark border */
+  --border-accent: rgba(255, 255, 255, 0.22);
+  --text-primary: #F0F6FC;    /* High contrast text */
+  --text-secondary: #94A3B8;  /* Secondary text */
+  --text-muted: #64748B;      /* Subtitles */
+
+  --brand-primary: #2563EB;
+  --brand-hover: #3B82F6;
+  --brand-light: rgba(37, 99, 235, 0.18);
+  --brand-lighter: rgba(37, 99, 235, 0.09);
+  --brand-shadow: rgba(37, 99, 235, 0.32);
+
+  /* Hero Button Controller */
+  --btn-primary-bg: #2563EB;
+  --btn-primary-text: #FFFFFF;
+  --btn-primary-hover: #1D4ED8;
+
+  /* Status Colors - Dark Mode */
+  --color-success: #3FB950;
+  --color-success-light: rgba(63, 185, 80, 0.15);
+  --color-warning: #D29922;
+  --color-warning-light: rgba(210, 153, 34, 0.15);
+  --color-error: #F85149;
+  --color-error-light: rgba(248, 81, 73, 0.15);
+  --color-info: #38BDF8;
+  --color-info-light: rgba(56, 189, 248, 0.15);
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 8px 20px -4px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 16px 32px -8px rgba(0, 0, 0, 0.5);
+  --shadow-premium: 0 4px 24px -2px var(--brand-shadow);
+  --shadow-xl: 0 24px 48px -12px rgba(0, 0, 0, 0.6);
+}
+
+@theme inline {
+  --color-background: var(--bg-canvas);
+  --color-foreground: var(--text-primary);
+
+  --color-brand: var(--brand-primary);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-light: var(--brand-light);
+  --color-brand-lighter: var(--brand-lighter);
+
+  --color-surface: var(--bg-surface);
+  --color-surface-secondary: var(--bg-surface-secondary);
+  --color-card: var(--bg-surface);
+  --color-card-foreground: var(--text-primary);
+  --color-popover: var(--bg-surface);
+  --color-popover-foreground: var(--text-primary);
+  --color-sidebar: var(--bg-surface);
+  --color-sidebar-foreground: var(--text-primary);
+  --color-sidebar-border: var(--border-surface);
+
+  --color-border: var(--border-surface);
+  --color-border-accent: var(--border-accent);
+  --color-subtle: var(--bg-subtle);
+  --color-accent-bg: var(--bg-accent);
+  --color-card-border: var(--border-surface);
+  --color-muted-text: var(--text-muted);
+  --color-secondary-text: var(--text-secondary);
+
+  --color-btn-fill: var(--btn-primary-bg);
+  --color-btn-text: var(--btn-primary-text);
+  --color-btn-hover: var(--btn-primary-hover);
+
+  --color-success: var(--color-success);
+  --color-success-light: var(--color-success-light);
+  --color-warning: var(--color-warning);
+  --color-warning-light: var(--color-warning-light);
+  --color-error: var(--color-error);
+  --color-error-light: var(--color-error-light);
+  --color-info: var(--color-info);
+  --color-info-light: var(--color-info-light);
+
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-premium: var(--shadow-premium);
+  --shadow-xl: var(--shadow-xl);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  scrollbar-gutter: stable;
+}
+
+/* Custom smooth scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(29, 91, 216, 0.6);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #30363D;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #484F58;
+}
+
+/* Scoped transitions for theme switching & interaction */
+button, [role="button"], a, input, select, textarea, [role="tablist"] {
+  transition-property: background-color, border-color, color;
+  transition-duration: 0.2s;
+  transition-timing-function: ease;
+}
+
+/* Focus indicator */
+:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 2px;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+/* ========================================================================= */
+/* CIRCULAR REVEAL THEME TRANSITION (Vite / VitePress View Transition)      */
+/* ========================================================================= */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none !important;
+  mix-blend-mode: normal !important;
+}
+
+::view-transition-old(root) {
+  z-index: 1 !important;
+}
+
+::view-transition-new(root) {
+  z-index: 999999 !important;
+}
+
+/* Hide Next.js dev overlay indicator in screenshots */
+nextjs-portal, [data-nextjs-toast], #__next-build-watcher, [data-nextjs-dev-overlay] {
+  display: none !important;
+}
+
+/* ========================================================================= */
+/* UNIVERSAL FROSTED GLASS (GLASSMORPHISM) ENGINE                            */
+/* ========================================================================= */
+.frosted-glass-card,
+[class*="rounded-3xl"].bg-white:not(.frosted-glass-dropdown):not(.dropdown-glass):not([data-dropdown="true"]):not([role="menu"]):not([role="dialog"]),
+[class*="rounded-2xl"].bg-white:not(button):not([role="menuitem"]):not(.frosted-glass-dropdown):not(.dropdown-glass):not([data-dropdown="true"]):not([role="menu"]):not([role="dialog"]),
+section[class*="rounded-3xl"].bg-white {
+  background-color: rgba(255, 255, 255, 0.68) !important;
+  backdrop-filter: blur(28px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+  border-color: rgba(255, 255, 255, 0.85) !important;
+  box-shadow: 0 20px 50px -15px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(15, 23, 42, 0.02), inset 0 1.5px 1.5px rgba(255, 255, 255, 1) !important;
+}
+
+.dark .frosted-glass-card,
+.dark [class*="rounded-3xl"].bg-white:not(.frosted-glass-dropdown):not(.dropdown-glass):not([data-dropdown="true"]):not([role="menu"]):not([role="dialog"]),
+.dark [class*="rounded-2xl"].bg-white:not(button):not([role="menuitem"]):not(.frosted-glass-dropdown):not(.dropdown-glass):not([data-dropdown="true"]):not([role="menu"]):not([role="dialog"]),
+.dark [class*="rounded-3xl"].dark\:bg-\[\#0D1117\]:not(.frosted-glass-dropdown):not(.dropdown-glass):not([data-dropdown="true"]):not([role="menu"]):not([role="dialog"]),
+.dark [class*="rounded-2xl"].dark\:bg-\[\#0D1117\]:not(button):not([role="menuitem"]):not(.frosted-glass-dropdown):not(.dropdown-glass):not([data-dropdown="true"]):not([role="menu"]):not([role="dialog"]),
+.dark [class*="rounded-3xl"].dark\:bg-\[\#0D131F\]:not(.frosted-glass-dropdown):not(.dropdown-glass):not([data-dropdown="true"]):not([role="menu"]):not([role="dialog"]),
+.dark [class*="rounded-2xl"].dark\:bg-\[\#0D131F\]:not(button):not([role="menuitem"]):not(.frosted-glass-dropdown):not(.dropdown-glass):not([data-dropdown="true"]):not([role="menu"]):not([role="dialog"]),
+.dark section[class*="rounded-3xl"] {
+  background-color: rgba(13, 19, 31, 0.72) !important;
+  backdrop-filter: blur(28px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.65), inset 0 1px 1px rgba(255, 255, 255, 0.14) !important;
+}
+
+/* ========================================================================= */
+/* PREMIUM FROSTED GLASS DROPDOWNS & FLOATING MENUS                          */
+/* High-density optical glass: diffuse light transmission, zero bleed-through*/
+/* ========================================================================= */
+.frosted-glass-dropdown,
+.dropdown-glass,
+[data-dropdown="true"] {
+  background: #FFFFFF !important;
+  backdrop-filter: blur(40px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(190%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 
+    0 24px 60px -12px rgba(15, 23, 42, 0.18),
+    0 4px 16px -2px rgba(15, 23, 42, 0.06),
+    inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1) !important;
+}
+
+.dark .frosted-glass-dropdown,
+.dark .dropdown-glass,
+.dark [data-dropdown="true"] {
+  background: #0D1117 !important;
+  backdrop-filter: blur(40px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(190%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 
+    0 25px 60px -12px rgba(0, 0, 0, 0.85),
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.12) !important;
+}
+
+
+
