@@ -67,7 +67,9 @@ export default function AttendanceScannerModal({
   useEffect(() => {
     if (!isOpen) return;
 
-    setSession(getActiveSession());
+    queueMicrotask(() => {
+      setSession(getActiveSession());
+    });
 
     const unsubscribe = subscribeToAttendance((event) => {
       if (event.session) {
@@ -205,9 +207,13 @@ export default function AttendanceScannerModal({
 
   useEffect(() => {
     if (isOpen && activeTab === "camera" && !isSuccess) {
-      startCamera();
+      queueMicrotask(() => {
+        startCamera();
+      });
     } else {
-      stopCamera();
+      queueMicrotask(() => {
+        stopCamera();
+      });
     }
 
     return () => {

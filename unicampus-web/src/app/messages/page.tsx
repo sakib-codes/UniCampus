@@ -75,10 +75,12 @@ export default function MessagesPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setConversations(
-      isTeacher ? INITIAL_TEACHER_CONVERSATIONS : INITIAL_STUDENT_CONVERSATIONS
-    );
-    setActiveConvId(isTeacher ? "t-conv-1" : "conv-1");
+    queueMicrotask(() => {
+      setConversations(
+        isTeacher ? INITIAL_TEACHER_CONVERSATIONS : INITIAL_STUDENT_CONVERSATIONS
+      );
+      setActiveConvId(isTeacher ? "t-conv-1" : "conv-1");
+    });
   }, [isTeacher]);
 
   const activeConv = useMemo(() => {

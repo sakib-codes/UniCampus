@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useAdminAuth } from '@/context/AdminAuthContext';
-import { Crown, ArrowLeft, KeyRound, Building2 } from 'lucide-react';
+import { Crown, ArrowLeft, Building2 } from 'lucide-react';
 import Link from 'next/link';
 
 interface SuperAdminGateProps {
@@ -11,7 +11,7 @@ interface SuperAdminGateProps {
 }
 
 export function SuperAdminGate({ children, featureName = "System Settings" }: SuperAdminGateProps) {
-  const { isSuperAdmin, isLoaded, currentUser, adminDepartmentName, loginAsAdmin } = useAdminAuth();
+  const { isSuperAdmin, isLoaded, currentUser, adminDepartmentName } = useAdminAuth();
 
   // During SSR or before auth state loads, render children to avoid layout flash
   if (!isLoaded || isSuperAdmin) {

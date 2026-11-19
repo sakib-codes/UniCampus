@@ -178,8 +178,10 @@ export default function AdminUsersPage() {
   const popoverRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const profiles = adminService.getProfiles();
-    setUsers(profiles.map((p, idx) => mapProfileToUserRecord(p, idx)));
+    queueMicrotask(() => {
+      const profiles = adminService.getProfiles();
+      setUsers(profiles.map((p, idx) => mapProfileToUserRecord(p, idx)));
+    });
   }, []);
 
   // Dismiss popover on outside click

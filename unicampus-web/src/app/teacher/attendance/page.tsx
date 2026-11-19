@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
+import { useState, useEffect, useCallback } from "react";
 import { 
   QrCode, 
   BookOpen, 
@@ -15,26 +14,20 @@ import {
   Search, 
   FileSpreadsheet, 
   CheckCircle2, 
-  AlertCircle, 
   Clock, 
   XCircle, 
   CloudCheck, 
-  Download, 
-  UserCheck, 
   UserX, 
   Clock3, 
-  Share2, 
   ShieldCheck, 
   RefreshCw,
   ChevronDown,
   Sparkles,
-  ExternalLink,
   GraduationCap
 } from "lucide-react";
 import QRCode from "qrcode";
 import {
   getActiveSession,
-  saveActiveSession,
   rotateToken,
   subscribeToAttendance,
   getRoster,
@@ -60,11 +53,10 @@ export default function TeacherAttendancePage() {
   const [recentCheckIn, setRecentCheckIn] = useState<StudentRosterRecord | null>(null);
 
   // Session Configurations
-  const [selectedCourse, setSelectedCourse] = useState("CSE-3101");
-  const [selectedSection, setSelectedSection] = useState("Section A (Spring 2026)");
-  const [sessionDate, setSessionDate] = useState("Today, Oct 22, 2026 (10:00 AM)");
-  const [sessionTopic, setSessionTopic] = useState("Lecture 09: Shortest Paths & Dijkstra's Algorithm");
-  const [isEditingTopic, setIsEditingTopic] = useState(false);
+  const selectedCourse = "CSE-3101";
+  const selectedSection = "Section A (Spring 2026)";
+  const sessionDate = "Today, Oct 22, 2026 (10:00 AM)";
+  const sessionTopic = "Lecture 09: Shortest Paths & Dijkstra's Algorithm";
 
   // Status & Save State
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -112,8 +104,10 @@ export default function TeacherAttendancePage() {
   // Subscribe to real-time student check-in events
   useEffect(() => {
     // Sync initial state from shared storage
-    setRoster(getRoster());
-    setSession(getActiveSession());
+    queueMicrotask(() => {
+      setRoster(getRoster());
+      setSession(getActiveSession());
+    });
 
     const unsubscribe = subscribeToAttendance((event) => {
       if (event.type === "STUDENT_CHECKED_IN" && event.student) {
@@ -180,7 +174,7 @@ export default function TeacherAttendancePage() {
   const attendancePercentage = ((checkedInCount / totalEnrolled) * 100).toFixed(1);
 
   // Status Toggle
-  const handleSetStatus = (id: string, newStatus: AttendanceState) => {
+  const handleSetStatus = useCallback((id: string, newStatus: AttendanceState) => {
     const updated = roster.map((student) => {
       if (student.id !== id) return student;
       let newCheckInTime = student.checkInTime;
@@ -210,9 +204,9 @@ export default function TeacherAttendancePage() {
       roster: updated,
       timestamp: Date.now(),
     });
-  };
+  }, [roster]);
 
-  const handleMarkAllAbsent = () => {
+  const handleMarkAllAbsent = useCallback(() => {
     const updated = roster.map((student) => {
       if (student.status === "absent") return student;
       return {
@@ -229,7 +223,7 @@ export default function TeacherAttendancePage() {
       roster: updated,
       timestamp: Date.now(),
     });
-  };
+  }, [roster]);
 
   const handleCopyPin = () => {
     navigator.clipboard.writeText(session.currentPin || "482915");
@@ -421,6 +415,7 @@ export default function TeacherAttendancePage() {
             {/* High-Contrast Dynamic QR Code Frame */}
             <div className="w-[176px] h-[176px] rounded-2xl bg-white p-2.5 flex flex-col items-center justify-center shadow-2xl relative z-10 border-4 border-slate-900 dark:border-surface-2 overflow-hidden">
               {qrDataUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={qrDataUrl}
                   alt="Dynamic Live Attendance QR"
@@ -446,7 +441,12 @@ export default function TeacherAttendancePage() {
             </div>
 
             {/* Countdown Badge on Bottom of Ring */}
-            <div className="absolute -bottom-2 bg-slate-50 dark:bg-surface-2 border border-brand/60 px-3 py-0.5 rounded-full shadow-lg flex items-center gap-1.5 z-20">
+            <button
+              type="button"
+              onClick={handleManualRotate}
+              title="Click to force rotate QR code"
+              className="absolute -bottom-2 bg-slate-50 dark:bg-surface-2 border border-brand/60 px-3 py-0.5 rounded-full shadow-lg flex items-center gap-1.5 z-20 cursor-pointer hover:border-brand transition-colors"
+            >
               <RefreshCw className={`w-3 h-3 text-brand ${isRotating ? "animate-spin" : ""}`} />
               <span className="font-mono text-xs font-bold text-slate-900 dark:text-fg">
                 {isRotating ? (
@@ -457,7 +457,7 @@ export default function TeacherAttendancePage() {
                   <span className="text-amber-500 font-bold">Rotation Paused</span>
                 )}
               </span>
-            </div>
+            </button>
           </div>
 
           {/* BACKUP SESSION PIN BOX */}

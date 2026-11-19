@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { motion } from "framer-motion";
 import { 
   Plus, 
   Search, 
@@ -15,10 +15,9 @@ import {
   Check, 
   X, 
   Upload, 
-  ChevronDown,
-  Users,
-  Lock,
-  Crown,
+  ChevronDown, 
+  Users, 
+  Lock, 
   MoreHorizontal
 } from "lucide-react";
 import { adminService } from "@/lib/services/adminService";
@@ -62,8 +61,10 @@ export default function AdminNoticesPage() {
   }, []);
 
   useEffect(() => {
-    loadNotices();
-    setDepartments(adminService.getDepartments());
+    queueMicrotask(() => {
+      loadNotices();
+      setDepartments(adminService.getDepartments());
+    });
   }, [loadNotices]);
 
   const showToast = (msg: string) => {
@@ -201,33 +202,31 @@ export default function AdminNoticesPage() {
   };
 
   // Filtered notices
-  const filteredNotices = useMemo(() => {
-    return notices.filter((notice) => {
-      // Dept Admin isolation
-      if (isDeptAdmin && currentUser?.department_id) {
-        if (notice.department_id && notice.department_id !== currentUser.department_id) return false;
-      } else if (effectiveDeptId !== 'all') {
-        if (notice.department_id && notice.department_id !== effectiveDeptId) return false;
-      }
+  const filteredNotices = notices.filter((notice) => {
+    // Dept Admin isolation
+    if (isDeptAdmin && currentUser?.department_id) {
+      if (notice.department_id && notice.department_id !== currentUser.department_id) return false;
+    } else if (effectiveDeptId !== 'all') {
+      if (notice.department_id && notice.department_id !== effectiveDeptId) return false;
+    }
 
-      // Tab filter
-      if (activeTab === 'pinned' && !notice.pinned) return false;
+    // Tab filter
+    if (activeTab === 'pinned' && !notice.pinned) return false;
 
-      // Category filter
-      if (selectedCategory !== 'all' && notice.category !== selectedCategory) return false;
+    // Category filter
+    if (selectedCategory !== 'all' && notice.category !== selectedCategory) return false;
 
-      // Search
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const matchesTitle = notice.title.toLowerCase().includes(q);
-        const matchesBody = notice.body.toLowerCase().includes(q);
-        const matchesCat = notice.category.toLowerCase().includes(q);
-        if (!matchesTitle && !matchesBody && !matchesCat) return false;
-      }
+    // Search
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      const matchesTitle = notice.title.toLowerCase().includes(q);
+      const matchesBody = notice.body.toLowerCase().includes(q);
+      const matchesCat = notice.category.toLowerCase().includes(q);
+      if (!matchesTitle && !matchesBody && !matchesCat) return false;
+    }
 
-      return true;
-    });
-  }, [notices, activeTab, selectedCategory, searchQuery, isDeptAdmin, currentUser, effectiveDeptId]);
+    return true;
+  });
 
   const pinnedCount = notices.filter(n => n.pinned).length;
   const totalViews = notices.reduce((sum, n) => sum + (n.views || 142), 0);

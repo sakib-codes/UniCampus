@@ -11,18 +11,8 @@ import {
   Settings,
   CheckCircle2,
   X,
-  FileSpreadsheet,
   Download,
-  Award,
-  Sparkles,
-  ChevronRight,
   ShieldCheck,
-  Briefcase,
-  Layers,
-  Calendar,
-  ExternalLink,
-  Edit3,
-  Check
 } from "lucide-react";
 import { CAMPUS_METRICS } from "@/lib/canonicalCampus";
 

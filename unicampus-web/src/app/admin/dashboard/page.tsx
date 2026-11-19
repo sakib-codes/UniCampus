@@ -89,7 +89,9 @@ export default function AdminDashboardPage() {
   const [transactions, setTransactions] = useState<PaymentTransaction[]>(INITIAL_TRANSACTIONS);
 
   useEffect(() => {
-    setTransactions(adminService.getTransactions());
+    queueMicrotask(() => {
+      setTransactions(adminService.getTransactions());
+    });
   }, []);
 
   // Listen to backup event dispatched from shell controls

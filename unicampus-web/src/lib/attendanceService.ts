@@ -212,7 +212,7 @@ export function broadcastAttendanceEvent(event: AttendanceEvent) {
   if (channel) {
     try {
       channel.postMessage(event);
-    } catch (e) {
+    } catch {
       // Fallback
     }
   }
@@ -233,7 +233,7 @@ export function getActiveSession(): ActiveAttendanceSession {
       const parsed = JSON.parse(raw);
       if (parsed && parsed.sessionId) return parsed;
     }
-  } catch (e) {
+  } catch {
     // fallback
   }
   const fresh = createDefaultSession();
@@ -248,7 +248,7 @@ export function saveActiveSession(session: ActiveAttendanceSession) {
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(STORAGE_SESSION_KEY, JSON.stringify(session));
-  } catch (e) {
+  } catch {
     // ignore quota errors
   }
 }
@@ -264,7 +264,7 @@ export function getRoster(): StudentRosterRecord[] {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) return parsed;
     }
-  } catch (e) {
+  } catch {
     // fallback
   }
   saveRoster(DEFAULT_INITIAL_ROSTER);
@@ -278,7 +278,7 @@ export function saveRoster(roster: StudentRosterRecord[]) {
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(STORAGE_ROSTER_KEY, JSON.stringify(roster));
-  } catch (e) {
+  } catch {
     // ignore quota
   }
 }
@@ -349,7 +349,7 @@ export function validateCheckInToken(
         isJsonMatch = true;
       }
     }
-  } catch (e) {}
+  } catch {}
 
   if (isDirectMatch || isGraceMatch || isJsonMatch) {
     return { valid: true, session };
@@ -468,7 +468,7 @@ export function subscribeToAttendance(callback: (event: AttendanceEvent) => void
           session: parsed,
           timestamp: Date.now(),
         });
-      } catch (err) {}
+      } catch {}
     } else if (e.key === STORAGE_ROSTER_KEY && e.newValue) {
       try {
         const parsed = JSON.parse(e.newValue);
@@ -477,7 +477,7 @@ export function subscribeToAttendance(callback: (event: AttendanceEvent) => void
           roster: parsed,
           timestamp: Date.now(),
         });
-      } catch (err) {}
+      } catch {}
     }
   };
 

@@ -49,7 +49,9 @@ export default function AdminAnalyticsPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    queueMicrotask(() => {
+      setMounted(true);
+    });
   }, []);
 
   const isDark = mounted ? resolvedTheme === "dark" : true;
@@ -84,32 +86,34 @@ export default function AdminAnalyticsPage() {
   });
 
   useEffect(() => {
-    const transactions = adminService.getTransactions();
-    const notices = adminService.getNotices();
+    queueMicrotask(() => {
+      const transactions = adminService.getTransactions();
+      const notices = adminService.getNotices();
 
-    const paidTxns = transactions.filter(t => t.type === 'student_fee' && t.status === 'Paid');
-    const revenue = paidTxns.reduce((sum, t) => sum + t.amount, 0);
-    const pendingAmount = transactions
-      .filter(t => t.type === 'student_fee' && t.status === 'Pending')
-      .reduce((sum, t) => sum + t.amount, 0);
+      const paidTxns = transactions.filter(t => t.type === 'student_fee' && t.status === 'Paid');
+      const revenue = paidTxns.reduce((sum, t) => sum + t.amount, 0);
+      const pendingAmount = transactions
+        .filter(t => t.type === 'student_fee' && t.status === 'Pending')
+        .reduce((sum, t) => sum + t.amount, 0);
 
-    const totalTarget = revenue + pendingAmount;
-    const collectionRate = totalTarget > 0 ? (revenue / totalTarget) * 100 : 100.0;
+      const totalTarget = revenue + pendingAmount;
+      const collectionRate = totalTarget > 0 ? (revenue / totalTarget) * 100 : 100.0;
 
-    setData({
-      totalUsers: 5072,
-      activeUsers: 4912,
-      students: 4820,
-      teachers: 240,
-      pendingApprovals: 118,
-      totalRevenue: revenue || 25200,
-      pendingPayments: pendingAmount,
-      collectionRate: Number(collectionRate.toFixed(1)),
-      completedTxns: paidTxns.length || 3,
-      performanceRate: 94.2,
-      noticesCount: notices.length || 2,
-      classesCount: 156,
-      coursesCount: 24,
+      setData({
+        totalUsers: 5072,
+        activeUsers: 4912,
+        students: 4820,
+        teachers: 240,
+        pendingApprovals: 118,
+        totalRevenue: revenue || 25200,
+        pendingPayments: pendingAmount,
+        collectionRate: Number(collectionRate.toFixed(1)),
+        completedTxns: paidTxns.length || 3,
+        performanceRate: 94.2,
+        noticesCount: notices.length || 2,
+        classesCount: 156,
+        coursesCount: 24,
+      });
     });
   }, []);
 

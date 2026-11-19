@@ -7,7 +7,6 @@ import {
   Search, 
   Check, 
   BookOpen, 
-  Sparkles,
   FolderDown, 
   Eye, 
   Copy, 

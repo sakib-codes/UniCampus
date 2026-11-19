@@ -33,12 +33,13 @@ export function executeThemeTransition({
     typeof window !== "undefined" &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  const doc = typeof document !== "undefined" ? document : null;
   const hasViewTransition =
-    typeof document !== "undefined" &&
-    "startViewTransition" in document &&
-    typeof (document as any).startViewTransition === "function";
+    doc !== null &&
+    "startViewTransition" in doc &&
+    typeof (doc as unknown as { startViewTransition?: unknown }).startViewTransition === "function";
 
-  if (!hasViewTransition || isReducedMotion) {
+  if (!hasViewTransition || isReducedMotion || !doc) {
     setTheme(theme);
     return;
   }
@@ -55,8 +56,8 @@ export function executeThemeTransition({
       const rect = event.currentTarget.getBoundingClientRect();
       x = rect.left + rect.width / 2;
       y = rect.top + rect.height / 2;
-    } else if ("target" in event && (event as any).target instanceof HTMLElement) {
-      const rect = ((event as any).target as HTMLElement).getBoundingClientRect();
+    } else if ("target" in event && event.target instanceof HTMLElement) {
+      const rect = event.target.getBoundingClientRect();
       x = rect.left + rect.width / 2;
       y = rect.top + rect.height / 2;
     }
@@ -69,7 +70,11 @@ export function executeThemeTransition({
   );
 
   try {
-    const transition = (document as any).startViewTransition(async () => {
+    const transition = (
+      doc as unknown as {
+        startViewTransition: (cb: () => Promise<void>) => { ready: Promise<void> };
+      }
+    ).startViewTransition(async () => {
       setTheme(theme);
       // Allow next-themes & React DOM commit tick
       await new Promise((resolve) => setTimeout(resolve, 0));
@@ -81,7 +86,7 @@ export function executeThemeTransition({
         `circle(${endRadius}px at ${x}px ${y}px)`,
       ];
 
-      (document.documentElement as any).animate(
+      document.documentElement.animate(
         {
           clipPath,
         },
@@ -89,12 +94,12 @@ export function executeThemeTransition({
           duration,
           easing: "cubic-bezier(0.16, 1, 0.3, 1)", // Fluid Apple/Vite deceleration curve
           pseudoElement: "::view-transition-new(root)",
-        }
+        } as KeyframeAnimationOptions
       );
     }).catch(() => {
       // Catch aborted transitions
     });
-  } catch (err) {
+  } catch {
     // Fallback if startViewTransition throws
     setTheme(theme);
   }

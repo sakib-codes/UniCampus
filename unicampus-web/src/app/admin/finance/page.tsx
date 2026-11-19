@@ -1,33 +1,26 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { 
   CreditCard, 
   ArrowUpRight, 
   ArrowDownLeft, 
   Search, 
-  Filter, 
   Download, 
   Copy, 
   Check, 
-  Clock, 
   AlertCircle, 
   Send, 
   Printer, 
-  Calendar, 
   Building2, 
   ChevronDown, 
   ChevronUp, 
   Receipt, 
-  ShieldCheck, 
   X, 
   DollarSign, 
-  Percent, 
-  FileSpreadsheet,
   CheckCircle2,
-  Crown,
-  Lock
+  Crown
 } from "lucide-react";
 import { adminService } from "@/lib/services/adminService";
 import { useAdminAuth } from "@/context/AdminAuthContext";
@@ -36,9 +29,7 @@ import {
   TeacherWage, 
   Department, 
   OrdinalSemesterName,
-  TransactionType,
-  PaymentMethod,
-  PaymentStatus 
+  PaymentMethod
 } from "@/types/admin";
 import { ORDINAL_SEMESTERS } from "@/lib/mockData";
 import CountUp from "@/components/bits/CountUp";
@@ -54,7 +45,7 @@ const formatTransactionType = (type: string) => {
 };
 
 export default function AdminFinancePage() {
-  const { currentUser, isSuperAdmin, isDeptAdmin, effectiveDeptId, adminDepartmentName } = useAdminAuth();
+  const { currentUser, isDeptAdmin, effectiveDeptId, adminDepartmentName } = useAdminAuth();
   const [activeTab, setActiveTab] = useState<'overview' | 'transactions' | 'departments' | 'payroll'>('overview');
   const [transactions, setTransactions] = useState<PaymentTransaction[]>([]);
   const [wages, setWages] = useState<TeacherWage[]>([]);
@@ -98,15 +89,17 @@ export default function AdminFinancePage() {
   }, [currentUser, effectiveDeptId, isDeptAdmin]);
 
   useEffect(() => {
-    loadData();
-    // Check URL parameters for tab navigation
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      const tabParam = params.get("tab");
-      if (tabParam === "payroll") setActiveTab("payroll");
-      else if (tabParam === "transactions") setActiveTab("transactions");
-      else if (tabParam === "departments") setActiveTab("departments");
-    }
+    queueMicrotask(() => {
+      loadData();
+      // Check URL parameters for tab navigation
+      if (typeof window !== "undefined") {
+        const params = new URLSearchParams(window.location.search);
+        const tabParam = params.get("tab");
+        if (tabParam === "payroll") setActiveTab("payroll");
+        else if (tabParam === "transactions") setActiveTab("transactions");
+        else if (tabParam === "departments") setActiveTab("departments");
+      }
+    });
   }, [loadData]);
 
   const showToast = (msg: string) => {
@@ -328,17 +321,17 @@ export default function AdminFinancePage() {
       {/* 4 Core Tabs Segmented Dock */}
       <div className={`p-1.5 flex items-center gap-1.5 overflow-x-auto scrollbar-none rounded-[20px] bg-surface border border-line relative`}>
         {[
-          { id: 'overview', label: 'Financial Overview', icon: Receipt },
-          { id: 'transactions', label: 'All Transactions', icon: CreditCard, count: transactions.length },
-          { id: 'departments', label: 'Department Breakdown', icon: Building2 },
-          { id: 'payroll', label: 'Faculty Payroll', icon: DollarSign },
+          { id: 'overview' as const, label: 'Financial Overview', icon: Receipt },
+          { id: 'transactions' as const, label: 'All Transactions', icon: CreditCard, count: transactions.length },
+          { id: 'departments' as const, label: 'Department Breakdown', icon: Building2 },
+          { id: 'payroll' as const, label: 'Faculty Payroll', icon: DollarSign },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id)}
               className={`relative px-4 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center gap-2 shrink-0 cursor-pointer z-10 ${
                 isActive
                   ? "text-slate-900 dark:text-white"

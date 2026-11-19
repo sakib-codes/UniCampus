@@ -15,10 +15,7 @@ import {
   ServerCrash, 
   Save, 
   Check, 
-  RefreshCw, 
-  HardDrive, 
   Lock, 
-  BellRing, 
   Sliders, 
   Cpu, 
   CheckCircle2, 
@@ -39,14 +36,15 @@ export default function AdminSettingsPage() {
   // Settings State
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [maintenanceReason, setMaintenanceReason] = useState("Scheduled term-end grade synchronization & maintenance");
-  const [requireMFA, setRequireMFA] = useState(true);
   const [sessionTimeoutMinutes, setSessionTimeoutMinutes] = useState(45);
-  const [autoBackupDaily, setAutoBackupDaily] = useState(true);
-  const [accentColor, setAccentColor] = useState("#605BFF");
   const [highDensityTable, setHighDensityTable] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
 
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    queueMicrotask(() => {
+      setMounted(true);
+    });
+  }, []);
 
   if (!mounted) return null;
 

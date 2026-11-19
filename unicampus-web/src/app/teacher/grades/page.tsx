@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef } from "react";
-import Link from "next/link";
+import { useState, useMemo } from "react";
 import { 
   BookOpen, 
   Calendar, 
@@ -12,17 +11,11 @@ import {
   Lock, 
   Search, 
   X, 
-  Sparkles, 
   ChevronDown, 
   ChevronLeft, 
   ChevronRight, 
   FileSpreadsheet, 
-  Check, 
-  ShieldCheck, 
-  Info,
-  RotateCcw,
-  SlidersHorizontal,
-  GraduationCap
+  ShieldCheck
 } from "lucide-react";
 
 export interface StudentMarkEntry {
@@ -189,6 +182,15 @@ function calculateGrade(total: number): { gpa: number; letter: string } {
   return { gpa: 0.0, letter: "F" };
 }
 
+// Score limits definition (10 + 10 + 25 + 15 + 40 = 100% normalized basis)
+const LIMITS = {
+  attendance: 10,
+  quiz: 10,
+  midterm: 25,
+  lab: 15,
+  final: 40,
+} as const;
+
 export default function TeacherGradesPage() {
   const [rows, setRows] = useState<StudentMarkEntry[]>(INITIAL_ROWS);
   const [searchQuery, setSearchQuery] = useState("");
@@ -202,15 +204,6 @@ export default function TeacherGradesPage() {
   const [submitSuccessToast, setSubmitSuccessToast] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-
-  // Score limits definition (10 + 10 + 25 + 15 + 40 = 100% normalized basis)
-  const LIMITS = {
-    attendance: 10,
-    quiz: 10,
-    midterm: 25,
-    lab: 15,
-    final: 40,
-  };
 
   // Check out of range errors
   const outOfRangeErrors = useMemo(() => {

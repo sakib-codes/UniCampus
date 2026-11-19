@@ -75,34 +75,36 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<Profile | null>(() => findStudentProfile());
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedVersion = localStorage.getItem(AUTH_SCHEMA_VERSION_KEY);
-      if (storedVersion !== AUTH_SCHEMA_VERSION) {
-        localStorage.removeItem(AUTH_STORAGE_KEY);
-        localStorage.removeItem(SCOPE_STORAGE_KEY);
-        localStorage.setItem(AUTH_SCHEMA_VERSION_KEY, AUTH_SCHEMA_VERSION);
-        setCurrentUser(findStudentProfile());
-        setActiveScopeDeptIdState('all');
-        setIsLoaded(true);
-        return;
-      }
+    queueMicrotask(() => {
+      if (typeof window !== 'undefined') {
+        const storedVersion = localStorage.getItem(AUTH_SCHEMA_VERSION_KEY);
+        if (storedVersion !== AUTH_SCHEMA_VERSION) {
+          localStorage.removeItem(AUTH_STORAGE_KEY);
+          localStorage.removeItem(SCOPE_STORAGE_KEY);
+          localStorage.setItem(AUTH_SCHEMA_VERSION_KEY, AUTH_SCHEMA_VERSION);
+          setCurrentUser(findStudentProfile());
+          setActiveScopeDeptIdState('all');
+          setIsLoaded(true);
+          return;
+        }
 
-      const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          setCurrentUser(parsed);
-        } catch (e) {
-          console.error('Failed to parse stored auth user', e);
+        const stored = localStorage.getItem(AUTH_STORAGE_KEY);
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            setCurrentUser(parsed);
+          } catch (e) {
+            console.error('Failed to parse stored auth user', e);
+          }
+        }
+
+        const storedScope = localStorage.getItem(SCOPE_STORAGE_KEY);
+        if (storedScope) {
+          setActiveScopeDeptIdState(storedScope);
         }
       }
-
-      const storedScope = localStorage.getItem(SCOPE_STORAGE_KEY);
-      if (storedScope) {
-        setActiveScopeDeptIdState(storedScope);
-      }
-    }
-    setIsLoaded(true);
+      setIsLoaded(true);
+    });
   }, []);
 
   const saveUser = (user: Profile | null) => {

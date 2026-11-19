@@ -7,26 +7,22 @@ import {
   ArrowRight,
   MessageSquare,
   GraduationCap,
-  ChevronUp,
   BookOpen,
   QrCode,
   ShieldCheck,
   Layers,
   CheckCircle2
 } from "lucide-react";
-import { useAdminAuth } from "@/context/AdminAuthContext";
 import ProfileAvatar from "@/components/common/ProfileAvatar";
 import StatCard from "@/components/common/StatCard";
 import LectureScheduleCard from "@/components/common/LectureScheduleCard";
 import NoticeSnippetCard from "@/components/common/NoticeSnippetCard";
 import AttendanceScannerModal from "@/components/attendance/AttendanceScannerModal";
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
 import { getRoster, subscribeToAttendance, StudentRosterRecord } from "@/lib/attendanceService";
 import { ACTIVE_TERM, CANONICAL_STUDENT } from "@/lib/canonicalCampus";
 
 export default function DashboardPage() {
-  const { currentUser } = useAdminAuth();
   const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
   const [attendanceRecord, setAttendanceRecord] = useState<StudentRosterRecord | null>(null);
 
@@ -36,8 +32,6 @@ export default function DashboardPage() {
     if (hour < 18) return "Good afternoon";
     return "Good evening";
   }, []);
-
-  const studentName = (currentUser?.role === "student" ? currentUser?.full_name?.split(" ")[0] : null) || "Sakib";
 
   // Check shared real-time attendance roster on mount & subscribe to updates
   useEffect(() => {

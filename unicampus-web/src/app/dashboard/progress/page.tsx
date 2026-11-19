@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   TrendingUp, 
   CheckCircle2, 
-  Sparkles, 
   BookOpen, 
   Download, 
   Search, 
