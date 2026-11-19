@@ -53,7 +53,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     pathname === "/login" ||
     pathname === "/register";
   const isAdmin = pathname === "/admin" || pathname.startsWith("/admin/");
-  const isTeacher = pathname === "/teacher" || pathname.startsWith("/teacher/");
+  const isTeacherPath = pathname === "/teacher" || pathname.startsWith("/teacher/");
+  const isTeacherUser = currentUser?.role === "teacher";
+  const isSharedRoute =
+    pathname === "/messages" ||
+    pathname === "/settings" ||
+    pathname === "/teachers" ||
+    pathname.startsWith("/teachers/");
+
+  const isTeacher = isTeacherPath || (isTeacherUser && isSharedRoute && !isAdmin);
   const isMessages = pathname === "/messages";
 
   const role: PortalRole = isAdmin ? "admin" : isTeacher ? "teacher" : "student";
@@ -95,7 +103,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         }
         const key = e.key.toLowerCase();
         if (key === "d") {
-          router.push("/dashboard");
+          const home =
+            currentUser?.role === "admin"
+              ? "/admin/dashboard"
+              : currentUser?.role === "teacher"
+              ? "/teacher/dashboard"
+              : "/dashboard";
+          router.push(home);
         } else if (
           key === "f" &&
           (currentUser?.role === "teacher" || userIsAdmin)

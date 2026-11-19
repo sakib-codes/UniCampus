@@ -222,7 +222,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       category: "Quick Actions",
       icon: Megaphone,
       action: () => {
-        router.push("/notices/1");
+        router.push("/notices/not-exam-108");
         onClose();
       },
       keywords: ["latest", "midterm", "exam", "notice", "spring", "2026"],

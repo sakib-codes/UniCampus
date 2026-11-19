@@ -312,7 +312,20 @@ export function getPortalTitle(
     if (pathname.startsWith("/teacher/notices")) {
       return { section: "Faculty", title: "Notices", homeHref };
     }
-    const seg = pathname.split("/").filter(Boolean)[1] || "Home";
+    if (pathname === "/messages") {
+      return { section: "Faculty", title: "Messages", homeHref };
+    }
+    if (pathname === "/settings") {
+      return { section: "Faculty", title: "Settings", homeHref };
+    }
+    if (pathname === "/teachers") {
+      return { section: "Faculty", title: "Faculty Directory", homeHref };
+    }
+    if (pathname.startsWith("/teachers/")) {
+      return { section: "Faculty", title: "Faculty Profile", homeHref };
+    }
+    const segments = pathname.split("/").filter(Boolean);
+    const seg = segments.length > 1 ? segments[1] : segments[0] || "Home";
     return {
       section: "Faculty",
       title: seg.charAt(0).toUpperCase() + seg.slice(1),

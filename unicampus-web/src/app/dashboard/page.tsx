@@ -255,25 +255,25 @@ export default function DashboardPage() {
 
             <div className="space-y-3">
               <NoticeSnippetCard
-                id="1"
+                id="not-exam-108"
                 category="URGENT"
                 timeAgo="2h ago"
-                title="Midterm Exam Seat Plan Spring 2026 Published"
-                description="Students are advised to check building allotment before Saturday."
+                title="Final Examination Schedule (Spring 2026) released"
+                description="Controller of Examinations published the master final seat plan & time slots."
               />
               <NoticeSnippetCard
-                id="2"
-                category="EXAM"
-                timeAgo="Yesterday"
-                title="Registration Deadline for Improvement Exams"
-                description="Submit bank payment slips to Academic Registrar Office Room 102."
-              />
-              <NoticeSnippetCard
-                id="3"
+                id="not-reg-089"
                 category="ACADEMIC"
+                timeAgo="Yesterday"
+                title="Course Add/Drop Deadline Extended for CSE & EEE"
+                description="Academic registrar approved extended window for semester credit adjustments."
+              />
+              <NoticeSnippetCard
+                id="not-hack-044"
+                category="EVENT"
                 timeAgo="3d ago"
-                title="Library Extended Hours During Assessment Week"
-                description="Central Library floors 2-4 will remain open until midnight."
+                title="National Inter-University Hackathon 2026 Registration"
+                description="Department inviting 3-member teams to represent UniCampus in national contest."
               />
             </div>
           </div>

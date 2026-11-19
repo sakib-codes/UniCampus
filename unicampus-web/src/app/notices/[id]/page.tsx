@@ -2,7 +2,7 @@
 
 import { Suspense } from "react";
 import { useParams } from "next/navigation";
-import { NoticeboardContent } from "../page";
+import { NoticeboardContent } from "@/components/notices/NoticeboardContent";
 
 export default function NoticeDetailPage() {
   const params = useParams();

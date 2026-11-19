@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { ACTIVE_TERM } from "@/lib/canonicalCampus";
+import { useAdminAuth } from "@/context/AdminAuthContext";
 
 interface SplashScreenProps {
   autoRedirect?: boolean;
@@ -13,17 +14,25 @@ interface SplashScreenProps {
 
 export function SplashScreen({ autoRedirect = false }: SplashScreenProps) {
   const router = useRouter();
+  const { currentUser } = useAdminAuth();
+
+  const targetDashboard =
+    currentUser?.role === "admin"
+      ? "/admin/dashboard"
+      : currentUser?.role === "teacher"
+      ? "/teacher/dashboard"
+      : "/dashboard";
 
   useEffect(() => {
     if (!autoRedirect) return;
     const redirectTimer = setTimeout(() => {
-      router.push("/dashboard");
+      router.push(targetDashboard);
     }, 900);
     return () => clearTimeout(redirectTimer);
-  }, [autoRedirect, router]);
+  }, [autoRedirect, router, targetDashboard]);
 
   const handleSkip = () => {
-    router.push("/dashboard");
+    router.push(targetDashboard);
   };
 
   return (
