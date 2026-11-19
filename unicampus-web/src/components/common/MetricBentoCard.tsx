@@ -71,7 +71,7 @@ export default function MetricBentoCard({
             <div className="w-full bg-surface-2 h-1.5 rounded-full overflow-hidden border border-line">
               <div
                 className={cn(
-                  "h-full rounded-full transition-all duration-300",
+                  "h-full rounded-full transition-[width] duration-300",
                   progressBarGradient
                 )}
                 style={{

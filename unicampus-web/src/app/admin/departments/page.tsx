@@ -339,7 +339,7 @@ export default function AdminDepartmentsPage() {
 
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand hover:bg-brand-hover text-white transition-all text-xs font-bold shadow-sm cursor-pointer active:scale-[0.98]"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand hover:bg-brand-hover text-white transition-colors text-xs font-bold shadow-xs cursor-pointer active:scale-[0.98]"
           >
             <Plus className="w-4 h-4" />
             <span>Add Department</span>
@@ -404,7 +404,7 @@ export default function AdminDepartmentsPage() {
         {filteredDepartments.map((dept) => (
           <div
             key={dept.id}
-            className="bg-white/70 dark:bg-surface border border-white/80 dark:border-line backdrop-blur-xl rounded-3xl p-[26px] relative flex flex-col justify-between hover:border-brand/60 transition-all duration-300 shadow-xl group"
+            className="bg-white/70 dark:bg-surface border border-white/80 dark:border-line backdrop-blur-xl rounded-3xl p-[26px] relative flex flex-col justify-between hover:border-brand/60 transition-colors duration-200 shadow-sm group"
           >
             {/* Subtle Top-Edge Brand Accent Bar */}
             <div className="absolute top-0 left-8 right-8 h-[2px] bg-gradient-to-r from-transparent via-brand to-transparent opacity-80 group-hover:opacity-100 transition-opacity"></div>

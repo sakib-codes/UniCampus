@@ -28,6 +28,7 @@ Backend (Supabase/Postgres)  [████████████████�
 | **Phase 5** | Faculty Portal Screens | Redesigned faculty home, sticky attendance QR roster, grades matrix, routine, materials, notices | `[x]` |
 | **Phase 6** | Admin Console Screens | Calm executive KPIs, routine conflict resolver, ৳ finance ledger, analytics with brand tokens | `[x]` |
 | **Phase 7** | Gimmick Cleanup & Verification | Deleted 10 unused gimmick bits, 0 `animate-in` classes, <50 hex classes, 0 TS/ESLint errors, production build passed, 406/406 E2E audit checks passed across 4 tiers | `[x]` |
+| **Phase 8** | Production UI Architecture Upgrade | Decomposed `messages/page.tsx` monolith into 10 memoized subcomponents, eliminated composer typing lag, replaced `min-h-screen` with `min-h-dvh`, added root & segment `loading.tsx` / `error.tsx` / `not-found.tsx`, purged 100% of `transition-all` across all 34 routes, removed remaining hex leaks, fixed responsive width traps, passed 406/406 E2E audit checks | `[x]` |
 
 ---
 

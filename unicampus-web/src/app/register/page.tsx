@@ -100,7 +100,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex bg-canvas text-fg">
+    <div className="min-h-dvh flex bg-canvas text-fg">
       {/* =========================================================================
           LEFT BRAND VALUE PANEL (DESKTOP ONLY)
       ========================================================================= */}
@@ -273,7 +273,7 @@ export default function RegisterPage() {
                 {[1, 2, 3].map((s) => (
                   <div
                     key={s}
-                    className={`h-1.5 rounded-full transition-all ${
+                    className={`h-1.5 rounded-full transition-[width,background-color] duration-150 ${
                       s <= step ? "bg-brand" : "bg-surface-2"
                     }`}
                   />
@@ -294,7 +294,7 @@ export default function RegisterPage() {
                     <button
                       type="button"
                       onClick={() => setRole("student")}
-                      className={`min-h-[44px] px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                      className={`min-h-[44px] px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer ${
                         role === "student"
                           ? "bg-surface text-fg shadow-2xs"
                           : "text-fg-muted hover:text-fg"
@@ -307,7 +307,7 @@ export default function RegisterPage() {
                     <button
                       type="button"
                       onClick={() => setRole("teacher")}
-                      className={`min-h-[44px] px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                      className={`min-h-[44px] px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer ${
                         role === "teacher"
                           ? "bg-surface text-fg shadow-2xs"
                           : "text-fg-muted hover:text-fg"
@@ -326,7 +326,7 @@ export default function RegisterPage() {
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder="e.g. Sakib Ahmed"
-                      className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
+                      className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-colors"
                     />
                   </div>
 
@@ -338,7 +338,7 @@ export default function RegisterPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder={role === "student" ? "student@unicampus.edu" : "faculty@unicampus.edu"}
-                      className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all font-mono"
+                      className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-colors font-mono"
                     />
                   </div>
 
@@ -362,7 +362,7 @@ export default function RegisterPage() {
                     <select
                       value={deptId}
                       onChange={(e) => setDeptId(e.target.value)}
-                      className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all cursor-pointer"
+                      className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-colors cursor-pointer"
                     >
                       {departments.map((d) => (
                         <option key={d.id} value={d.id}>
@@ -382,7 +382,7 @@ export default function RegisterPage() {
                       value={identifier}
                       onChange={(e) => setIdentifier(e.target.value)}
                       placeholder={role === "student" ? "e.g. 211-15-4424" : "e.g. FAC-1042"}
-                      className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all font-mono"
+                      className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-colors font-mono"
                     />
                   </div>
 
@@ -392,7 +392,7 @@ export default function RegisterPage() {
                       <select
                         value={semesterName}
                         onChange={(e) => setSemesterName(e.target.value as OrdinalSemesterName)}
-                        className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all cursor-pointer"
+                        className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-colors cursor-pointer"
                       >
                         {ORDINAL_SEMESTERS.map((s) => (
                           <option key={s} value={s}>
@@ -436,7 +436,7 @@ export default function RegisterPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Minimum 6 characters"
-                      className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all font-mono"
+                      className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-colors font-mono"
                     />
                   </div>
 

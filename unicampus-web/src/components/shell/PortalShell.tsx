@@ -108,7 +108,6 @@ export function PortalShell({
   // Compute pending approvals count for Admin scoped by effectiveDeptId
   const pendingCount = useMemo(() => {
     if (!mounted || role !== "admin") return 0;
-    void pathname;
     void storageVersion;
     try {
       const profiles = adminService.getProfiles();
@@ -125,7 +124,7 @@ export function PortalShell({
     } catch {
       return 0;
     }
-  }, [mounted, role, pathname, storageVersion, currentUser, isDeptAdmin, effectiveDeptId]);
+  }, [mounted, role, storageVersion, currentUser, isDeptAdmin, effectiveDeptId]);
 
   // Close MoreSheet when route changes
   useEffect(() => {

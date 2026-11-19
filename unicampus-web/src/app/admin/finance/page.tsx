@@ -489,7 +489,7 @@ export default function AdminFinancePage() {
                   {/* Progress Bar */}
                   <div className="w-full h-2 bg-slate-200 dark:bg-surface-2 rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-brand rounded-full transition-all duration-500"
+                      className="h-full bg-brand rounded-full transition-[width] duration-300"
                       style={{ width: `${dp.percentage}%` }}
                     ></div>
                   </div>
@@ -611,7 +611,7 @@ export default function AdminFinancePage() {
                 <button
                   key={chip.id}
                   onClick={() => setSelectedType(chip.id)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
                     selectedType === chip.id
                       ? "bg-surface text-fg font-bold shadow-xs rounded-lg px-3 py-1.5 text-xs transition-colors"
                       : "text-fg-muted hover:text-fg rounded-lg px-3 py-1.5 text-xs transition-colors"
@@ -898,7 +898,7 @@ export default function AdminFinancePage() {
                 <button
                   key={dept.id}
                   onClick={() => setActiveDeptTab(dept.id)}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-2 ${
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-colors shrink-0 flex items-center gap-2 ${
                     isSelected
                       ? "bg-surface text-fg font-bold shadow-xs rounded-lg px-3 py-1.5 text-xs transition-colors"
                       : "text-fg-muted hover:text-fg rounded-lg px-3 py-1.5 text-xs transition-colors"
@@ -1113,7 +1113,7 @@ export default function AdminFinancePage() {
                 <button
                   key={m}
                   onClick={() => setSelectedMonth(m)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors shrink-0 ${
                     selectedMonth === m
                       ? "bg-surface text-fg font-bold shadow-xs rounded-lg px-3 py-1.5 text-xs transition-colors"
                       : "text-fg-muted hover:text-fg rounded-lg px-3 py-1.5 text-xs transition-colors"

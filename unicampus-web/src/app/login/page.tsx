@@ -121,7 +121,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-canvas text-fg px-4 py-6 sm:py-8">
+    <div className="min-h-dvh flex flex-col justify-between bg-canvas text-fg px-4 py-6 sm:py-8">
       {/* Top Header */}
       <header className="max-w-md w-full mx-auto flex items-center justify-between">
         <Link href="/" className="inline-flex items-center gap-2.5 group">
@@ -160,7 +160,7 @@ export default function LoginPage() {
                     key={dept.id}
                     type="button"
                     onClick={() => handleAdminDeptSelect(dept.id as AdminDeptOption)}
-                    className={`min-h-[44px] py-2 px-2 rounded-lg text-xs font-medium border flex items-center justify-center text-center transition-all cursor-pointer ${
+                    className={`min-h-[44px] py-2 px-2 rounded-lg text-xs font-medium border flex items-center justify-center text-center transition-colors cursor-pointer ${
                       selectedAdminDept === dept.id
                         ? "bg-brand text-on-brand border-brand font-semibold"
                         : "bg-surface text-fg-muted border-line hover:text-fg"
@@ -185,7 +185,7 @@ export default function LoginPage() {
                 value={emailOrId}
                 onChange={(e) => setEmailOrId(e.target.value)}
                 placeholder="211-15-4424 or name@unicampus.edu"
-                className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
+                className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-colors"
               />
             </div>
 
@@ -207,7 +207,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
-                  className="w-full min-h-[44px] pl-3.5 pr-11 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all font-mono"
+                  className="w-full min-h-[44px] pl-3.5 pr-11 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-colors font-mono"
                 />
                 <button
                   type="button"
@@ -296,7 +296,7 @@ export default function LoginPage() {
               type="button"
               onClick={() => handleSSOLogin("google")}
               disabled={isLoading}
-              className="min-h-[44px] px-2.5 sm:px-3 py-2 rounded-xl bg-surface hover:bg-surface-2 border border-line text-xs font-semibold text-fg flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs whitespace-nowrap"
+              className="min-h-[44px] px-2.5 sm:px-3 py-2 rounded-xl bg-surface hover:bg-surface-2 border border-line text-xs font-semibold text-fg flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-2xs whitespace-nowrap"
             >
               <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                 <path
@@ -323,7 +323,7 @@ export default function LoginPage() {
               type="button"
               onClick={() => handleSSOLogin("microsoft")}
               disabled={isLoading}
-              className="min-h-[44px] px-2.5 sm:px-3 py-2 rounded-xl bg-surface hover:bg-surface-2 border border-line text-xs font-semibold text-fg flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs whitespace-nowrap"
+              className="min-h-[44px] px-2.5 sm:px-3 py-2 rounded-xl bg-surface hover:bg-surface-2 border border-line text-xs font-semibold text-fg flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-2xs whitespace-nowrap"
             >
               <svg className="w-4 h-4 shrink-0" viewBox="0 0 23 23">
                 <path fill="#f35325" d="M1 1h10v10H1z" />

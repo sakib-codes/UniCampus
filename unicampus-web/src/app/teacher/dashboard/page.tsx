@@ -336,7 +336,7 @@ export default function TeacherCommandCenterPage() {
                           <button
                             type="button"
                             onClick={() => setActiveSessionModal(session)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-brand hover:bg-brand-hover text-on-brand text-xs font-semibold transition-all cursor-pointer active:scale-[0.98] whitespace-nowrap"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-brand hover:bg-brand-hover text-on-brand text-xs font-semibold transition-colors cursor-pointer active:scale-[0.98] whitespace-nowrap"
                           >
                             <Play className="w-3.5 h-3.5 fill-current" />
                             <span>Start QR</span>

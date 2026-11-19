@@ -196,7 +196,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   if (isSplash) {
     mainLayout = (
-      <div className="min-h-screen w-full bg-canvas text-fg selection:bg-brand selection:text-on-brand">
+      <div className="min-h-dvh w-full bg-canvas text-fg selection:bg-brand selection:text-on-brand">
         {children}
       </div>
     );

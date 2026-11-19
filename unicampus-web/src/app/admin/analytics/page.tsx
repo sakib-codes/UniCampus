@@ -137,7 +137,7 @@ export default function AdminAnalyticsPage() {
             
               <button
                 onClick={() => setTimeRange("week")}
-                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
                   timeRange === "week"
                     ? "bg-surface text-fg font-bold shadow-xs rounded-lg px-3 py-1.5 text-xs transition-colors"
                     : "text-fg-muted hover:text-fg rounded-lg px-3 py-1.5 text-xs transition-colors"
@@ -149,7 +149,7 @@ export default function AdminAnalyticsPage() {
             
               <button
                 onClick={() => setTimeRange("month")}
-                className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer ${
                   timeRange === "month"
                     ? "bg-surface text-fg font-bold shadow-xs rounded-lg px-3 py-1.5 text-xs transition-colors"
                     : "text-fg-muted hover:text-fg rounded-lg px-3 py-1.5 text-xs transition-colors"
@@ -162,7 +162,7 @@ export default function AdminAnalyticsPage() {
             
               <button
                 onClick={() => setTimeRange("year")}
-                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
                   timeRange === "year"
                     ? "bg-surface text-fg font-bold shadow-xs rounded-lg px-3 py-1.5 text-xs transition-colors"
                     : "text-fg-muted hover:text-fg rounded-lg px-3 py-1.5 text-xs transition-colors"
@@ -195,7 +195,7 @@ export default function AdminAnalyticsPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
           {/* Card 1: Total Users */}
-          <div className="rounded-[20px] bg-surface border border-line p-5 flex flex-col justify-between hover:border-slate-300 dark:hover:border-fg-muted transition-all">
+          <div className="rounded-[20px] bg-surface border border-line p-5 flex flex-col justify-between hover:border-slate-300 dark:hover:border-fg-muted transition-colors">
             <div className="flex items-start justify-between">
               <div className="w-8 h-8 rounded-xl bg-blue-500/10 dark:bg-blue-500/15 text-blue-500 flex items-center justify-center shrink-0">
                 <Users className="w-4 h-4" />
@@ -215,7 +215,7 @@ export default function AdminAnalyticsPage() {
           </div>
 
           {/* Card 2: Active Users */}
-          <div className="rounded-[20px] bg-surface border border-line p-5 flex flex-col justify-between hover:border-slate-300 dark:hover:border-fg-muted transition-all">
+          <div className="rounded-[20px] bg-surface border border-line p-5 flex flex-col justify-between hover:border-slate-300 dark:hover:border-fg-muted transition-colors">
             <div className="flex items-start justify-between">
               <div className="w-8 h-8 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-500 flex items-center justify-center shrink-0">
                 <ShieldCheck className="w-4 h-4" />
@@ -235,7 +235,7 @@ export default function AdminAnalyticsPage() {
           </div>
 
           {/* Card 3: Students */}
-          <div className="rounded-[20px] bg-surface border border-line p-5 flex flex-col justify-between hover:border-slate-300 dark:hover:border-fg-muted transition-all">
+          <div className="rounded-[20px] bg-surface border border-line p-5 flex flex-col justify-between hover:border-slate-300 dark:hover:border-fg-muted transition-colors">
             <div className="flex items-start justify-between">
               <div className="w-8 h-8 rounded-xl bg-teal-500/10 dark:bg-teal-500/15 text-teal-500 flex items-center justify-center shrink-0">
                 <GraduationCap className="w-4 h-4" />
@@ -252,7 +252,7 @@ export default function AdminAnalyticsPage() {
           </div>
 
           {/* Card 4: Teachers */}
-          <div className="rounded-[20px] bg-surface border border-line p-5 flex flex-col justify-between hover:border-slate-300 dark:hover:border-fg-muted transition-all">
+          <div className="rounded-[20px] bg-surface border border-line p-5 flex flex-col justify-between hover:border-slate-300 dark:hover:border-fg-muted transition-colors">
             <div className="flex items-start justify-between">
               <div className="w-8 h-8 rounded-xl bg-amber-500/10 dark:bg-amber-500/15 text-amber-500 flex items-center justify-center shrink-0">
                 <User className="w-4 h-4" />
@@ -269,7 +269,7 @@ export default function AdminAnalyticsPage() {
           </div>
 
           {/* Card 5: Pending Approvals */}
-          <div className="rounded-[20px] bg-surface border border-line p-5 flex flex-col justify-between hover:border-slate-300 dark:hover:border-fg-muted transition-all">
+          <div className="rounded-[20px] bg-surface border border-line p-5 flex flex-col justify-between hover:border-slate-300 dark:hover:border-fg-muted transition-colors">
             <div className="flex items-start justify-between">
               <div className="w-8 h-8 rounded-xl bg-slate-500/10 dark:bg-slate-500/15 text-slate-400 dark:text-fg-muted flex items-center justify-center shrink-0">
                 <ClipboardList className="w-4 h-4" />
@@ -296,7 +296,7 @@ export default function AdminAnalyticsPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5">
           {/* Revenue Wide Card */}
-          <div className={`md:col-span-5 rounded-[20px] bg-surface border border-line p-6 flex flex-col justify-between hover:border-slate-300 dark:hover:border-fg-muted transition-all`}>
+          <div className={`md:col-span-5 rounded-[20px] bg-surface border border-line p-6 flex flex-col justify-between hover:border-slate-300 dark:hover:border-fg-muted transition-colors`}>
             <div className="flex items-start justify-between">
               <div className="w-9 h-9 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-500 flex items-center justify-center shrink-0">
                 <CreditCard className="w-4 h-4" />
@@ -319,7 +319,7 @@ export default function AdminAnalyticsPage() {
           </div>
 
           {/* Pending Payments Card */}
-          <div className={`md:col-span-3 rounded-[20px] bg-surface border border-line p-6 flex flex-col justify-between hover:border-slate-300 dark:hover:border-fg-muted transition-all`}>
+          <div className={`md:col-span-3 rounded-[20px] bg-surface border border-line p-6 flex flex-col justify-between hover:border-slate-300 dark:hover:border-fg-muted transition-colors`}>
             <div className="w-9 h-9 rounded-xl bg-amber-500/10 dark:bg-amber-500/15 text-amber-500 flex items-center justify-center shrink-0">
               <Clock className="w-4 h-4" />
             </div>
@@ -337,7 +337,7 @@ export default function AdminAnalyticsPage() {
           </div>
 
           {/* Collection Rate Card */}
-          <div className={`md:col-span-2 rounded-[20px] bg-surface border border-line p-6 flex flex-col justify-between hover:border-slate-300 dark:hover:border-fg-muted transition-all`}>
+          <div className={`md:col-span-2 rounded-[20px] bg-surface border border-line p-6 flex flex-col justify-between hover:border-slate-300 dark:hover:border-fg-muted transition-colors`}>
             <div className="w-9 h-9 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-500 flex items-center justify-center shrink-0">
               <TrendingUp className="w-4 h-4" />
             </div>
@@ -352,7 +352,7 @@ export default function AdminAnalyticsPage() {
           </div>
 
           {/* Completed Transactions Card */}
-          <div className={`md:col-span-2 rounded-[20px] bg-surface border border-line p-6 flex flex-col justify-between hover:border-slate-300 dark:hover:border-fg-muted transition-all`}>
+          <div className={`md:col-span-2 rounded-[20px] bg-surface border border-line p-6 flex flex-col justify-between hover:border-slate-300 dark:hover:border-fg-muted transition-colors`}>
             <div className="w-9 h-9 rounded-xl bg-blue-500/10 dark:bg-blue-500/15 text-blue-500 flex items-center justify-center shrink-0">
               <CheckCircle2 className="w-4 h-4" />
             </div>
@@ -380,7 +380,7 @@ export default function AdminAnalyticsPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5">
           {/* Card 1: Attendance / Pass Rate */}
-          <div className={`md:col-span-5 rounded-[20px] bg-surface border border-line p-6 flex flex-col justify-between hover:border-slate-300 dark:hover:border-fg-muted transition-all`}>
+          <div className={`md:col-span-5 rounded-[20px] bg-surface border border-line p-6 flex flex-col justify-between hover:border-slate-300 dark:hover:border-fg-muted transition-colors`}>
             <div className="flex items-start justify-between">
               <div className="w-9 h-9 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-500 flex items-center justify-center shrink-0">
                 <TrendingUp className="w-4 h-4" />
@@ -403,7 +403,7 @@ export default function AdminAnalyticsPage() {
           </div>
 
           {/* Card 2: Campus Notices */}
-          <div className={`md:col-span-3 rounded-[20px] bg-surface border border-line p-6 flex flex-col justify-between hover:border-slate-300 dark:hover:border-fg-muted transition-all`}>
+          <div className={`md:col-span-3 rounded-[20px] bg-surface border border-line p-6 flex flex-col justify-between hover:border-slate-300 dark:hover:border-fg-muted transition-colors`}>
             <div className="w-9 h-9 rounded-xl bg-teal-500/10 dark:bg-teal-500/15 text-teal-500 flex items-center justify-center shrink-0">
               <Megaphone className="w-4 h-4" />
             </div>
@@ -421,7 +421,7 @@ export default function AdminAnalyticsPage() {
           </div>
 
           {/* Card 3: Dual metric (Classes & Courses) */}
-          <div className={`md:col-span-4 rounded-[20px] bg-surface border border-line p-4 sm:p-5 grid grid-cols-2 divide-x divide-line hover:border-slate-300 dark:hover:border-fg-muted transition-all`}>
+          <div className={`md:col-span-4 rounded-[20px] bg-surface border border-line p-4 sm:p-5 grid grid-cols-2 divide-x divide-line hover:border-slate-300 dark:hover:border-fg-muted transition-colors`}>
             <div className="text-center px-2">
               <h3 className="text-3xl font-black text-blue-500 tracking-tight leading-none">
                 {data.classesCount}

@@ -345,7 +345,7 @@ export default function TeacherAttendancePage() {
         {/* Right Pause / Resume Button */}
         <button
           onClick={() => setIsRotating(!isRotating)}
-          className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-surface-2 hover:bg-slate-200 dark:hover:bg-surface-2 border border-slate-200 dark:border-line text-slate-900 dark:text-fg font-semibold text-xs sm:text-[13px] flex items-center gap-2 transition-all active:scale-[0.98] cursor-pointer shadow-xs whitespace-nowrap self-stretch md:self-auto justify-center"
+          className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-surface-2 hover:bg-slate-200 dark:hover:bg-surface-2 border border-slate-200 dark:border-line text-slate-900 dark:text-fg font-semibold text-xs sm:text-[13px] flex items-center gap-2 transition-colors active:scale-[0.98] cursor-pointer shadow-xs whitespace-nowrap self-stretch md:self-auto justify-center"
         >
           {isRotating ? (
             <>
@@ -392,9 +392,10 @@ export default function TeacherAttendancePage() {
                 cx="110"
                 cy="110"
                 r={circleRadius}
-                stroke="#161B22"
+                stroke="currentColor"
                 strokeWidth="5"
                 fill="transparent"
+                className="text-line"
               />
               <circle
                 cx="110"
@@ -406,12 +407,12 @@ export default function TeacherAttendancePage() {
                 strokeDashoffset={isRotating ? strokeOffset : 0}
                 strokeLinecap="round"
                 fill="transparent"
-                className="transition-all duration-1000 ease-linear"
+                className="transition-[stroke-dashoffset] duration-1000 ease-linear"
               />
               <defs>
                 <linearGradient id="indigoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#2563EB" />
-                  <stop offset="100%" stopColor="#A5A2FF" />
+                  <stop offset="0%" stopColor="var(--color-brand, #605BFF)" />
+                  <stop offset="100%" stopColor="var(--color-brand, #7C78FF)" />
                 </linearGradient>
               </defs>
             </svg>
@@ -501,11 +502,11 @@ export default function TeacherAttendancePage() {
             {/* Horizontal Emerald/Indigo Progress Bar */}
             <div className="w-full h-2.5 bg-slate-200 dark:bg-surface rounded-full overflow-hidden flex p-0.5 border border-slate-300 dark:border-line/80 mb-2.5">
               <div
-                className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full transition-all duration-300"
+                className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full transition-[width] duration-300"
                 style={{ width: `${(presentCount / totalEnrolled) * 100}%` }}
               ></div>
               <div
-                className="h-full bg-amber-500 rounded-full ml-0.5 transition-all duration-300"
+                className="h-full bg-amber-500 rounded-full ml-0.5 transition-[width] duration-300"
                 style={{ width: `${(lateCount / totalEnrolled) * 100}%` }}
               ></div>
             </div>
@@ -559,7 +560,7 @@ export default function TeacherAttendancePage() {
               {/* Batch Action Link */}
               <button
                 onClick={handleMarkAllAbsent}
-                className="self-start sm:self-auto px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-surface-2 hover:bg-rose-500/10 border border-slate-200 dark:border-line hover:border-rose-500/40 text-rose-600 dark:text-rose-400 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 whitespace-nowrap"
+                className="self-start sm:self-auto px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-surface-2 hover:bg-rose-500/10 border border-slate-200 dark:border-line hover:border-rose-500/40 text-rose-600 dark:text-rose-400 text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer active:scale-95 whitespace-nowrap"
               >
                 <UserX className="w-3.5 h-3.5" />
                 <span>Mark All Remaining Absent</span>
@@ -597,14 +598,14 @@ export default function TeacherAttendancePage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Filter student name or ID..."
-                  className="w-full bg-slate-50 dark:bg-surface-2 border border-slate-200 dark:border-line text-xs sm:text-[13px] rounded-xl pl-10 pr-4 py-2 text-slate-900 dark:text-fg placeholder:text-slate-400 dark:placeholder:text-fg-muted focus:outline-none focus:border-brand transition-all"
+                  className="w-full bg-slate-50 dark:bg-surface-2 border border-slate-200 dark:border-line text-xs sm:text-[13px] rounded-xl pl-10 pr-4 py-2 text-slate-900 dark:text-fg placeholder:text-slate-400 dark:placeholder:text-fg-muted focus:outline-none focus:border-brand transition-colors"
                 />
               </div>
 
               <div className="flex items-center gap-1 bg-slate-100 dark:bg-surface-2 p-1 rounded-xl border border-slate-200 dark:border-line text-xs self-end sm:self-auto">
                 <button
                   onClick={() => { setFilterTab("all"); setCurrentPage(1); }}
-                  className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
+                  className={`px-2.5 py-1 rounded-lg font-semibold transition-colors cursor-pointer ${
                     filterTab === "all"
                       ? "bg-white dark:bg-surface text-slate-900 dark:text-fg shadow-xs border border-slate-200 dark:border-line"
                       : "text-slate-500 dark:text-fg-muted hover:text-slate-900 dark:hover:text-fg"
@@ -614,7 +615,7 @@ export default function TeacherAttendancePage() {
                 </button>
                 <button
                   onClick={() => { setFilterTab("checked_in"); setCurrentPage(1); }}
-                  className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
+                  className={`px-2.5 py-1 rounded-lg font-semibold transition-colors cursor-pointer ${
                     filterTab === "checked_in"
                       ? "bg-white dark:bg-surface text-slate-900 dark:text-fg shadow-xs border border-slate-200 dark:border-line"
                       : "text-slate-500 dark:text-fg-muted hover:text-slate-900 dark:hover:text-fg"
@@ -624,7 +625,7 @@ export default function TeacherAttendancePage() {
                 </button>
                 <button
                   onClick={() => { setFilterTab("absent"); setCurrentPage(1); }}
-                  className={`px-2.5 py-1 rounded-lg font-semibold transition-all cursor-pointer ${
+                  className={`px-2.5 py-1 rounded-lg font-semibold transition-colors cursor-pointer ${
                     filterTab === "absent"
                       ? "bg-white dark:bg-surface text-slate-900 dark:text-fg shadow-xs border border-slate-200 dark:border-line"
                       : "text-slate-500 dark:text-fg-muted hover:text-slate-900 dark:hover:text-fg"
@@ -714,7 +715,7 @@ export default function TeacherAttendancePage() {
                             {/* Present Button */}
                             <button
                               onClick={() => handleSetStatus(student.id, "present")}
-                              className={`flex-1 py-1 px-2.5 rounded-lg font-bold text-xs tracking-wide flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                              className={`flex-1 py-1 px-2.5 rounded-lg font-bold text-xs tracking-wide flex items-center justify-center gap-1 transition-colors cursor-pointer ${
                                 isPresent
                                   ? "bg-emerald-500 text-white shadow-xs"
                                   : "text-slate-500 dark:text-fg-muted hover:text-emerald-600 dark:hover:text-emerald-400"
@@ -727,7 +728,7 @@ export default function TeacherAttendancePage() {
                             {/* Late Button */}
                             <button
                               onClick={() => handleSetStatus(student.id, "late")}
-                              className={`flex-1 py-1 px-2.5 rounded-lg font-bold text-xs tracking-wide flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                              className={`flex-1 py-1 px-2.5 rounded-lg font-bold text-xs tracking-wide flex items-center justify-center gap-1 transition-colors cursor-pointer ${
                                 isLate
                                   ? "bg-amber-500 text-slate-900 dark:text-surface shadow-xs"
                                   : "text-slate-500 dark:text-fg-muted hover:text-amber-600 dark:hover:text-amber-400"
@@ -740,7 +741,7 @@ export default function TeacherAttendancePage() {
                             {/* Absent Button */}
                             <button
                               onClick={() => handleSetStatus(student.id, "absent")}
-                              className={`flex-1 py-1 px-2.5 rounded-lg font-bold text-xs tracking-wide flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                              className={`flex-1 py-1 px-2.5 rounded-lg font-bold text-xs tracking-wide flex items-center justify-center gap-1 transition-colors cursor-pointer ${
                                 isAbsent
                                   ? "bg-rose-500 text-white shadow-xs"
                                   : "text-slate-500 dark:text-fg-muted hover:text-rose-600 dark:hover:text-rose-400"
@@ -812,16 +813,16 @@ export default function TeacherAttendancePage() {
           {/* Secondary Button: Export Excel Sheet */}
           <button
             onClick={handleExportExcel}
-            className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-surface-2 hover:bg-slate-200 dark:hover:bg-surface-2 border border-slate-200 dark:border-line text-slate-900 dark:text-fg font-semibold text-xs sm:text-[13px] flex items-center gap-2 transition-all cursor-pointer shadow-xs active:scale-[0.98]"
+            className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-surface-2 hover:bg-slate-200 dark:hover:bg-surface-2 border border-slate-200 dark:border-line text-slate-900 dark:text-fg font-semibold text-xs sm:text-[13px] flex items-center gap-2 transition-colors cursor-pointer shadow-xs active:scale-[0.98]"
           >
             <FileSpreadsheet className="w-4 h-4 text-slate-500 dark:text-fg-muted" />
             <span>Export Excel Sheet</span>
           </button>
 
-          {/* Primary Electric Indigo #2563EB Button */}
+          {/* Primary Action Button */}
           <button
             onClick={handleSaveFinalize}
-            className="px-5 py-2.5 rounded-xl bg-brand hover:bg-[#5853f5] text-white font-bold text-xs sm:text-[13px] flex items-center gap-2 shadow-lg shadow-brand/30 transition-all cursor-pointer active:scale-[0.98]"
+            className="px-5 py-2.5 rounded-xl bg-brand hover:bg-brand-hover text-white font-bold text-xs sm:text-[13px] flex items-center gap-2 shadow-xs transition-colors cursor-pointer active:scale-[0.98]"
           >
             {saveSuccess ? (
               <>

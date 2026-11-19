@@ -294,7 +294,7 @@ export default function AdminDashboardPage() {
                   </div>
                   <div className="w-full h-3 bg-surface-2 rounded-full overflow-hidden p-0.5 border border-line">
                     <div
-                      className="h-full rounded-full bg-brand transition-all duration-500"
+                      className="h-full rounded-full bg-brand transition-[width] duration-300"
                       style={{ width: `${dept.percent}%` }}
                     />
                   </div>
@@ -370,7 +370,7 @@ export default function AdminDashboardPage() {
             </span>
             <Link
               href="/admin/analytics"
-              className="text-xs font-sans font-semibold text-brand hover:underline flex items-center gap-1 transition-all"
+              className="text-xs font-sans font-semibold text-brand hover:underline flex items-center gap-1 transition-colors"
             >
               <span>View Full Analytics</span>
               <ArrowRight className="w-3.5 h-3.5" />

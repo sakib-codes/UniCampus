@@ -235,7 +235,7 @@ export default function TeachersPage() {
                         <div className="flex items-center gap-3.5 min-w-0 flex-1">
                           <div className="relative shrink-0">
                             <ProfileAvatar
-                              className="w-14 h-14 rounded-2xl border-2 border-amber-400/30 dark:border-amber-500/30 group-hover:border-amber-400/60 group-hover:scale-105 transition-all bg-amber-500/5 dark:bg-surface-2"
+                              className="w-14 h-14 rounded-2xl border-2 border-amber-400/30 dark:border-amber-500/30 group-hover:border-amber-400/60 group-hover:scale-105 transition-[transform,border-color] duration-150 motion-reduce:group-hover:scale-100 bg-amber-500/5 dark:bg-surface-2"
                               iconClassName="w-7 h-7 text-amber-500/80 dark:text-amber-400/80"
                             />
                             <span className="absolute -bottom-1 -right-1 p-0.5 rounded-full bg-surface border border-line">
@@ -419,7 +419,7 @@ export default function TeachersPage() {
                     <div className="flex flex-wrap items-start justify-between gap-2.5 mb-4">
                       <div className="flex items-center gap-3.5 min-w-0 flex-1">
                         <ProfileAvatar
-                          className="w-14 h-14 rounded-2xl border-2 border-line shrink-0 group-hover:border-brand/40 group-hover:scale-105 transition-all bg-surface-2"
+                          className="w-14 h-14 rounded-2xl border-2 border-line shrink-0 group-hover:border-brand/40 group-hover:scale-105 transition-[transform,border-color] duration-150 motion-reduce:group-hover:scale-100 bg-surface-2"
                           iconClassName="w-7 h-7"
                         />
                         <div className="min-w-0">

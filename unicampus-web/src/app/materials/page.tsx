@@ -356,7 +356,7 @@ export default function StudentMaterialsPage() {
             <button
               type="button"
               onClick={handleSyncCloud}
-              className={`h-9 px-4 rounded-xl border text-[13px] font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-xs active:scale-[0.98] ${
+              className={`h-9 px-4 rounded-xl border text-[13px] font-semibold flex items-center gap-2 transition-colors cursor-pointer shadow-xs active:scale-[0.98] ${
                 syncSuccess
                   ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
                   : "bg-slate-100 hover:bg-slate-200 dark:bg-surface-2 dark:hover:bg-surface-2 border-slate-200 dark:border-line text-slate-800 dark:text-fg"
@@ -369,7 +369,7 @@ export default function StudentMaterialsPage() {
             <button
               type="button"
               onClick={() => setSavedItemsOnly(!savedItemsOnly)}
-              className={`h-9 px-4 rounded-xl border text-[13px] font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-xs active:scale-[0.98] ${
+              className={`h-9 px-4 rounded-xl border text-[13px] font-semibold flex items-center gap-2 transition-colors cursor-pointer shadow-xs active:scale-[0.98] ${
                 savedItemsOnly
                   ? "bg-brand text-white dark:bg-brand border-brand dark:border-brand"
                   : "bg-slate-100 hover:bg-slate-200 dark:bg-surface-2 dark:hover:bg-surface-2 border-slate-200 dark:border-line text-slate-800 dark:text-fg"
@@ -388,7 +388,7 @@ export default function StudentMaterialsPage() {
       <div className="w-full">
         <section className="p-4 rounded-2xl bg-white dark:bg-surface border border-slate-200 dark:border-line flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 shadow-xs">
           {/* Left: Search input field */}
-          <div className="relative w-full lg:w-[380px]">
+          <div className="relative w-full lg:max-w-[380px]">
             <Search className="w-4 h-4 text-slate-400 dark:text-fg-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               ref={searchInputRef}
@@ -424,7 +424,7 @@ export default function StudentMaterialsPage() {
                     key={opt.id}
                     type="button"
                     onClick={() => setSelectedCourse(opt.id)}
-                    className={`px-3 py-1.5 rounded-lg text-[12px] font-semibold tracking-tight transition-all shrink-0 cursor-pointer ${
+                    className={`px-3 py-1.5 rounded-lg text-[12px] font-semibold tracking-tight transition-colors shrink-0 cursor-pointer ${
                       isActive
                         ? "bg-brand text-white dark:bg-brand dark:text-fg shadow-xs"
                         : "text-slate-600 dark:text-fg-muted hover:text-slate-900 dark:hover:text-fg hover:bg-slate-200/60 dark:hover:bg-surface-2"
@@ -462,7 +462,7 @@ export default function StudentMaterialsPage() {
       <div className="w-full">
         <section className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {/* Card 1: Total Repository Files */}
-          <div className="p-5 rounded-[20px] bg-white dark:bg-surface border border-slate-200 dark:border-line flex items-center justify-between relative overflow-hidden transition-all duration-300 shadow-2xs hover:border-brand/40 dark:hover:border-brand/40">
+          <div className="p-5 rounded-[20px] bg-white dark:bg-surface border border-slate-200 dark:border-line flex items-center justify-between relative overflow-hidden transition-colors duration-200 shadow-2xs hover:border-brand/40 dark:hover:border-brand/40">
             <div className="flex flex-col gap-1 z-10">
               <span className="text-[12px] font-medium text-slate-500 dark:text-fg-muted font-mono">
                 Total Repository Files
@@ -485,7 +485,7 @@ export default function StudentMaterialsPage() {
           </div>
 
           {/* Card 2: Offline Sync & Downloads */}
-          <div className="p-5 rounded-[20px] bg-white dark:bg-surface border border-slate-200 dark:border-line flex items-center justify-between relative overflow-hidden transition-all duration-300 shadow-2xs hover:border-sky-500/40 dark:hover:border-sky-400/40">
+          <div className="p-5 rounded-[20px] bg-white dark:bg-surface border border-slate-200 dark:border-line flex items-center justify-between relative overflow-hidden transition-colors duration-200 shadow-2xs hover:border-sky-500/40 dark:hover:border-sky-400/40">
             <div className="flex flex-col gap-1 z-10">
               <span className="text-[12px] font-medium text-slate-500 dark:text-fg-muted font-mono">
                 Downloads this week
@@ -508,7 +508,7 @@ export default function StudentMaterialsPage() {
           </div>
 
           {/* Card 3: Recent Dispatches */}
-          <div className="p-5 rounded-[20px] bg-white dark:bg-surface border border-slate-200 dark:border-line flex items-center justify-between relative overflow-hidden transition-all duration-300 shadow-2xs hover:border-emerald-500/40 dark:hover:border-success/40">
+          <div className="p-5 rounded-[20px] bg-white dark:bg-surface border border-slate-200 dark:border-line flex items-center justify-between relative overflow-hidden transition-colors duration-200 shadow-2xs hover:border-emerald-500/40 dark:hover:border-success/40">
             <div className="flex flex-col gap-1 z-10">
               <span className="text-[12px] font-medium text-slate-500 dark:text-fg-muted font-mono">
                 Recent Uploads
@@ -599,7 +599,7 @@ export default function StudentMaterialsPage() {
                     return (
                       <div
                         key={item.id}
-                        className="p-4 rounded-xl bg-slate-50/70 dark:bg-surface-2 border border-slate-200 dark:border-line/60 hover:border-brand/40 dark:hover:border-brand/40 transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-3 group"
+                        className="p-4 rounded-xl bg-slate-50/70 dark:bg-surface-2 border border-slate-200 dark:border-line/60 hover:border-brand/40 dark:hover:border-brand/40 transition-colors flex flex-col lg:flex-row lg:items-center justify-between gap-3 group"
                       >
                         {/* Left: Icon Badge + Title + Metadata */}
                         <div className="flex items-start gap-3.5 min-w-0">
@@ -650,7 +650,7 @@ export default function StudentMaterialsPage() {
                           <button
                             type="button"
                             onClick={() => handleDownload(item)}
-                            className="h-8 px-3.5 rounded-lg bg-brand hover:bg-brand-hover text-white text-xs font-semibold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
+                            className="h-8 px-3.5 rounded-lg bg-brand hover:bg-brand-hover text-white text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
                           >
                             <Download className="w-3.5 h-3.5" />
                             <span>{isDownloading ? "Downloading..." : "Download"}</span>
@@ -745,7 +745,7 @@ export default function StudentMaterialsPage() {
                   <button
                     type="button"
                     onClick={() => handleDownload(previewItem)}
-                    className="h-8 px-3 rounded-lg bg-brand hover:bg-brand-hover dark:bg-brand dark:hover:bg-brand-hover text-white text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
+                    className="h-8 px-3 rounded-lg bg-brand hover:bg-brand-hover dark:bg-brand dark:hover:bg-brand-hover text-white text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
                   >
                     <Download className="w-3.5 h-3.5" />
                     <span>Download</span>

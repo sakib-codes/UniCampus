@@ -373,7 +373,7 @@ export default function TeacherGradesPage() {
               <div className="relative">
                 <button
                   onClick={() => setCourseDropdownOpen(!courseDropdownOpen)}
-                  className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-surface-2 border border-slate-200 dark:border-line hover:border-brand/60 text-slate-900 dark:text-fg text-xs font-semibold cursor-pointer transition-all shadow-xs"
+                  className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-surface-2 border border-slate-200 dark:border-line hover:border-brand/60 text-slate-900 dark:text-fg text-xs font-semibold cursor-pointer transition-colors shadow-xs"
                 >
                   <BookOpen className="w-3.5 h-3.5 text-brand" />
                   <span>{selectedCourse}</span>
@@ -409,7 +409,7 @@ export default function TeacherGradesPage() {
               <div className="relative">
                 <button
                   onClick={() => setSemesterDropdownOpen(!semesterDropdownOpen)}
-                  className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-surface-2 border border-slate-200 dark:border-line hover:border-brand/60 text-slate-900 dark:text-fg text-xs font-semibold cursor-pointer transition-all shadow-xs"
+                  className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-surface-2 border border-slate-200 dark:border-line hover:border-brand/60 text-slate-900 dark:text-fg text-xs font-semibold cursor-pointer transition-colors shadow-xs"
                 >
                   <Calendar className="w-3.5 h-3.5 text-brand" />
                   <span>{selectedSemester}</span>
@@ -559,12 +559,12 @@ export default function TeacherGradesPage() {
               <svg className="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 320 90">
                 <defs>
                   <linearGradient id="bellGlow" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor="#8582ff" stopOpacity="0.4" />
-                    <stop offset="100%" stopColor="#8582ff" stopOpacity="0.0" />
+                    <stop offset="0%" stopColor="var(--color-brand, #605BFF)" stopOpacity="0.4" />
+                    <stop offset="100%" stopColor="var(--color-brand, #605BFF)" stopOpacity="0.0" />
                   </linearGradient>
                 </defs>
                 {/* Baseline */}
-                <line stroke="#30363D" strokeDasharray="2 2" strokeWidth="1" x1="10" x2="310" y1="80" y2="80" />
+                <line stroke="currentColor" className="text-line" strokeDasharray="2 2" strokeWidth="1" x1="10" x2="310" y1="80" y2="80" />
                 {/* Area Fill */}
                 <path
                   d="M 15 80 C 80 80, 110 75, 140 30 C 160 5, 185 5, 205 32 C 235 70, 275 80, 305 80 Z"
@@ -574,12 +574,12 @@ export default function TeacherGradesPage() {
                 <path
                   d="M 15 80 C 80 80, 110 75, 140 30 C 160 5, 185 5, 205 32 C 235 70, 275 80, 305 80"
                   fill="none"
-                  stroke="#2563EB"
+                  stroke="var(--color-brand, #605BFF)"
                   strokeWidth="2.5"
                 />
                 {/* Benchmark Mean Indicator (3.64) */}
-                <line stroke="#2563EB" strokeDasharray="3 3" strokeWidth="1.5" x1="172" x2="172" y1="12" y2="80" />
-                <circle className="shadow-lg" cx="172" cy="12" fill="#8582ff" r="3.5" />
+                <line stroke="var(--color-brand, #605BFF)" strokeDasharray="3 3" strokeWidth="1.5" x1="172" x2="172" y1="12" y2="80" />
+                <circle className="shadow-xs" cx="172" cy="12" fill="var(--color-brand, #7C78FF)" r="3.5" />
               </svg>
               {/* Mean Indicator Pill */}
               <div className="absolute top-2 left-[54%] -translate-x-1/2 px-1.5 py-0.5 rounded bg-brand text-white font-mono text-xs font-bold shadow-md">
@@ -673,7 +673,7 @@ export default function TeacherGradesPage() {
             {/* Import CSV */}
             <button
               onClick={() => setImportModalOpen(true)}
-              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-surface-2 hover:bg-slate-100 dark:hover:bg-[#252C36] border border-slate-200 dark:border-line text-slate-700 dark:text-fg text-xs font-medium cursor-pointer transition-colors shadow-xs"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-surface-2 hover:bg-slate-100 dark:hover:bg-line border border-slate-200 dark:border-line text-slate-700 dark:text-fg text-xs font-medium cursor-pointer transition-colors shadow-xs"
             >
               <Upload className="w-3.5 h-3.5 text-slate-400 dark:text-fg-muted" />
               <span>Import Marks CSV</span>
@@ -682,7 +682,7 @@ export default function TeacherGradesPage() {
             {/* Download Draft */}
             <button
               onClick={handleDownloadDraft}
-              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-surface-2 hover:bg-slate-100 dark:hover:bg-[#252C36] border border-slate-200 dark:border-line text-slate-700 dark:text-fg text-xs font-medium cursor-pointer transition-colors shadow-xs"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-surface-2 hover:bg-slate-100 dark:hover:bg-line border border-slate-200 dark:border-line text-slate-700 dark:text-fg text-xs font-medium cursor-pointer transition-colors shadow-xs"
             >
               <Download className="w-3.5 h-3.5 text-slate-400 dark:text-fg-muted" />
               <span>Download Draft</span>
@@ -694,7 +694,7 @@ export default function TeacherGradesPage() {
                 if (!isLocked) setSubmitModalOpen(true);
               }}
               disabled={isLocked}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white transition-all duration-150 cursor-pointer shadow-lg active:scale-[0.98] ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white transition-colors duration-150 cursor-pointer shadow-xs active:scale-[0.98] ${
                 isLocked
                   ? "bg-slate-700 cursor-not-allowed opacity-60"
                   : "bg-brand hover:bg-brand-hover shadow-[0_0_20px_rgba(37, 99, 235,0.4)]"
@@ -793,7 +793,7 @@ export default function TeacherGradesPage() {
                         value={student.quiz.toFixed(1)}
                         onFocus={() => setActiveCellId(`${student.id}-quiz`)}
                         onChange={(e) => handleScoreChange(student.id, "quiz", e.target.value)}
-                        className={`w-15 h-7.5 text-right px-1.5 rounded-lg font-mono text-xs tabular-nums transition-all focus:outline-none ${
+                        className={`w-15 h-7.5 text-right px-1.5 rounded-lg font-mono text-xs tabular-nums transition-colors focus:outline-none ${
                           activeCellId === `${student.id}-quiz`
                             ? "bg-white dark:bg-surface-2 border-2 border-brand shadow-[0_0_12px_rgba(37, 99, 235,0.4)] text-slate-900 dark:text-white"
                             : "bg-slate-100 dark:bg-surface-2 border border-slate-300 dark:border-line text-slate-900 dark:text-fg hover:border-slate-400 dark:hover:border-fg-muted"
@@ -812,7 +812,7 @@ export default function TeacherGradesPage() {
                         value={student.midterm.toFixed(1)}
                         onFocus={() => setActiveCellId(`${student.id}-midterm`)}
                         onChange={(e) => handleScoreChange(student.id, "midterm", e.target.value)}
-                        className={`w-15 h-7.5 text-right px-1.5 rounded-lg font-mono text-xs tabular-nums transition-all focus:outline-none ${
+                        className={`w-15 h-7.5 text-right px-1.5 rounded-lg font-mono text-xs tabular-nums transition-colors focus:outline-none ${
                           activeCellId === `${student.id}-midterm`
                             ? "bg-white dark:bg-surface-2 border-2 border-brand shadow-[0_0_12px_rgba(37, 99, 235,0.4)] text-slate-900 dark:text-white"
                             : "bg-slate-100 dark:bg-surface-2 border border-slate-300 dark:border-line text-slate-900 dark:text-fg hover:border-slate-400 dark:hover:border-fg-muted"
@@ -831,7 +831,7 @@ export default function TeacherGradesPage() {
                         value={student.lab.toFixed(1)}
                         onFocus={() => setActiveCellId(`${student.id}-lab`)}
                         onChange={(e) => handleScoreChange(student.id, "lab", e.target.value)}
-                        className={`w-15 h-7.5 text-right px-1.5 rounded-lg font-mono text-xs tabular-nums transition-all focus:outline-none ${
+                        className={`w-15 h-7.5 text-right px-1.5 rounded-lg font-mono text-xs tabular-nums transition-colors focus:outline-none ${
                           activeCellId === `${student.id}-lab`
                             ? "bg-white dark:bg-surface-2 border-2 border-brand shadow-[0_0_12px_rgba(37, 99, 235,0.4)] text-slate-900 dark:text-white"
                             : "bg-slate-100 dark:bg-surface-2 border border-slate-300 dark:border-line text-slate-900 dark:text-fg hover:border-slate-400 dark:hover:border-fg-muted"
@@ -851,7 +851,7 @@ export default function TeacherGradesPage() {
                           value={student.final.toFixed(1)}
                           onFocus={() => setActiveCellId(`${student.id}-final`)}
                           onChange={(e) => handleScoreChange(student.id, "final", e.target.value)}
-                          className={`w-15 h-7.5 text-right px-1.5 rounded-lg font-mono text-xs tabular-nums transition-all focus:outline-none ${
+                          className={`w-15 h-7.5 text-right px-1.5 rounded-lg font-mono text-xs tabular-nums transition-colors focus:outline-none ${
                             activeCellId === `${student.id}-final`
                               ? "bg-white dark:bg-surface-2 border-2 border-brand shadow-[0_0_12px_rgba(37, 99, 235,0.5)] text-slate-900 dark:text-white font-bold"
                               : "bg-slate-100 dark:bg-surface-2 border border-slate-300 dark:border-line text-slate-900 dark:text-fg hover:border-slate-400 dark:hover:border-fg-muted"
@@ -1000,7 +1000,7 @@ export default function TeacherGradesPage() {
               </button>
               <button
                 onClick={handleLockAndSubmit}
-                className="px-5 py-2 rounded-xl bg-brand hover:bg-brand-hover text-white text-xs font-bold shadow-lg shadow-brand/30 cursor-pointer transition-all active:scale-[0.98]"
+                className="px-5 py-2 rounded-xl bg-brand hover:bg-brand-hover text-white text-xs font-bold shadow-xs cursor-pointer transition-colors active:scale-[0.98]"
               >
                 Confirm &amp; Transmit Marks
               </button>

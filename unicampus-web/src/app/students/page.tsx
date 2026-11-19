@@ -69,7 +69,7 @@ const studentsData: Student[] = [
     skills: ["Section B", "Competitive Programming", "Math Club"],
     isActive: true,
     activeStatusText: "Active 15m ago",
-    avatarColor: "from-[#A855F7]/30 to-[#7E22CE]/20 text-[#A855F7] border-[#A855F7]/40",
+    avatarColor: "from-brand/30 to-brand/20 text-brand border-brand/40",
   },
   {
     id: "4",
@@ -81,7 +81,7 @@ const studentsData: Student[] = [
     skills: ["Section A", "Design Guild", "Study Group 2"],
     isActive: true,
     activeStatusText: "Active now",
-    avatarColor: "from-[#EC4899]/30 to-[#BE185D]/20 text-[#EC4899] border-[#EC4899]/40",
+    avatarColor: "from-pink-500/30 to-pink-600/20 text-pink-500 border-pink-500/40",
   },
   {
     id: "5",
@@ -105,7 +105,7 @@ const studentsData: Student[] = [
     skills: ["Section A", "Debating Club", "Study Group 4"],
     isActive: true,
     activeStatusText: "Active now",
-    avatarColor: "from-success/30 to-[#047857]/20 text-success border-success/40",
+    avatarColor: "from-success/30 to-success/20 text-success border-success/40",
   },
   {
     id: "7",
@@ -129,7 +129,7 @@ const studentsData: Student[] = [
     skills: ["Section A", "Algorithms Lab", "Study Group 1"],
     isActive: true,
     activeStatusText: "Active 5m ago",
-    avatarColor: "from-[#06B6D4]/30 to-[#0891B2]/20 text-[#06B6D4] border-[#06B6D4]/40",
+    avatarColor: "from-cyan-500/30 to-cyan-600/20 text-cyan-500 border-cyan-500/40",
   },
   {
     id: "9",
@@ -141,7 +141,7 @@ const studentsData: Student[] = [
     skills: ["Section A", "Database R&D", "IEEE Student Branch"],
     isActive: false,
     activeStatusText: "Seen 4h ago",
-    avatarColor: "from-danger/30 to-[#E11D48]/20 text-danger border-danger/40",
+    avatarColor: "from-danger/30 to-danger/20 text-danger border-danger/40",
   },
   {
     id: "10",
@@ -153,7 +153,7 @@ const studentsData: Student[] = [
     skills: ["Section B", "Robotics Club", "IoT Research Group"],
     isActive: true,
     activeStatusText: "Active now",
-    avatarColor: "from-[#8B5CF6]/30 to-[#6D28D9]/20 text-[#8B5CF6] border-[#8B5CF6]/40",
+    avatarColor: "from-brand/30 to-brand/20 text-brand border-brand/40",
   },
   {
     id: "11",
@@ -346,7 +346,7 @@ export default function StudentsPage() {
       <div className="w-full">
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {/* Card A: Enrolled Peers */}
-          <div className="p-[18px] rounded-[16px] bg-white dark:bg-surface border border-slate-200 dark:border-line flex items-center justify-between relative overflow-hidden transition-all duration-300 shadow-2xs hover:border-brand/40 dark:hover:border-brand/40">
+          <div className="p-[18px] rounded-[16px] bg-white dark:bg-surface border border-slate-200 dark:border-line flex items-center justify-between relative overflow-hidden transition-colors duration-200 shadow-2xs hover:border-brand/40 dark:hover:border-brand/40">
             <div className="flex flex-col gap-1 z-10">
               <span className="text-[12px] font-medium text-slate-500 dark:text-fg-muted font-mono">
                 Enrolled Peers
@@ -369,7 +369,7 @@ export default function StudentsPage() {
           </div>
 
           {/* Card B: Active Now */}
-          <div className="p-[18px] rounded-[16px] bg-white dark:bg-surface border border-slate-200 dark:border-line flex items-center justify-between relative overflow-hidden transition-all duration-300 shadow-2xs hover:border-emerald-500/40 dark:hover:border-success/40">
+          <div className="p-[18px] rounded-[16px] bg-white dark:bg-surface border border-slate-200 dark:border-line flex items-center justify-between relative overflow-hidden transition-colors duration-200 shadow-2xs hover:border-emerald-500/40 dark:hover:border-success/40">
             <div className="flex flex-col gap-1 z-10">
               <div className="flex items-center gap-2">
                 <span className="text-[12px] font-medium text-slate-500 dark:text-fg-muted font-mono">
@@ -398,7 +398,7 @@ export default function StudentsPage() {
           </div>
 
           {/* Card C: 6th Semester */}
-          <div className="p-[18px] rounded-[16px] bg-white dark:bg-surface border border-slate-200 dark:border-line flex items-center justify-between relative overflow-hidden transition-all duration-300 shadow-2xs hover:border-brand/40 dark:hover:border-brand/40">
+          <div className="p-[18px] rounded-[16px] bg-white dark:bg-surface border border-slate-200 dark:border-line flex items-center justify-between relative overflow-hidden transition-colors duration-200 shadow-2xs hover:border-brand/40 dark:hover:border-brand/40">
             <div className="flex flex-col gap-1 z-10">
               <span className="text-[12px] font-medium text-slate-500 dark:text-fg-muted font-mono">
                 6th Semester
@@ -421,7 +421,7 @@ export default function StudentsPage() {
           </div>
 
           {/* Card D: Departments */}
-          <div className="p-[18px] rounded-[16px] bg-white dark:bg-surface border border-slate-200 dark:border-line flex items-center justify-between relative overflow-hidden transition-all duration-300 shadow-2xs hover:border-brand/40 dark:hover:border-brand/40">
+          <div className="p-[18px] rounded-[16px] bg-white dark:bg-surface border border-slate-200 dark:border-line flex items-center justify-between relative overflow-hidden transition-colors duration-200 shadow-2xs hover:border-brand/40 dark:hover:border-brand/40">
             <div className="flex flex-col gap-1 z-10">
               <span className="text-[12px] font-medium text-slate-500 dark:text-fg-muted font-mono">
                 Departments
@@ -491,7 +491,7 @@ export default function StudentsPage() {
                     setActiveFilter(tab.id);
                     setCurrentPage(1);
                   }}
-                  className={`px-3.5 py-1.5 rounded-lg text-[12px] font-semibold tracking-tight transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                  className={`px-3.5 py-1.5 rounded-lg text-[12px] font-semibold tracking-tight transition-colors shrink-0 cursor-pointer flex items-center gap-1.5 ${
                     isActive
                       ? "bg-brand text-white dark:bg-brand dark:text-fg shadow-xs"
                       : "text-slate-600 dark:text-fg-muted hover:text-slate-900 dark:hover:text-fg hover:bg-slate-200/60 dark:hover:bg-surface-2"
@@ -548,7 +548,7 @@ export default function StudentsPage() {
                 <div
                   key={student.id}
                   onClick={() => handleMessagePeer(student.name)}
-                  className="p-[22px] rounded-[24px] bg-white dark:bg-surface border border-slate-200 dark:border-line flex flex-col justify-between gap-5 relative group transition-all duration-300 hover:-translate-y-0.5 hover:border-brand/40 dark:hover:border-brand/40 shadow-2xs h-full cursor-pointer"
+                  className="p-[22px] rounded-[24px] bg-white dark:bg-surface border border-slate-200 dark:border-line flex flex-col justify-between gap-5 relative group transition-[transform,border-color] duration-150 hover:-translate-y-0.5 hover:border-brand/40 dark:hover:border-brand/40 shadow-2xs h-full cursor-pointer motion-reduce:hover:translate-y-0"
                 >
                   <div className="flex flex-col gap-3.5">
                     {/* Top Row: Avatar + Name + Monospace ID */}
@@ -692,7 +692,7 @@ export default function StudentsPage() {
                 key={page}
                 type="button"
                 onClick={() => setCurrentPage(page)}
-                className={`w-8 h-8 rounded-lg font-mono font-semibold transition-all cursor-pointer ${
+                className={`w-8 h-8 rounded-lg font-mono font-semibold transition-colors cursor-pointer ${
                   currentPage === page
                     ? "bg-brand text-white dark:bg-brand dark:text-fg shadow-xs"
                     : "bg-slate-100 dark:bg-surface-2 border border-slate-200 dark:border-line text-slate-700 dark:text-fg-muted hover:text-slate-900 dark:hover:text-fg"
@@ -824,7 +824,7 @@ export default function StudentsPage() {
                     </button>
                     <button
                       type="submit"
-                      className="px-5 py-2 rounded-xl bg-brand hover:bg-brand-hover dark:bg-brand dark:hover:bg-brand-hover text-white text-xs font-bold transition-all shadow-md cursor-pointer"
+                      className="px-5 py-2 rounded-xl bg-brand hover:bg-brand-hover dark:bg-brand dark:hover:bg-brand-hover text-white text-xs font-bold transition-colors shadow-xs cursor-pointer"
                     >
                       Send Invite
                     </button>

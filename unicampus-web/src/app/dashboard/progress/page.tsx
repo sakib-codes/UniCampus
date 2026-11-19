@@ -762,7 +762,7 @@ export default function AcademicProgressPage() {
             <button
               type="button"
               onClick={() => setIsTranscriptOpen(true)}
-              className="h-8.5 px-3.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-surface-2 dark:hover:bg-surface-2 border border-slate-200 dark:border-line text-slate-700 dark:text-fg hover:text-slate-900 dark:hover:text-fg transition-all flex items-center gap-2 text-xs font-semibold shadow-xs cursor-pointer active:scale-[0.98]"
+              className="h-8.5 px-3.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-surface-2 dark:hover:bg-surface-2 border border-slate-200 dark:border-line text-slate-700 dark:text-fg hover:text-slate-900 dark:hover:text-fg transition-colors flex items-center gap-2 text-xs font-semibold shadow-xs cursor-pointer active:scale-[0.98]"
               title="Download Unofficial Academic Transcript"
             >
               <Download className="w-3.5 h-3.5" />
@@ -773,7 +773,7 @@ export default function AcademicProgressPage() {
             <button
               type="button"
               onClick={() => setIsSimulatorOpen(true)}
-              className="h-8.5 px-4 rounded-xl bg-brand hover:bg-brand-hover dark:bg-brand dark:hover:bg-brand-hover text-white transition-all flex items-center gap-2 text-xs font-semibold shadow-sm active:scale-[0.98] cursor-pointer"
+              className="h-8.5 px-4 rounded-xl bg-brand hover:bg-brand-hover dark:bg-brand dark:hover:bg-brand-hover text-white transition-colors flex items-center gap-2 text-xs font-semibold shadow-xs active:scale-[0.98] cursor-pointer"
             >
               <Sliders className="w-3.5 h-3.5" />
               <span>GPA Simulator</span>
@@ -790,7 +790,7 @@ export default function AcademicProgressPage() {
           {/* ------------------------------------------------------------- */}
           {/* CARD 1: OVERALL CGPA (Radial Arc Gauge)                       */}
           {/* ------------------------------------------------------------- */}
-          <div className="bg-white dark:bg-surface border border-slate-200 dark:border-line hover:border-brand/40 dark:hover:border-brand/60 rounded-[20px] p-5 transition-all duration-300 flex flex-col justify-between shadow-2xs  dark:">
+          <div className="bg-white dark:bg-surface border border-slate-200 dark:border-line hover:border-brand/40 dark:hover:border-brand/60 rounded-[20px] p-5 transition-colors duration-150 flex flex-col justify-between shadow-2xs  dark:">
             <div className="relative z-10 flex flex-col justify-between h-full">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-700 dark:text-fg tracking-tight">
@@ -823,7 +823,7 @@ export default function AcademicProgressPage() {
                       strokeDasharray="301.59"
                       strokeDashoffset="16.59"
                       strokeLinecap="round"
-                      className="transition-all duration-1000"
+                      className="transition-[stroke-dashoffset] duration-1000"
                     />
                   </svg>
                   {/* Center Callout */}
@@ -856,7 +856,7 @@ export default function AcademicProgressPage() {
           {/* ------------------------------------------------------------- */}
           {/* CARD 2: DEGREE COMPLETION                                     */}
           {/* ------------------------------------------------------------- */}
-          <div className="bg-white dark:bg-surface border border-slate-200 dark:border-line hover:border-brand/40 dark:hover:border-brand/60 rounded-[20px] p-5 transition-all duration-300 flex flex-col justify-between shadow-2xs  dark:">
+          <div className="bg-white dark:bg-surface border border-slate-200 dark:border-line hover:border-brand/40 dark:hover:border-brand/60 rounded-[20px] p-5 transition-colors duration-150 flex flex-col justify-between shadow-2xs  dark:">
             <div className="relative z-10 flex flex-col justify-between h-full">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-700 dark:text-fg tracking-tight">
@@ -927,7 +927,7 @@ export default function AcademicProgressPage() {
           {/* ------------------------------------------------------------- */}
           {/* CARD 3: CREDIT DISTRIBUTION                                   */}
           {/* ------------------------------------------------------------- */}
-          <div className="bg-white dark:bg-surface border border-slate-200 dark:border-line hover:border-brand/40 dark:hover:border-brand/60 rounded-[20px] p-5 transition-all duration-300 flex flex-col justify-between shadow-2xs  dark:">
+          <div className="bg-white dark:bg-surface border border-slate-200 dark:border-line hover:border-brand/40 dark:hover:border-brand/60 rounded-[20px] p-5 transition-colors duration-150 flex flex-col justify-between shadow-2xs  dark:">
             <div className="relative z-10 flex flex-col justify-between h-full">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-700 dark:text-fg tracking-tight">
@@ -989,7 +989,7 @@ export default function AcademicProgressPage() {
           {/* ------------------------------------------------------------- */}
           {/* CARD 4: CURRENT SEMESTER SGPA FORECAST                        */}
           {/* ------------------------------------------------------------- */}
-          <div className="bg-white dark:bg-surface border border-slate-200 dark:border-line hover:border-brand/40 dark:hover:border-brand/60 rounded-[20px] p-5 transition-all duration-300 flex flex-col justify-between shadow-2xs  dark:">
+          <div className="bg-white dark:bg-surface border border-slate-200 dark:border-line hover:border-brand/40 dark:hover:border-brand/60 rounded-[20px] p-5 transition-colors duration-150 flex flex-col justify-between shadow-2xs  dark:">
             <div className="relative z-10 flex flex-col justify-between h-full">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-700 dark:text-fg tracking-tight">
@@ -1037,7 +1037,7 @@ export default function AcademicProgressPage() {
       {/* 3. INTERACTIVE SEMESTER PROGRESSION CHART CARD (Full width)                */}
       {/* ========================================================================= */}
       <div className="w-full">
-        <div className="bg-white dark:bg-surface border border-slate-200 dark:border-line hover:border-brand/40 dark:hover:border-brand/60 rounded-[20px] p-5 md:p-6 shadow-2xs relative transition-all duration-300  dark:">
+        <div className="bg-white dark:bg-surface border border-slate-200 dark:border-line hover:border-brand/40 dark:hover:border-brand/60 rounded-[20px] p-5 md:p-6 shadow-2xs relative transition-colors duration-150">
           <div className="relative z-10">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <div>
@@ -1126,7 +1126,7 @@ export default function AcademicProgressPage() {
                     width="48"
                     height="112"
                     rx="4"
-                    className={`transition-all duration-150 ${
+                    className={`transition-opacity duration-150 ${
                       hoveredChartNode?.id === "sem-1"
                         ? "fill-indigo-50/50 dark:fill-surface-2 stroke-brand stroke-[2] drop-shadow-[0_0_10px_rgba(37, 99, 235,0.3)]"
                         : "fill-slate-100 dark:fill-surface-2 stroke-slate-300 dark:stroke-line group-hover:stroke-brand"
@@ -1154,7 +1154,7 @@ export default function AcademicProgressPage() {
                     width="48"
                     height="126"
                     rx="4"
-                    className={`transition-all duration-150 ${
+                    className={`transition-opacity duration-150 ${
                       hoveredChartNode?.id === "sem-2"
                         ? "fill-indigo-50/50 dark:fill-surface-2 stroke-brand stroke-[2] drop-shadow-[0_0_10px_rgba(37, 99, 235,0.3)]"
                         : "fill-slate-100 dark:fill-surface-2 stroke-slate-300 dark:stroke-line group-hover:stroke-brand"
@@ -1182,7 +1182,7 @@ export default function AcademicProgressPage() {
                     width="48"
                     height="122"
                     rx="4"
-                    className={`transition-all duration-150 ${
+                    className={`transition-opacity duration-150 ${
                       hoveredChartNode?.id === "sem-3"
                         ? "fill-indigo-50/50 dark:fill-surface-2 stroke-brand stroke-[2] drop-shadow-[0_0_10px_rgba(37, 99, 235,0.3)]"
                         : "fill-slate-100 dark:fill-surface-2 stroke-slate-300 dark:stroke-line group-hover:stroke-brand"
@@ -1210,7 +1210,7 @@ export default function AcademicProgressPage() {
                     width="48"
                     height="146"
                     rx="4"
-                    className={`transition-all duration-150 ${
+                    className={`transition-opacity duration-150 ${
                       hoveredChartNode?.id === "sem-4"
                         ? "fill-indigo-50/50 dark:fill-surface-2 stroke-brand stroke-[2] drop-shadow-[0_0_10px_rgba(37, 99, 235,0.3)]"
                         : "fill-slate-100 dark:fill-surface-2 stroke-slate-300 dark:stroke-line group-hover:stroke-brand"
@@ -1238,7 +1238,7 @@ export default function AcademicProgressPage() {
                     width="48"
                     height="151"
                     rx="4"
-                    className={`transition-all duration-150 ${
+                    className={`transition-opacity duration-150 ${
                       hoveredChartNode?.id === "sem-5"
                         ? "fill-indigo-50/50 dark:fill-surface-2 stroke-brand stroke-[2] drop-shadow-[0_0_10px_rgba(37, 99, 235,0.3)]"
                         : "fill-slate-100 dark:fill-surface-2 stroke-slate-300 dark:stroke-line group-hover:stroke-brand"
@@ -1269,7 +1269,7 @@ export default function AcademicProgressPage() {
                     stroke="#3FB950"
                     strokeDasharray={hoveredChartNode?.id === "sem-6" ? undefined : "4 3"}
                     strokeWidth={hoveredChartNode?.id === "sem-6" ? "2" : "1.5"}
-                    className={`transition-all duration-150 ${
+                    className={`transition-opacity duration-150 ${
                       hoveredChartNode?.id === "sem-6"
                         ? "fill-emerald-500/10 dark:fill-emerald-950/30 drop-shadow-[0_0_10px_rgba(63,185,80,0.3)]"
                         : "fill-slate-100 dark:fill-surface-2"
@@ -1323,7 +1323,7 @@ export default function AcademicProgressPage() {
                   fill={hoveredChartNode?.id === "sem-1" ? "var(--color-brand, #605BFF)" : "currentColor"}
                   stroke={hoveredChartNode?.id === "sem-1" ? "#F0F6FC" : "var(--color-brand, #605BFF)"}
                   strokeWidth={hoveredChartNode?.id === "sem-1" ? "2.5" : "2"}
-                  className={`transition-all duration-150 ${hoveredChartNode?.id === "sem-1" ? "filter drop-shadow-[0_0_8px_var(--color-brand, #605BFF)]" : "text-white dark:text-surface"}`}
+                  className={`transition-opacity duration-150 ${hoveredChartNode?.id === "sem-1" ? "filter drop-shadow-[0_0_8px_var(--color-brand, #605BFF)]" : "text-white dark:text-surface"}`}
                 />
                 <circle
                   cx="304"
@@ -1332,7 +1332,7 @@ export default function AcademicProgressPage() {
                   fill={hoveredChartNode?.id === "sem-2" ? "var(--color-brand, #605BFF)" : "currentColor"}
                   stroke={hoveredChartNode?.id === "sem-2" ? "#F0F6FC" : "var(--color-brand, #605BFF)"}
                   strokeWidth={hoveredChartNode?.id === "sem-2" ? "2.5" : "2"}
-                  className={`transition-all duration-150 ${hoveredChartNode?.id === "sem-2" ? "filter drop-shadow-[0_0_8px_var(--color-brand, #605BFF)]" : "text-white dark:text-surface"}`}
+                  className={`transition-opacity duration-150 ${hoveredChartNode?.id === "sem-2" ? "filter drop-shadow-[0_0_8px_var(--color-brand, #605BFF)]" : "text-white dark:text-surface"}`}
                 />
                 <circle
                   cx="508"
@@ -1341,7 +1341,7 @@ export default function AcademicProgressPage() {
                   fill={hoveredChartNode?.id === "sem-3" ? "var(--color-brand, #605BFF)" : "currentColor"}
                   stroke={hoveredChartNode?.id === "sem-3" ? "#F0F6FC" : "var(--color-brand, #605BFF)"}
                   strokeWidth={hoveredChartNode?.id === "sem-3" ? "2.5" : "2"}
-                  className={`transition-all duration-150 ${hoveredChartNode?.id === "sem-3" ? "filter drop-shadow-[0_0_8px_var(--color-brand, #605BFF)]" : "text-white dark:text-surface"}`}
+                  className={`transition-opacity duration-150 ${hoveredChartNode?.id === "sem-3" ? "filter drop-shadow-[0_0_8px_var(--color-brand, #605BFF)]" : "text-white dark:text-surface"}`}
                 />
                 <circle
                   cx="712"
@@ -1350,7 +1350,7 @@ export default function AcademicProgressPage() {
                   fill={hoveredChartNode?.id === "sem-4" ? "var(--color-brand, #605BFF)" : "currentColor"}
                   stroke={hoveredChartNode?.id === "sem-4" ? "#F0F6FC" : "var(--color-brand, #605BFF)"}
                   strokeWidth={hoveredChartNode?.id === "sem-4" ? "2.5" : "2"}
-                  className={`transition-all duration-150 ${hoveredChartNode?.id === "sem-4" ? "filter drop-shadow-[0_0_8px_var(--color-brand, #605BFF)]" : "text-white dark:text-surface"}`}
+                  className={`transition-opacity duration-150 ${hoveredChartNode?.id === "sem-4" ? "filter drop-shadow-[0_0_8px_var(--color-brand, #605BFF)]" : "text-white dark:text-surface"}`}
                 />
                 <circle
                   cx="916"
@@ -1359,7 +1359,7 @@ export default function AcademicProgressPage() {
                   fill={hoveredChartNode?.id === "sem-5" ? "var(--color-brand, #605BFF)" : "currentColor"}
                   stroke={hoveredChartNode?.id === "sem-5" ? "#F0F6FC" : "var(--color-brand, #605BFF)"}
                   strokeWidth={hoveredChartNode?.id === "sem-5" ? "2.5" : "2"}
-                  className={`transition-all duration-150 ${hoveredChartNode?.id === "sem-5" ? "filter drop-shadow-[0_0_8px_var(--color-brand, #605BFF)]" : "text-white dark:text-surface"}`}
+                  className={`transition-opacity duration-150 ${hoveredChartNode?.id === "sem-5" ? "filter drop-shadow-[0_0_8px_var(--color-brand, #605BFF)]" : "text-white dark:text-surface"}`}
                 />
                 <circle
                   cx="1120"
@@ -1368,7 +1368,7 @@ export default function AcademicProgressPage() {
                   fill={hoveredChartNode?.id === "sem-6" ? "#3FB950" : "currentColor"}
                   stroke={hoveredChartNode?.id === "sem-6" ? "#F0F6FC" : "#3FB950"}
                   strokeWidth={hoveredChartNode?.id === "sem-6" ? "2.5" : "2"}
-                  className={`transition-all duration-150 ${hoveredChartNode?.id === "sem-6" ? "filter drop-shadow-[0_0_8px_#3FB950]" : "text-white dark:text-surface"}`}
+                  className={`transition-opacity duration-150 ${hoveredChartNode?.id === "sem-6" ? "filter drop-shadow-[0_0_8px_#3FB950]" : "text-white dark:text-surface"}`}
                 />
 
                 {/* X-AXIS LABELS */}
@@ -1459,7 +1459,7 @@ export default function AcademicProgressPage() {
       {/* 4. SEMESTER BREAKDOWN TABLE CARD                                          */}
       {/* ========================================================================= */}
       <div className="w-full">
-        <div className="bg-white dark:bg-surface border border-slate-200 dark:border-line hover:border-brand/40 dark:hover:border-brand/60 rounded-[20px] overflow-hidden shadow-2xs transition-all duration-300  dark:">
+        <div className="bg-white dark:bg-surface border border-slate-200 dark:border-line hover:border-brand/40 dark:hover:border-brand/60 rounded-[20px] overflow-hidden shadow-2xs transition-colors duration-150">
           <div className="relative z-10">
           {/* Controls Bar: Semester Selector Tabs & Course Search */}
           <div className="p-3.5 sm:p-4 border-b border-slate-200 dark:border-line flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-slate-50/50 dark:bg-surface">
@@ -1468,7 +1468,7 @@ export default function AcademicProgressPage() {
               <button
                 type="button"
                 onClick={() => setSelectedSemesterTab("all")}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer ${
                   selectedSemesterTab === "all"
                     ? "bg-slate-100 dark:bg-surface-2 border border-brand/60 dark:border-brand/60 text-slate-900 dark:text-fg shadow-xs"
                     : "text-slate-600 dark:text-fg-muted hover:text-slate-900 dark:hover:text-fg hover:bg-slate-100 dark:hover:bg-surface-2 border border-transparent"
@@ -1483,7 +1483,7 @@ export default function AcademicProgressPage() {
               <button
                 type="button"
                 onClick={() => setSelectedSemesterTab("sem-6")}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer ${
                   selectedSemesterTab === "sem-6"
                     ? "bg-slate-100 dark:bg-surface-2 border border-emerald-500/60 dark:border-success/60 text-slate-900 dark:text-fg shadow-xs dark:shadow-[0_0_12px_rgba(63,185,80,0.2)]"
                     : "text-slate-600 dark:text-fg-muted hover:text-slate-900 dark:hover:text-fg hover:bg-slate-100 dark:hover:bg-surface-2 border border-transparent"
@@ -1498,7 +1498,7 @@ export default function AcademicProgressPage() {
               <button
                 type="button"
                 onClick={() => setSelectedSemesterTab("sem-5")}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer ${
                   selectedSemesterTab === "sem-5"
                     ? "bg-slate-100 dark:bg-surface-2 border border-brand/60 dark:border-brand/60 text-slate-900 dark:text-fg shadow-xs dark:shadow-[0_0_12px_rgba(37, 99, 235,0.2)]"
                     : "text-slate-600 dark:text-fg-muted hover:text-slate-900 dark:hover:text-fg hover:bg-slate-100 dark:hover:bg-surface-2 border border-transparent"
@@ -1513,7 +1513,7 @@ export default function AcademicProgressPage() {
               <button
                 type="button"
                 onClick={() => setSelectedSemesterTab("sem-4")}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer ${
                   selectedSemesterTab === "sem-4"
                     ? "bg-slate-100 dark:bg-surface-2 border border-brand/60 dark:border-brand/60 text-slate-900 dark:text-fg shadow-xs dark:shadow-[0_0_12px_rgba(37, 99, 235,0.2)]"
                     : "text-slate-600 dark:text-fg-muted hover:text-slate-900 dark:hover:text-fg hover:bg-slate-100 dark:hover:bg-surface-2 border border-transparent"
@@ -1528,7 +1528,7 @@ export default function AcademicProgressPage() {
               <button
                 type="button"
                 onClick={() => setSelectedSemesterTab("sem-3")}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer ${
                   selectedSemesterTab === "sem-3"
                     ? "bg-slate-100 dark:bg-surface-2 border border-brand/60 dark:border-brand/60 text-slate-900 dark:text-fg shadow-xs dark:shadow-[0_0_12px_rgba(37, 99, 235,0.2)]"
                     : "text-slate-600 dark:text-fg-muted hover:text-slate-900 dark:hover:text-fg hover:bg-slate-100 dark:hover:bg-surface-2 border border-transparent"
@@ -1543,7 +1543,7 @@ export default function AcademicProgressPage() {
               <button
                 type="button"
                 onClick={() => setSelectedSemesterTab("sem-2")}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer ${
                   selectedSemesterTab === "sem-2"
                     ? "bg-slate-100 dark:bg-surface-2 border border-brand/60 dark:border-brand/60 text-slate-900 dark:text-fg shadow-xs dark:shadow-[0_0_12px_rgba(37, 99, 235,0.2)]"
                     : "text-slate-600 dark:text-fg-muted hover:text-slate-900 dark:hover:text-fg hover:bg-slate-100 dark:hover:bg-surface-2 border border-transparent"
@@ -1558,7 +1558,7 @@ export default function AcademicProgressPage() {
               <button
                 type="button"
                 onClick={() => setSelectedSemesterTab("sem-1")}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer ${
                   selectedSemesterTab === "sem-1"
                     ? "bg-slate-100 dark:bg-surface-2 border border-brand/60 dark:border-brand/60 text-slate-900 dark:text-fg shadow-xs dark:shadow-[0_0_12px_rgba(37, 99, 235,0.2)]"
                     : "text-slate-600 dark:text-fg-muted hover:text-slate-900 dark:hover:text-fg hover:bg-slate-100 dark:hover:bg-surface-2 border border-transparent"
@@ -1572,7 +1572,7 @@ export default function AcademicProgressPage() {
             </div>
 
             {/* Course Filter Search Input */}
-            <div className="flex items-center bg-slate-100 dark:bg-surface-2 border border-slate-200 dark:border-line rounded-lg px-2.5 py-1 w-full sm:w-64 focus-within:border-brand dark:focus-within:border-brand transition-all">
+            <div className="flex items-center bg-slate-100 dark:bg-surface-2 border border-slate-200 dark:border-line rounded-lg px-2.5 py-1 w-full sm:w-64 focus-within:border-brand dark:focus-within:border-brand transition-colors">
               <Search className="w-3.5 h-3.5 text-slate-400 dark:text-fg-muted mr-2 shrink-0" />
               <input
                 type="text"
@@ -1918,7 +1918,7 @@ export default function AcademicProgressPage() {
                   <button
                     type="button"
                     onClick={() => setTranscriptSemester("all")}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                    className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition-colors cursor-pointer whitespace-nowrap ${
                       transcriptSemester === "all"
                         ? "bg-brand text-white dark:bg-brand shadow-xs"
                         : "bg-slate-100 dark:bg-surface-2 text-slate-600 dark:text-fg-muted hover:text-slate-900 dark:hover:text-fg border border-slate-200 dark:border-line"
@@ -1931,7 +1931,7 @@ export default function AcademicProgressPage() {
                       key={m.id}
                       type="button"
                       onClick={() => setTranscriptSemester(m.id)}
-                      className={`px-2.5 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                      className={`px-2.5 py-1.5 rounded-lg text-xs font-mono font-semibold transition-colors cursor-pointer whitespace-nowrap ${
                         transcriptSemester === m.id
                           ? "bg-brand text-white dark:bg-brand shadow-xs"
                           : "bg-slate-100 dark:bg-surface-2 text-slate-600 dark:text-fg-muted hover:text-slate-900 dark:hover:text-fg border border-slate-200 dark:border-line"

@@ -796,7 +796,7 @@ export default function AdminRoutinePage() {
         </div>
 
         {/* RIGHT SECTION: Fixed-Width Slot Inspector */}
-        <div className="w-full lg:w-[330px] xl:w-[340px] shrink-0 bg-surface rounded-[20px] border border-line p-5 flex flex-col justify-between">
+        <div className="w-full lg:max-w-[330px] xl:max-w-[340px] shrink-0 bg-surface rounded-[20px] border border-line p-5 flex flex-col justify-between">
           {!activeSlot ? (
             <div className="py-12 text-center space-y-2">
               <Monitor className="w-8 h-8 text-fg-muted/50 mx-auto" />
@@ -826,7 +826,7 @@ export default function AdminRoutinePage() {
                   <button
                     type="button"
                     onClick={() => triggerToast("Slot details synced with Central Registry.")}
-                    className="min-w-[40px] min-h-[40px] inline-flex items-center justify-center rounded-xl hover:bg-surface-2 text-fg-muted hover:text-fg transition-colors cursor-pointer shrink-0"
+                    className="min-w-[44px] min-h-[44px] inline-flex items-center justify-center rounded-xl hover:bg-surface-2 text-fg-muted hover:text-fg transition-colors cursor-pointer shrink-0"
                     title="Sync Slot"
                     aria-label="Sync Slot"
                   >
@@ -1033,7 +1033,7 @@ export default function AdminRoutinePage() {
                 type="button"
                 onClick={() => setIsPublishModalOpen(false)}
                 aria-label="Close modal"
-                className="min-w-[40px] min-h-[40px] inline-flex items-center justify-center rounded-lg text-fg-muted hover:text-fg hover:bg-surface-2 cursor-pointer"
+                className="min-w-[44px] min-h-[44px] inline-flex items-center justify-center rounded-lg text-fg-muted hover:text-fg hover:bg-surface-2 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>

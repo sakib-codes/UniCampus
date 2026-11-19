@@ -66,7 +66,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-screen bg-canvas text-fg antialiased selection:bg-brand selection:text-on-brand">
+      <body className="min-h-dvh bg-canvas text-fg antialiased selection:bg-brand selection:text-on-brand">
         <Providers>
           <AppShell>{children}</AppShell>
         </Providers>

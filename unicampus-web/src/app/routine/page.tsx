@@ -464,7 +464,7 @@ export default function RoutinePage() {
             <button
               type="button"
               onClick={handlePrint}
-              className="h-8.5 px-3 rounded-xl bg-surface-2 hover:bg-surface border border-line text-fg transition-all flex items-center gap-1.5 text-xs font-semibold shadow-xs cursor-pointer active:scale-[0.98]"
+              className="h-8.5 px-3 rounded-xl bg-surface-2 hover:bg-surface border border-line text-fg transition-colors flex items-center gap-1.5 text-xs font-semibold shadow-xs cursor-pointer active:scale-[0.98]"
               title="Print Timetable"
             >
               <Printer className="w-3.5 h-3.5 text-fg-muted" />
@@ -475,7 +475,7 @@ export default function RoutinePage() {
             <button
               type="button"
               onClick={() => setIsCalendarModalOpen(true)}
-              className="h-8.5 px-3.5 rounded-xl bg-brand hover:bg-brand-hover text-white transition-all flex items-center gap-1.5 text-xs font-semibold shadow-xs active:scale-[0.98] cursor-pointer"
+              className="h-8.5 px-3.5 rounded-xl bg-brand hover:bg-brand-hover text-white transition-colors flex items-center gap-1.5 text-xs font-semibold shadow-xs active:scale-[0.98] cursor-pointer"
             >
               <CalendarPlus className="w-3.5 h-3.5" />
               <span>Sync Calendar</span>
@@ -612,7 +612,7 @@ export default function RoutinePage() {
                 if (slot.status === "active") {
                   return (
                     <div key={slot.id} className="w-full">
-                      <div className="w-full bg-indigo-50/40 dark:bg-surface-2 border-2 border-brand dark:border-[var(--color-brand, #605BFF)] rounded-2xl p-4 shadow-md dark:shadow-[0_0_30px_rgba(37, 99, 235,0.18)] relative overflow-hidden transition-all">
+                      <div className="w-full bg-indigo-50/40 dark:bg-surface-2 border-2 border-brand dark:border-[var(--color-brand, #605BFF)] rounded-2xl p-4 shadow-xs relative overflow-hidden transition-colors">
                         {/* Top gradient highlight strip */}
                         <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-brand dark:via-[var(--color-brand, #605BFF)] to-transparent" />
 
@@ -998,7 +998,7 @@ export default function RoutinePage() {
                           return (
                             <td key={day} className="py-2.5 px-3">
                               <div
-                                className={`p-2 rounded-xl border transition-all ${
+                                className={`p-2 rounded-xl border transition-colors ${
                                   isActiveSlot
                                     ? "bg-brand/10 dark:bg-[var(--color-brand, #605BFF)]/15 border-brand dark:border-[var(--color-brand, #605BFF)] shadow-xs"
                                     : isLab
@@ -1120,7 +1120,7 @@ export default function RoutinePage() {
                   <button
                     type="button"
                     onClick={handleSyncCalendar}
-                    className="px-5 py-2 rounded-xl bg-brand hover:bg-brand-hover text-white text-xs font-bold transition-all shadow-md cursor-pointer"
+                    className="px-5 py-2 rounded-xl bg-brand hover:bg-brand-hover text-white text-xs font-bold transition-colors shadow-xs cursor-pointer"
                   >
                     Sync Now
                   </button>
@@ -1233,7 +1233,7 @@ export default function RoutinePage() {
                     </button>
                     <button
                       type="submit"
-                      className="px-5 py-2 rounded-xl bg-brand hover:bg-brand-hover text-white text-xs font-bold transition-all shadow-md cursor-pointer"
+                      className="px-5 py-2 rounded-xl bg-brand hover:bg-brand-hover text-white text-xs font-bold transition-colors shadow-xs cursor-pointer"
                     >
                       Submit Proposal
                     </button>

@@ -514,7 +514,7 @@ ${activeNotice.authorCouncil}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search notices by title, ref no, or department..."
-                className="w-full h-10 pl-10 pr-12 bg-white dark:bg-surface-2 border border-slate-300 dark:border-line rounded-xl text-xs sm:text-sm text-slate-900 dark:text-fg placeholder:text-slate-400 dark:placeholder:text-fg-muted focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-all shadow-xs"
+                className="w-full h-10 pl-10 pr-12 bg-white dark:bg-surface-2 border border-slate-300 dark:border-line rounded-xl text-xs sm:text-sm text-slate-900 dark:text-fg placeholder:text-slate-400 dark:placeholder:text-fg-muted focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-colors shadow-xs"
               />
               <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none">
                 <kbd className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-surface border border-slate-200 dark:border-line text-xs font-mono text-slate-400 dark:text-fg-muted">
@@ -532,7 +532,7 @@ ${activeNotice.authorCouncil}
                 <button
                   key={cat.key}
                   onClick={() => setActiveCategory(cat.key)}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer ${
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-2 cursor-pointer ${
                     isActive
                       ? "bg-brand text-white shadow-xs font-bold"
                       : cat.isUrgent
@@ -627,7 +627,7 @@ ${activeNotice.authorCouncil}
                 <article
                   key={notice.id}
                   onClick={() => handleSelectNotice(notice.id)}
-                  className={`p-4 sm:p-5 rounded-2xl cursor-pointer transition-all duration-200 flex flex-col gap-3 relative border ${
+                  className={`p-4 sm:p-5 rounded-2xl cursor-pointer transition-colors duration-150 flex flex-col gap-3 relative border ${
                     isSelected
                       ? "bg-white dark:bg-surface-2 border-brand shadow-[0_0_20px_-3px_rgba(37, 99, 235,0.22)]"
                       : "bg-white dark:bg-surface border-slate-200 dark:border-line hover:border-slate-300 dark:hover:border-fg-muted/80 hover:bg-slate-50 dark:hover:bg-surface-2/60"
@@ -752,7 +752,7 @@ ${activeNotice.authorCouncil}
               <button
                 onClick={handleDownloadPDF}
                 disabled={isDownloading}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-brand hover:bg-brand-hover active:scale-[0.98] text-white text-xs font-semibold shadow-xs transition-all cursor-pointer"
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-brand hover:bg-brand-hover active:scale-[0.98] text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>

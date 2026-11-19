@@ -16,7 +16,7 @@ export default function FadeIn({
   className = "",
 }: FadeInProps) {
   return (
-    <div className={`transition-all duration-300 ease-out ${className}`}>
+    <div className={`transition-opacity duration-200 ease-out ${className}`}>
       {children}
     </div>
   );

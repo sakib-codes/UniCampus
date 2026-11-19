@@ -93,7 +93,7 @@ export default function AdminSettingsPage() {
           
             <button
               onClick={handleSave}
-              className="bg-brand hover:bg-brand-hover dark:bg-brand dark:hover:bg-brand-hover text-white font-bold rounded-2xl px-5 py-2.5 flex items-center gap-2 text-xs cursor-pointer shadow-[0_4px_16px_rgba(29, 91, 216,0.30)] hover:shadow-[0_6px_20px_rgba(29, 91, 216,0.40)] transition-all active:scale-[0.98]"
+              className="bg-brand hover:bg-brand-hover dark:bg-brand dark:hover:bg-brand-hover text-white font-bold rounded-2xl px-5 py-2.5 flex items-center gap-2 text-xs cursor-pointer shadow-xs transition-colors active:scale-[0.98]"
             >
               <Save className="w-4 h-4" />
               Apply &amp; Save
@@ -185,7 +185,7 @@ export default function AdminSettingsPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <button
                     onClick={(e) => executeThemeTransition({ theme: "dark", event: e, setTheme, currentTheme: theme })}
-                    className={`p-4 rounded-xl border text-left flex flex-col gap-3 transition-all cursor-pointer ${
+                    className={`p-4 rounded-xl border text-left flex flex-col gap-3 transition-colors cursor-pointer ${
                       theme === "dark"
                         ? `border-brand ring-1 ring-brand/40 ${"bg-surface text-fg font-bold shadow-xs rounded-lg px-3 py-1.5 text-xs transition-colors"}`
                         : `rounded-xl bg-canvas border border-line hover:border-slate-400 dark:hover:border-fg-muted`
@@ -205,7 +205,7 @@ export default function AdminSettingsPage() {
 
                   <button
                     onClick={(e) => executeThemeTransition({ theme: "light", event: e, setTheme, currentTheme: theme })}
-                    className={`p-4 rounded-xl border text-left flex flex-col gap-3 transition-all cursor-pointer ${
+                    className={`p-4 rounded-xl border text-left flex flex-col gap-3 transition-colors cursor-pointer ${
                       theme === "light"
                         ? `border-brand ring-1 ring-brand/40 bg-surface text-fg font-bold shadow-xs rounded-lg px-3 py-1.5 text-xs transition-colors`
                         : `rounded-xl bg-canvas border border-line hover:border-slate-400 dark:hover:border-fg-muted`
@@ -225,7 +225,7 @@ export default function AdminSettingsPage() {
 
                   <button
                     onClick={(e) => executeThemeTransition({ theme: "system", event: e, setTheme, currentTheme: theme })}
-                    className={`p-4 rounded-xl border text-left flex flex-col gap-3 transition-all cursor-pointer ${
+                    className={`p-4 rounded-xl border text-left flex flex-col gap-3 transition-colors cursor-pointer ${
                       theme === "system"
                         ? `border-brand ring-1 ring-brand/40 bg-surface text-fg font-bold shadow-xs rounded-lg px-3 py-1.5 text-xs transition-colors`
                         : `rounded-xl bg-canvas border border-line hover:border-slate-400 dark:hover:border-fg-muted`

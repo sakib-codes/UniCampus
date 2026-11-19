@@ -27,7 +27,7 @@ export function SplashScreen({ autoRedirect = false }: SplashScreenProps) {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-between py-6 px-4 bg-canvas text-fg">
+    <div className="min-h-dvh w-full flex flex-col items-center justify-between py-6 px-4 bg-canvas text-fg">
       {/* Floating Center Splash Card */}
       <main className="w-full flex-1 flex items-center justify-center">
         <div className="w-full max-w-[420px] bg-surface rounded-[20px] p-6 sm:p-10 border border-line shadow-sm flex flex-col items-center text-center">

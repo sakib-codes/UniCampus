@@ -44,7 +44,7 @@ export function DemoModal({ open, onClose }: DemoModalProps) {
           interactive
           padding="md"
           onClick={() => handleSelectRole("student")}
-          className="flex items-center justify-between group cursor-pointer transition-all hover:border-brand/50 hover:bg-brand-soft/20"
+          className="flex items-center justify-between group cursor-pointer transition-colors hover:border-brand/50 hover:bg-brand-soft/20"
         >
           <div className="flex items-center gap-3.5">
             <div className="w-11 h-11 rounded-xl bg-brand-soft text-brand flex items-center justify-center shrink-0">
@@ -59,7 +59,7 @@ export function DemoModal({ open, onClose }: DemoModalProps) {
               </p>
             </div>
           </div>
-          <ArrowRight className="w-4 h-4 text-fg-muted group-hover:text-brand group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+          <ArrowRight className="w-4 h-4 text-fg-muted group-hover:text-brand group-hover:translate-x-0.5 transition-transform duration-150 motion-reduce:group-hover:translate-x-0 shrink-0 ml-2" />
         </Card>
 
         {/* Faculty Option */}
@@ -67,7 +67,7 @@ export function DemoModal({ open, onClose }: DemoModalProps) {
           interactive
           padding="md"
           onClick={() => handleSelectRole("faculty")}
-          className="flex items-center justify-between group cursor-pointer transition-all hover:border-emerald-500/50 hover:bg-emerald-500/5"
+          className="flex items-center justify-between group cursor-pointer transition-colors hover:border-emerald-500/50 hover:bg-emerald-500/5"
         >
           <div className="flex items-center gap-3.5">
             <div className="w-11 h-11 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
@@ -82,7 +82,7 @@ export function DemoModal({ open, onClose }: DemoModalProps) {
               </p>
             </div>
           </div>
-          <ArrowRight className="w-4 h-4 text-fg-muted group-hover:text-emerald-600 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+          <ArrowRight className="w-4 h-4 text-fg-muted group-hover:text-emerald-600 group-hover:translate-x-0.5 transition-transform duration-150 motion-reduce:group-hover:translate-x-0 shrink-0 ml-2" />
         </Card>
 
         {/* Admin Option */}
@@ -90,7 +90,7 @@ export function DemoModal({ open, onClose }: DemoModalProps) {
           interactive
           padding="md"
           onClick={() => handleSelectRole("admin")}
-          className="flex items-center justify-between group cursor-pointer transition-all hover:border-amber-500/50 hover:bg-amber-500/5"
+          className="flex items-center justify-between group cursor-pointer transition-colors hover:border-amber-500/50 hover:bg-amber-500/5"
         >
           <div className="flex items-center gap-3.5">
             <div className="w-11 h-11 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
@@ -105,7 +105,7 @@ export function DemoModal({ open, onClose }: DemoModalProps) {
               </p>
             </div>
           </div>
-          <ArrowRight className="w-4 h-4 text-fg-muted group-hover:text-amber-600 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+          <ArrowRight className="w-4 h-4 text-fg-muted group-hover:text-amber-600 group-hover:translate-x-0.5 transition-transform duration-150 motion-reduce:group-hover:translate-x-0 shrink-0 ml-2" />
         </Card>
       </div>
     </Modal>

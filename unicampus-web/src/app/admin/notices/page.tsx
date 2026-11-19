@@ -261,7 +261,7 @@ export default function AdminNoticesPage() {
           {selectedNoticeIds.length > 0 && (
             <button
               onClick={handleBulkDelete}
-              className="bg-rose-500/10 border border-rose-500/30 hover:bg-rose-500/20 text-rose-600 dark:text-rose-300 px-3.5 py-2 rounded-xl font-bold flex items-center gap-1.5 transition-all text-xs cursor-pointer"
+              className="bg-rose-500/10 border border-rose-500/30 hover:bg-rose-500/20 text-rose-600 dark:text-rose-300 px-3.5 py-2 rounded-xl font-bold flex items-center gap-1.5 transition-colors text-xs cursor-pointer"
             >
               <Trash2 className="w-3.5 h-3.5" />
               Delete Selected ({selectedNoticeIds.length})
@@ -475,7 +475,7 @@ export default function AdminNoticesPage() {
                             setActiveActionMenuId(null);
                           }} 
                         />
-                        <div className="absolute right-0 bottom-8 z-30 w-44 rounded-xl bg-surface border border-line shadow-lg p-1.5 text-left transition-all">
+                        <div className="absolute right-0 bottom-8 z-30 w-44 rounded-xl bg-surface border border-line shadow-lg p-1.5 text-left transition-opacity">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -670,7 +670,7 @@ export default function AdminNoticesPage() {
                                 setActiveActionMenuId(null);
                               }} 
                             />
-                            <div className="absolute right-5 top-12 z-30 w-44 rounded-xl bg-surface border border-line shadow-lg p-1.5 text-left transition-all">
+                            <div className="absolute right-5 top-12 z-30 w-44 rounded-xl bg-surface border border-line shadow-lg p-1.5 text-left transition-opacity">
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();

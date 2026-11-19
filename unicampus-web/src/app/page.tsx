@@ -20,7 +20,7 @@ export default function LandingPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen overflow-x-clip bg-canvas text-fg transition-colors selection:bg-brand selection:text-on-brand relative">
+    <div className="min-h-dvh overflow-x-clip bg-canvas text-fg transition-colors selection:bg-brand selection:text-on-brand relative">
       {/* =========================================================================
           TOP NAVIGATION HEADER
       ========================================================================= */}
