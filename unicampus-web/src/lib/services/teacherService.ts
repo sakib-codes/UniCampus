@@ -4,6 +4,13 @@
  * Persists changes in localStorage for interactive state retention.
  */
 
+import {
+  CANONICAL_COURSES,
+  CANONICAL_FACULTY,
+  GRADE_WEIGHTS,
+  calculateGrade,
+} from '@/lib/canonicalCampus';
+
 export interface TeacherCourse {
   id: string;
   code: string;
@@ -43,10 +50,10 @@ export interface StudentGradeRecord {
   studentId: string;
   name: string;
   attendance: number; // Max 10
-  quiz: number;       // Max 15
+  quiz: number;       // Max 10
   midterm: number;    // Max 25
-  final: number;      // Max 30
-  lab: number;        // Max 20
+  final: number;      // Max 40
+  lab: number;        // Max 15
   total: number;      // Max 100
   letterGrade: string;
   gpa: number;
@@ -68,52 +75,66 @@ export interface TeacherTimetableSlot {
 const INITIAL_TEACHER_COURSES: TeacherCourse[] = [
   {
     id: 'course-1',
-    code: 'CSE-311',
-    title: 'Database Management Systems',
-    credit: 3.0,
+    code: CANONICAL_COURSES['CSE-3101'].code,
+    title: CANONICAL_COURSES['CSE-3101'].title,
+    credit: CANONICAL_COURSES['CSE-3101'].credit,
     department: 'CSE',
     semester: '6th Semester',
-    section: 'Sec-A',
-    room: 'RM-402',
-    enrolledCount: 48,
+    section: 'Sec A',
+    room: 'Room 402',
+    enrolledCount: 45,
     avgAttendance: 91.5,
     syllabusProgress: 68,
-    nextSession: 'Today, 10:00 AM - 11:30 AM',
+    nextSession: 'Monday, 10:15 AM - 11:45 AM',
   },
   {
     id: 'course-2',
-    code: 'CSE-401',
-    title: 'Artificial Intelligence & Neural Nets',
-    credit: 3.0,
+    code: CANONICAL_COURSES['CSE-3101'].code,
+    title: CANONICAL_COURSES['CSE-3101'].title,
+    credit: CANONICAL_COURSES['CSE-3101'].credit,
     department: 'CSE',
-    semester: '7th Semester',
-    section: 'Sec-B',
-    room: 'RM-303',
-    enrolledCount: 42,
-    avgAttendance: 87.2,
-    syllabusProgress: 52,
-    nextSession: 'Monday, 09:00 AM - 10:30 AM',
+    semester: '6th Semester',
+    section: 'Sec B',
+    room: 'Room 405',
+    enrolledCount: 48,
+    avgAttendance: 88.4,
+    syllabusProgress: 64,
+    nextSession: 'Monday, 08:30 AM - 10:00 AM',
   },
   {
     id: 'course-3',
-    code: 'CSE-402',
-    title: 'AI & Deep Learning Lab',
-    credit: 1.5,
+    code: CANONICAL_COURSES['CSE-4109'].code,
+    title: CANONICAL_COURSES['CSE-4109'].title,
+    credit: CANONICAL_COURSES['CSE-4109'].credit,
     department: 'CSE',
     semester: '7th Semester',
-    section: 'Lab-1',
-    room: 'LAB-03',
+    section: 'Sec A',
+    room: 'Room 602',
     enrolledCount: 36,
+    avgAttendance: 87.2,
+    syllabusProgress: 52,
+    nextSession: 'Monday, 02:00 PM - 04:00 PM',
+  },
+  {
+    id: 'course-4',
+    code: CANONICAL_COURSES['CSE-3102'].code,
+    title: CANONICAL_COURSES['CSE-3102'].title,
+    credit: CANONICAL_COURSES['CSE-3102'].credit,
+    department: 'CSE',
+    semester: '6th Semester',
+    section: 'Lab 4A',
+    room: 'Lab 4A',
+    enrolledCount: 45,
     avgAttendance: 94.0,
     syllabusProgress: 60,
-    nextSession: 'Wednesday, 01:00 PM - 03:30 PM',
+    nextSession: 'Wednesday, 02:45 PM - 04:45 PM',
   },
 ];
 
 const INITIAL_STUDENT_ROSTER: StudentAttendanceRecord[] = [
   { studentId: '211-15-4424', name: 'Sakib Ahmed', avatar: '', status: 'present' },
   { studentId: '211-15-4425', name: 'Anika Tabassum', avatar: '', status: 'present' },
-  { studentId: '211-15-4426', name: 'Tanvir Hasan', avatar: '', status: 'present' },
+  { studentId: '211-15-4426', name: 'Tanvir Mahmud', avatar: '', status: 'present' },
   { studentId: '211-15-4427', name: 'Zara Rahman', avatar: '', status: 'late' },
   { studentId: '211-15-4428', name: 'Mahmudul Karim', avatar: '', status: 'present' },
   { studentId: '211-15-4429', name: 'Nusrat Fariha', avatar: '', status: 'absent' },
@@ -121,56 +142,90 @@ const INITIAL_STUDENT_ROSTER: StudentAttendanceRecord[] = [
   { studentId: '211-15-4431', name: 'Sabrina Mostafa', avatar: '', status: 'excused' },
 ];
 
+function buildGradeRecord(
+  studentId: string,
+  name: string,
+  attendance: number,
+  quiz: number,
+  midterm: number,
+  lab: number,
+  final: number
+): StudentGradeRecord {
+  const clampedAttendance = Math.min(GRADE_WEIGHTS.attendance, Math.max(0, attendance));
+  const clampedQuiz = Math.min(GRADE_WEIGHTS.quiz1, Math.max(0, quiz));
+  const clampedMidterm = Math.min(GRADE_WEIGHTS.midterm, Math.max(0, midterm));
+  const clampedLab = Math.min(GRADE_WEIGHTS.lab, Math.max(0, lab));
+  const clampedFinal = Math.min(GRADE_WEIGHTS.finalExam, Math.max(0, final));
+  const total = Number(
+    (clampedAttendance + clampedQuiz + clampedMidterm + clampedLab + clampedFinal).toFixed(1)
+  );
+  const { letterGrade, gpa } = calculateGrade(total);
+  return {
+    studentId,
+    name,
+    attendance: clampedAttendance,
+    quiz: clampedQuiz,
+    midterm: clampedMidterm,
+    final: clampedFinal,
+    lab: clampedLab,
+    total,
+    letterGrade,
+    gpa,
+    isSubmitted: false,
+  };
+}
+
 const INITIAL_GRADES: StudentGradeRecord[] = [
-  { studentId: '211-15-4424', name: 'Sakib Ahmed', attendance: 9.5, quiz: 14.0, midterm: 23.5, final: 28.0, lab: 19.0, total: 94.0, letterGrade: 'A+', gpa: 4.0, isSubmitted: false },
-  { studentId: '211-15-4425', name: 'Anika Tabassum', attendance: 10.0, quiz: 13.5, midterm: 22.0, final: 27.0, lab: 18.5, total: 91.0, letterGrade: 'A+', gpa: 4.0, isSubmitted: false },
-  { studentId: '211-15-4426', name: 'Tanvir Hasan', attendance: 8.5, quiz: 12.0, midterm: 19.5, final: 24.0, lab: 17.0, total: 81.0, letterGrade: 'A', gpa: 3.75, isSubmitted: false },
-  { studentId: '211-15-4427', name: 'Zara Rahman', attendance: 8.0, quiz: 11.5, midterm: 18.0, final: 22.5, lab: 16.0, total: 76.0, letterGrade: 'A-', gpa: 3.5, isSubmitted: false },
-  { studentId: '211-15-4428', name: 'Mahmudul Karim', attendance: 9.0, quiz: 13.0, midterm: 21.0, final: 25.5, lab: 18.0, total: 86.5, letterGrade: 'A+', gpa: 4.0, isSubmitted: false },
-  { studentId: '211-15-4429', name: 'Nusrat Fariha', attendance: 7.0, quiz: 10.0, midterm: 16.0, final: 21.0, lab: 15.0, total: 69.0, letterGrade: 'B+', gpa: 3.25, isSubmitted: false },
-  { studentId: '211-15-4430', name: 'Rifat Chowdhury', attendance: 9.0, quiz: 12.5, midterm: 20.0, final: 24.0, lab: 17.5, total: 83.0, letterGrade: 'A', gpa: 3.75, isSubmitted: false },
-  { studentId: '211-15-4431', name: 'Sabrina Mostafa', attendance: 8.5, quiz: 11.0, midterm: 17.5, final: 23.0, lab: 16.5, total: 76.5, letterGrade: 'A-', gpa: 3.5, isSubmitted: false },
+  buildGradeRecord('211-15-4424', 'Sakib Ahmed', 9.5, 9.5, 23.5, 14.5, 37.0),
+  buildGradeRecord('211-15-4425', 'Anika Tabassum', 10.0, 9.0, 22.0, 14.0, 36.0),
+  buildGradeRecord('211-15-4426', 'Tanvir Mahmud', 8.5, 8.0, 19.5, 12.5, 32.5),
+  buildGradeRecord('211-15-4427', 'Zara Rahman', 8.0, 7.5, 18.0, 12.0, 30.5),
+  buildGradeRecord('211-15-4428', 'Mahmudul Karim', 9.0, 8.5, 21.0, 13.5, 34.5),
+  buildGradeRecord('211-15-4429', 'Nusrat Fariha', 7.0, 6.5, 16.0, 11.0, 28.5),
+  buildGradeRecord('211-15-4430', 'Rifat Chowdhury', 9.0, 8.5, 20.0, 13.0, 32.5),
+  buildGradeRecord('211-15-4431', 'Sabrina Mostafa', 8.5, 7.5, 17.5, 12.0, 31.0),
 ];
 
 const INITIAL_TEACHER_ROUTINE: TeacherTimetableSlot[] = [
-  { id: 'tt-1', day: 'Saturday', startTime: '10:00 AM', endTime: '11:30 AM', courseCode: 'CSE-311', courseTitle: 'Database Management Systems', room: 'RM-402', section: 'Sec-A', type: 'Theory' },
-  { id: 'tt-2', day: 'Saturday', startTime: '02:00 PM', endTime: '03:30 PM', courseCode: 'OFFICE', courseTitle: 'Student Consultation & Advising', room: 'Cabin 412', section: 'Open', type: 'Consultation' },
-  { id: 'tt-3', day: 'Monday', startTime: '09:00 AM', endTime: '10:30 AM', courseCode: 'CSE-401', courseTitle: 'Artificial Intelligence & Neural Nets', room: 'RM-303', section: 'Sec-B', type: 'Theory' },
-  { id: 'tt-4', day: 'Monday', startTime: '11:00 AM', endTime: '12:30 PM', courseCode: 'CSE-311', courseTitle: 'Database Management Systems', room: 'RM-402', section: 'Sec-A', type: 'Theory' },
-  { id: 'tt-5', day: 'Wednesday', startTime: '01:00 PM', endTime: '03:30 PM', courseCode: 'CSE-402', courseTitle: 'AI & Deep Learning Lab', room: 'LAB-03', section: 'Lab-1', type: 'Lab' },
-  { id: 'tt-6', day: 'Thursday', startTime: '10:00 AM', endTime: '12:00 PM', courseCode: 'RESEARCH', courseTitle: 'Departmental Curriculum Meeting', room: 'Conference Hall', section: 'Faculty', type: 'Consultation' },
+  { id: 'tt-1', day: 'Monday', startTime: '08:30 AM', endTime: '10:00 AM', courseCode: CANONICAL_COURSES['CSE-3101'].code, courseTitle: CANONICAL_COURSES['CSE-3101'].title, room: 'Room 405', section: 'Sec B', type: 'Theory' },
+  { id: 'tt-2', day: 'Monday', startTime: '10:15 AM', endTime: '11:45 AM', courseCode: CANONICAL_COURSES['CSE-3101'].code, courseTitle: CANONICAL_COURSES['CSE-3101'].title, room: 'Room 402', section: 'Sec A', type: 'Theory' },
+  { id: 'tt-3', day: 'Monday', startTime: '02:00 PM', endTime: '04:00 PM', courseCode: CANONICAL_COURSES['CSE-4109'].code, courseTitle: CANONICAL_COURSES['CSE-4109'].title, room: 'Room 602', section: 'Sec A', type: 'Theory' },
+  { id: 'tt-4', day: 'Monday', startTime: '04:15 PM', endTime: '05:30 PM', courseCode: 'OFFICE', courseTitle: 'Student Consultation & Advising', room: CANONICAL_FACULTY.office, section: 'Open', type: 'Consultation' },
+  { id: 'tt-5', day: 'Tuesday', startTime: '10:15 AM', endTime: '11:45 AM', courseCode: CANONICAL_COURSES['CSE-3101'].code, courseTitle: CANONICAL_COURSES['CSE-3101'].title, room: 'Room 402', section: 'Sec A', type: 'Theory' },
+  { id: 'tt-6', day: 'Wednesday', startTime: '02:45 PM', endTime: '04:45 PM', courseCode: CANONICAL_COURSES['CSE-3102'].code, courseTitle: CANONICAL_COURSES['CSE-3102'].title, room: 'Lab 4A', section: 'Lab 4A', type: 'Lab' },
+  { id: 'tt-7', day: 'Thursday', startTime: '10:15 AM', endTime: '11:45 AM', courseCode: 'RESEARCH', courseTitle: 'Departmental Curriculum Committee', room: CANONICAL_FACULTY.office, section: 'Faculty', type: 'Consultation' },
 ];
 
 export const teacherService = {
   getCourses(): TeacherCourse[] {
     if (typeof window === 'undefined') return INITIAL_TEACHER_COURSES;
-    const stored = localStorage.getItem('unicampus_teacher_courses');
+    const stored = localStorage.getItem('unicampus_teacher_courses_v2');
     return stored ? JSON.parse(stored) : INITIAL_TEACHER_COURSES;
   },
 
   getAttendanceRoster(courseCode: string, date: string): StudentAttendanceRecord[] {
     if (typeof window === 'undefined') return INITIAL_STUDENT_ROSTER;
-    const key = `unicampus_attendance_${courseCode}_${date}`;
+    const key = `unicampus_attendance_v2_${courseCode}_${date}`;
     const stored = localStorage.getItem(key);
     return stored ? JSON.parse(stored) : INITIAL_STUDENT_ROSTER;
   },
 
   saveAttendance(courseCode: string, date: string, records: StudentAttendanceRecord[]): void {
     if (typeof window === 'undefined') return;
-    const key = `unicampus_attendance_${courseCode}_${date}`;
+    const key = `unicampus_attendance_v2_${courseCode}_${date}`;
     localStorage.setItem(key, JSON.stringify(records));
   },
 
   getGrades(courseCode: string): StudentGradeRecord[] {
     if (typeof window === 'undefined') return INITIAL_GRADES;
-    const key = `unicampus_grades_${courseCode}`;
+    const key = `unicampus_grades_v2_${courseCode}`;
     const stored = localStorage.getItem(key);
     return stored ? JSON.parse(stored) : INITIAL_GRADES;
   },
 
   saveGrades(courseCode: string, grades: StudentGradeRecord[]): void {
     if (typeof window === 'undefined') return;
-    const key = `unicampus_grades_${courseCode}`;
+    const key = `unicampus_grades_v2_${courseCode}`;
     localStorage.setItem(key, JSON.stringify(grades));
   },
 
@@ -179,16 +234,8 @@ export const teacherService = {
   },
 
   computeGradeLetter(total: number): { letter: string; gpa: number } {
-    if (total >= 80) return { letter: 'A+', gpa: 4.0 };
-    if (total >= 75) return { letter: 'A', gpa: 3.75 };
-    if (total >= 70) return { letter: 'A-', gpa: 3.5 };
-    if (total >= 65) return { letter: 'B+', gpa: 3.25 };
-    if (total >= 60) return { letter: 'B', gpa: 3.0 };
-    if (total >= 55) return { letter: 'B-', gpa: 2.75 };
-    if (total >= 50) return { letter: 'C+', gpa: 2.5 };
-    if (total >= 45) return { letter: 'C', gpa: 2.25 };
-    if (total >= 40) return { letter: 'D', gpa: 2.0 };
-    return { letter: 'F', gpa: 0.0 };
+    const { letterGrade, gpa } = calculateGrade(total);
+    return { letter: letterGrade, gpa };
   }
 };
 

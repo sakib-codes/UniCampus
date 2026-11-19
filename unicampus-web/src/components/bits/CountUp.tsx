@@ -16,6 +16,21 @@ interface CountUpProps {
   suffix?: string;
 }
 
+export function formatCountValue(
+  value: number,
+  decimals: number,
+  separator: string,
+  prefix: string,
+  suffix: string
+): string {
+  const formatted = value.toFixed(decimals);
+  const parts = formatted.split(".");
+  if (separator) {
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, separator);
+  }
+  return `${prefix}${parts.join(".")}${suffix}`;
+}
+
 export default function CountUp({
   to,
   from = 0,
@@ -23,7 +38,7 @@ export default function CountUp({
   duration = 0.7,
   className = "",
   startWhen = true,
-  separator = "",
+  separator = ",",
   decimals = 0,
   prefix = "",
   suffix = "",
@@ -41,24 +56,24 @@ export default function CountUp({
       ease: [0.16, 1, 0.3, 1],
       onUpdate: (latest) => {
         if (ref.current) {
-          const formatted = latest.toFixed(decimals);
-          const parts = formatted.split(".");
-
-          if (separator) {
-            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, separator);
-          }
-
-          ref.current.textContent = `${prefix}${parts.join(".")}${suffix}`;
+          ref.current.textContent = formatCountValue(
+            latest,
+            decimals,
+            separator,
+            prefix,
+            suffix
+          );
         }
       },
       onComplete: () => {
         if (ref.current) {
-          const formatted = to.toFixed(decimals);
-          const parts = formatted.split(".");
-          if (separator) {
-            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, separator);
-          }
-          ref.current.textContent = `${prefix}${parts.join(".")}${suffix}`;
+          ref.current.textContent = formatCountValue(
+            to,
+            decimals,
+            separator,
+            prefix,
+            suffix
+          );
         }
       },
     });
@@ -66,15 +81,14 @@ export default function CountUp({
     return () => controls.stop();
   }, [isInView, startWhen, from, to, duration, delay, decimals, separator, prefix, suffix]);
 
-  const formattedFinal = `${prefix}${to.toFixed(decimals)}${suffix}`;
+  const formattedFinal = formatCountValue(to, decimals, separator, prefix, suffix);
+  const formattedInitial = formatCountValue(from, decimals, separator, prefix, suffix);
 
   return (
     <>
       <span className="sr-only">{formattedFinal}</span>
       <span ref={ref} className={className} aria-hidden="true">
-        {prefix}
-        {from.toFixed(decimals)}
-        {suffix}
+        {formattedInitial}
       </span>
     </>
   );

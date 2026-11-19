@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
   Upload,
@@ -12,35 +11,34 @@ import {
   MoreVertical,
   CheckCircle2,
   KeyRound,
-  RotateCcw,
   Eye,
   Ban,
   FilterX,
   ChevronDown,
   X,
   Download,
-  Check,
   AlertCircle,
   FileSpreadsheet,
-  Clock,
-  Sparkles,
-  ShieldAlert,
-  ArrowRight,
-  ExternalLink
 } from "lucide-react";
-import Link from "next/link";
-import { themeTokens } from "@/lib/theme";
+import { Badge, Button, PageHeader, Tabs, Toast } from "@/components/ui";
+import { CAMPUS_METRICS, CANONICAL_DEPARTMENTS } from "@/lib/canonicalCampus";
+import { INITIAL_PROFILES } from "@/lib/mockData";
+import { adminService } from "@/lib/services/adminService";
+import type { Profile } from "@/types/admin";
+
+type DeptKey = "it" | "cse" | "eee" | "bba" | "pharm" | "eng";
+type RoleTab = "all" | "student" | "teacher" | "admin";
 
 interface UserRecord {
-  id: string; // e.g., ADM-00104, FAC-1042, 211-15-4424
+  id: string;
+  profileId: string;
   name: string;
   email: string;
   initials: string;
-  initialsBg: string;
   role: "admin" | "teacher" | "student";
   roleLabel: string;
   department: string;
-  deptKey: "it" | "cse" | "eee" | "bba";
+  deptKey: DeptKey;
   lastLogin: string;
   isOnlineNow?: boolean;
   status: "active" | "pending" | "suspended";
@@ -48,119 +46,141 @@ interface UserRecord {
   verified?: boolean;
 }
 
-const INITIAL_USERS: UserRecord[] = [
-  {
-    id: "ADM-00104",
-    name: "Syed Tariqul Islam",
-    email: "tariq.admin@unicampus.edu",
-    initials: "TI",
-    initialsBg: "from-[#1D5BD8]/30 to-sky-500/30 text-[#60A5FA] border-[#1D5BD8]/40",
-    role: "admin",
-    roleLabel: "Admin",
-    department: "IT & Systems",
-    deptKey: "it",
-    lastLogin: "2 mins ago",
-    status: "active",
-    statusLabel: "Active",
-    verified: true,
+const DEPT_META: Record<
+  DeptKey,
+  { id: string; shortLabel: string; fullName: string }
+> = {
+  cse: {
+    id: "dept-cse",
+    shortLabel: "Computer Science (CSE)",
+    fullName: "Computer Science & Engineering",
   },
-  {
-    id: "FAC-1042",
-    name: "Dr. Asif Rahman",
-    email: "asif.rahman@unicampus.edu",
-    initials: "AR",
-    initialsBg: "from-[#58A6FF]/30 to-blue-600/30 text-[#58A6FF] border-[#58A6FF]/40",
-    role: "teacher",
-    roleLabel: "Teacher",
-    department: "Computer Science (CSE)",
-    deptKey: "cse",
-    lastLogin: "14 mins ago",
-    status: "active",
-    statusLabel: "Active",
+  eee: {
+    id: "dept-eee",
+    shortLabel: "Electrical Eng (EEE)",
+    fullName: "Electrical & Electronic Engineering",
   },
-  {
-    id: "FAC-1088",
-    name: "Dr. Farhana Khan",
-    email: "farhana.khan@unicampus.edu",
-    initials: "FK",
-    initialsBg: "from-[#58A6FF]/30 to-teal-500/30 text-[#58A6FF] border-[#58A6FF]/40",
-    role: "teacher",
-    roleLabel: "Teacher",
-    department: "Computer Science (CSE)",
-    deptKey: "cse",
-    lastLogin: "1 hour ago",
-    status: "active",
-    statusLabel: "Active",
+  bba: {
+    id: "dept-bba",
+    shortLabel: "Business Admin (BBA)",
+    fullName: "Business Administration",
   },
-  {
-    id: "211-15-4424",
-    name: "Sakib Ahmed",
-    email: "sakib.211154424@unicampus.edu",
-    initials: "SA",
-    initialsBg: "from-[#1C2128] to-[#161B22] text-[#8D96A0] border-[#30363D]",
-    role: "student",
-    roleLabel: "Student",
-    department: "Computer Science (CSE)",
-    deptKey: "cse",
-    lastLogin: "Online now",
-    isOnlineNow: true,
-    status: "active",
-    statusLabel: "Active",
+  pharm: {
+    id: "dept-pharm",
+    shortLabel: "Pharmacy (PHARM)",
+    fullName: "Department of Pharmacy",
   },
-  {
-    id: "211-15-4425",
-    name: "Nusrat Jahan",
-    email: "nusrat.211154425@unicampus.edu",
-    initials: "NJ",
-    initialsBg: "from-[#1C2128] to-[#161B22] text-[#8D96A0] border-[#30363D]",
-    role: "student",
-    roleLabel: "Student",
-    department: "Computer Science (CSE)",
-    deptKey: "cse",
-    lastLogin: "38 mins ago",
-    status: "active",
-    statusLabel: "Active",
+  eng: {
+    id: "dept-eng",
+    shortLabel: "English (ENG)",
+    fullName: "Department of English",
   },
-  {
-    id: "211-14-3210",
-    name: "Kamrul Hasan",
-    email: "kamrul.211143210@unicampus.edu",
-    initials: "KH",
-    initialsBg: "from-[#D29922]/20 to-[#1C2128] text-[#D29922] border-[#D29922]/40",
-    role: "student",
-    roleLabel: "Student",
-    department: "Electrical Eng (EEE)",
-    deptKey: "eee",
-    lastLogin: "14 days ago",
-    status: "pending",
-    statusLabel: "Pending Verification",
+  it: {
+    id: "all",
+    shortLabel: "Central Administration",
+    fullName: "Central University Administration",
   },
-];
+};
+
+function resolveDeptKey(profile: Profile): DeptKey {
+  if (profile.department_id === "dept-cse") return "cse";
+  if (profile.department_id === "dept-eee") return "eee";
+  if (profile.department_id === "dept-bba") return "bba";
+  if (profile.department_id === "dept-pharm") return "pharm";
+  if (profile.department_id === "dept-eng") return "eng";
+  return "it";
+}
+
+function getInitials(name: string): string {
+  const cleaned = name
+    .replace(/^(Prof\.|Dr\.|Engr\.|Mr\.|Ms\.)\s+/gi, "")
+    .replace(/^(Prof\.|Dr\.)\s+/gi, "")
+    .trim();
+  const parts = cleaned.split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "UC";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+}
+
+function mapProfileToUserRecord(profile: Profile, index: number): UserRecord {
+  const deptKey = resolveDeptKey(profile);
+  const displayId =
+    profile.student_id ||
+    profile.teacher_code ||
+    profile.id.toUpperCase();
+  const loginWindows = [
+    "2 mins ago",
+    "14 mins ago",
+    "38 mins ago",
+    "1 hour ago",
+    "3 hours ago",
+    "Yesterday",
+  ];
+  const isOnline = profile.id === "user-stud-1";
+
+  return {
+    id: displayId,
+    profileId: profile.id,
+    name: profile.full_name,
+    email: profile.email,
+    initials: getInitials(profile.full_name),
+    role: profile.role,
+    roleLabel:
+      profile.role === "admin"
+        ? "Admin"
+        : profile.role === "teacher"
+        ? "Teacher"
+        : "Student",
+    department:
+      profile.department_name || DEPT_META[deptKey].fullName,
+    deptKey,
+    lastLogin: !profile.is_approved
+      ? "Pending verification"
+      : isOnline
+      ? "Online now"
+      : loginWindows[index % loginWindows.length],
+    isOnlineNow: isOnline && profile.is_approved,
+    status: profile.is_approved ? "active" : "pending",
+    statusLabel: profile.is_approved ? "Active" : "Pending Verification",
+    verified: profile.admin_role === "super_admin",
+  };
+}
 
 export default function AdminUsersPage() {
-  const [users, setUsers] = useState<UserRecord[]>(INITIAL_USERS);
+  const [users, setUsers] = useState<UserRecord[]>(() =>
+    INITIAL_PROFILES.map((p, idx) => mapProfileToUserRecord(p, idx))
+  );
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<"all" | "student" | "teacher" | "admin">("all");
+  const [activeTab, setActiveTab] = useState<RoleTab>("all");
   const [selectedDept, setSelectedDept] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 6;
 
-  // Floating Action Popover state - Row 2 (FAC-1042 Dr. Asif Rahman) is open by default
-  const [openPopoverId, setOpenPopoverId] = useState<string | null>("FAC-1042");
+  // Floating Action Popover state
+  const [openPopoverId, setOpenPopoverId] = useState<string | null>(null);
 
   // Modals & Feedback
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isCsvModalOpen, setIsCsvModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserRecord | null>(null);
+  const [editRole, setEditRole] = useState<"student" | "teacher" | "admin">("student");
+  const [editDeptKey, setEditDeptKey] = useState<DeptKey>("cse");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Invite Form State
   const [inviteName, setInviteName] = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<"student" | "teacher" | "admin">("student");
-  const [inviteDept, setInviteDept] = useState<"cse" | "eee" | "bba" | "it">("cse");
+  const [inviteDept, setInviteDept] = useState<DeptKey>("cse");
   const [inviteId, setInviteId] = useState("");
 
   const popoverRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const profiles = adminService.getProfiles();
+    setUsers(profiles.map((p, idx) => mapProfileToUserRecord(p, idx)));
+  }, []);
 
   // Dismiss popover on outside click
   useEffect(() => {
@@ -177,27 +197,20 @@ export default function AdminUsersPage() {
 
   const triggerToast = (msg: string) => {
     setToastMessage(msg);
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 3500);
   };
 
   // Filtered dataset
   const filteredUsers = useMemo(() => {
     return users.filter((u) => {
-      // Role Tab
       if (activeTab !== "all" && u.role !== activeTab) {
         return false;
       }
-      // Department
       if (selectedDept !== "all" && u.deptKey !== selectedDept) {
         return false;
       }
-      // Status
       if (selectedStatus !== "all" && u.status !== selectedStatus) {
         return false;
       }
-      // Search Query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
         const matchesName = u.name.toLowerCase().includes(q);
@@ -212,6 +225,44 @@ export default function AdminUsersPage() {
     });
   }, [users, activeTab, selectedDept, selectedStatus, searchQuery]);
 
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / pageSize));
+  const safePage = Math.min(currentPage, totalPages);
+  const startIdx = (safePage - 1) * pageSize;
+  const paginatedUsers = filteredUsers.slice(startIdx, startIdx + pageSize);
+
+  const directoryCounts = useMemo(() => {
+    const active = users.filter((u) => u.status === "active").length;
+    const pending = users.filter((u) => u.status === "pending").length;
+    const suspended = users.filter((u) => u.status === "suspended").length;
+    return { active, pending, suspended };
+  }, [users]);
+
+  const roleTabs = useMemo(
+    () => [
+      {
+        id: "all" as const,
+        label: "All Users",
+        count: CAMPUS_METRICS.totalUsers.toLocaleString(),
+      },
+      {
+        id: "student" as const,
+        label: "Students",
+        count: CAMPUS_METRICS.students.toLocaleString(),
+      },
+      {
+        id: "teacher" as const,
+        label: "Faculty",
+        count: CAMPUS_METRICS.faculty.toLocaleString(),
+      },
+      {
+        id: "admin" as const,
+        label: "Admins",
+        count: CAMPUS_METRICS.admins.toLocaleString(),
+      },
+    ],
+    []
+  );
+
   // Handle Actions
   const handleTogglePopover = (userId: string) => {
     setOpenPopoverId((prev) => (prev === userId ? null : userId));
@@ -219,7 +270,45 @@ export default function AdminUsersPage() {
 
   const handleEditRole = (user: UserRecord) => {
     setEditingUser(user);
+    setEditRole(user.role);
+    setEditDeptKey(user.deptKey);
     setOpenPopoverId(null);
+  };
+
+  const handleSaveRoleChanges = () => {
+    if (!editingUser) return;
+    const deptMeta = DEPT_META[editDeptKey];
+    const nextRoleLabel =
+      editRole === "admin"
+        ? "Admin"
+        : editRole === "teacher"
+        ? "Teacher"
+        : "Student";
+
+    setUsers((prev) =>
+      prev.map((u) =>
+        u.id === editingUser.id
+          ? {
+              ...u,
+              role: editRole,
+              roleLabel: nextRoleLabel,
+              deptKey: editDeptKey,
+              department: deptMeta.fullName,
+            }
+          : u
+      )
+    );
+
+    adminService.updateProfile(editingUser.profileId, {
+      role: editRole,
+      department_id: deptMeta.id,
+      department_name: deptMeta.fullName,
+    });
+    window.dispatchEvent(new Event("unicampus:profiles-updated"));
+
+    const targetName = editingUser.name;
+    setEditingUser(null);
+    triggerToast(`Updated role permissions for ${targetName}.`);
   };
 
   const handleResetPassword = (user: UserRecord) => {
@@ -229,20 +318,26 @@ export default function AdminUsersPage() {
 
   const handleImpersonate = (user: UserRecord) => {
     setOpenPopoverId(null);
-    triggerToast(`Impersonating session for ${user.name} (${user.roleLabel}).`);
+    triggerToast(`Previewing portal view for ${user.name} (${user.roleLabel}).`);
   };
 
   const handleSuspendToggle = (user: UserRecord) => {
+    const nextStatus = user.status === "suspended" ? "active" : "suspended";
+    const nextLabel = nextStatus === "suspended" ? "Suspended" : "Active";
+
     setUsers((prev) =>
-      prev.map((u) => {
-        if (u.id === user.id) {
-          const nextStatus = u.status === "suspended" ? "active" : "suspended";
-          const nextLabel = nextStatus === "suspended" ? "Suspended" : "Active";
-          return { ...u, status: nextStatus, statusLabel: nextLabel };
-        }
-        return u;
-      })
+      prev.map((u) =>
+        u.id === user.id
+          ? { ...u, status: nextStatus, statusLabel: nextLabel }
+          : u
+      )
     );
+
+    if (nextStatus === "active") {
+      adminService.approveProfile(user.profileId);
+      window.dispatchEvent(new Event("unicampus:profiles-updated"));
+    }
+
     setOpenPopoverId(null);
     triggerToast(
       user.status === "suspended"
@@ -255,41 +350,31 @@ export default function AdminUsersPage() {
     e.preventDefault();
     if (!inviteName.trim() || !inviteEmail.trim()) return;
 
-    const deptMap: Record<string, string> = {
-      cse: "Computer Science (CSE)",
-      eee: "Electrical Eng (EEE)",
-      bba: "Business Administration (BBA)",
-      it: "IT & Systems",
-    };
+    const deptMeta = DEPT_META[inviteDept];
+    const generatedId =
+      inviteId.trim() || `GEN-${Math.floor(1000 + Math.random() * 9000)}`;
 
-    const initials = inviteName
-      .split(" ")
-      .map((n) => n[0])
-      .slice(0, 2)
-      .join("")
-      .toUpperCase();
-
-    const newUser: UserRecord = {
-      id: inviteId.trim() || `GEN-${Math.floor(1000 + Math.random() * 9000)}`,
-      name: inviteName.trim(),
+    const created = adminService.createProfile({
+      full_name: inviteName.trim(),
       email: inviteEmail.trim(),
-      initials,
-      initialsBg:
-        inviteRole === "admin"
-          ? "from-[#1D5BD8]/30 to-sky-500/30 text-[#60A5FA] border-[#1D5BD8]/40"
-          : inviteRole === "teacher"
-          ? "from-[#58A6FF]/30 to-blue-600/30 text-[#58A6FF] border-[#58A6FF]/40"
-          : "from-[#1C2128] to-[#161B22] text-[#8D96A0] border-[#30363D]",
       role: inviteRole,
-      roleLabel: inviteRole === "admin" ? "Admin" : inviteRole === "teacher" ? "Teacher" : "Student",
-      department: deptMap[inviteDept] || "Central Campus",
-      deptKey: inviteDept,
-      lastLogin: "Never (Invited)",
-      status: "active",
-      statusLabel: "Active",
-    };
+      admin_role: inviteRole === "admin" ? "dept_admin" : undefined,
+      department_id: deptMeta.id,
+      department_name: deptMeta.fullName,
+      semester_id: inviteRole === "student" ? "sem-cse-1" : null,
+      semester_name: inviteRole === "student" ? "1st Semester" : null,
+      teacher_code: inviteRole !== "student" ? generatedId : null,
+      student_id: inviteRole === "student" ? generatedId : null,
+      avatar_url: "",
+      is_approved: true,
+    });
+    window.dispatchEvent(new Event("unicampus:profiles-updated"));
+
+    const newUser = mapProfileToUserRecord(created, 0);
+    newUser.lastLogin = "Invited";
 
     setUsers((prev) => [newUser, ...prev]);
+    setCurrentPage(1);
     setIsInviteModalOpen(false);
     setInviteName("");
     setInviteEmail("");
@@ -302,244 +387,222 @@ export default function AdminUsersPage() {
     setActiveTab("all");
     setSelectedDept("all");
     setSelectedStatus("all");
+    setCurrentPage(1);
   };
 
   return (
-    <div className="w-full space-y-5 antialiased selection:bg-[#2563EB]/30 pb-4">
-      {/* Toast Notification Banner */}
-      {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-white dark:bg-[#161B22] border border-slate-200 dark:border-[#2563EB]/40 text-xs font-semibold text-slate-900 dark:text-[#F0F6FC] shadow-[0_8px_30px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.6)] backdrop-blur-md animate-in slide-in-from-bottom-3 duration-200">
-          <div className="w-5 h-5 rounded-full bg-brand/10 dark:bg-[#2563EB]/20 flex items-center justify-center text-brand dark:text-[#2563EB] shrink-0">
-            <CheckCircle2 className="w-3.5 h-3.5" />
-          </div>
-          <span>{toastMessage}</span>
-          <button
-            onClick={() => setToastMessage(null)}
-            className="ml-2 text-slate-400 dark:text-[#8D96A0] hover:text-slate-900 dark:hover:text-[#F0F6FC] transition-colors"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      )}
+    <div className="w-full space-y-5 antialiased selection:bg-brand/30 pb-6">
+      <Toast
+        open={Boolean(toastMessage)}
+        message={toastMessage ?? ""}
+        tone="success"
+        durationMs={3500}
+        onClose={() => setToastMessage(null)}
+      />
 
-      {/* PAGE HEADER */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-[28px] font-bold tracking-[-0.02em] text-slate-900 dark:text-[#F0F6FC] font-manrope">
-            User Accounts & Role Permissions
-          </h1>
-          <p className="text-xs sm:text-[13px] text-slate-500 dark:text-[#8D96A0] mt-1 font-sans">
-            Manage identity provisioning, role assignments, and account security across{" "}
-            <span className="font-mono text-slate-900 dark:text-[#F0F6FC] font-semibold">5,060</span> portal users
-          </p>
-        </div>
+      <PageHeader
+        title="User Accounts & Role Permissions"
+        description={
+          <>
+            Manage identity provisioning, role assignments, and account access across{" "}
+            <span className="font-mono text-fg font-semibold">
+              {CAMPUS_METRICS.totalUsers.toLocaleString()}
+            </span>{" "}
+            portal users
+          </>
+        }
+        actions={
+          <>
+            <Button
+              variant="secondary"
+              size="sm"
+              leftIcon={<Upload className="w-4 h-4 text-fg-muted" />}
+              onClick={() => setIsCsvModalOpen(true)}
+            >
+              Bulk Import CSV
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              leftIcon={<UserPlus className="w-4 h-4" />}
+              onClick={() => setIsInviteModalOpen(true)}
+            >
+              Invite User
+            </Button>
+          </>
+        }
+      />
 
-        {/* Right Action Buttons */}
-        <div className="flex items-center gap-3 shrink-0">
-          <button
-            onClick={() => setIsCsvModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-[#161B22] hover:bg-slate-50 dark:hover:bg-[#21262D] border border-slate-200 dark:border-[#30363D] hover:border-slate-300 dark:hover:border-[#8D96A0]/50 text-slate-700 dark:text-[#F0F6FC] transition-all text-xs font-semibold shadow-xs cursor-pointer active:scale-[0.98]"
-            title="Bulk Import Users from CSV/Excel"
-          >
-            <Upload className="w-4 h-4 text-[#8D96A0]" />
-            <span>Bulk Import CSV</span>
-          </button>
-
-          <button
-            onClick={() => setIsInviteModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#5752E5] text-white transition-all text-xs font-bold shadow-[0_0_16px_rgba(37, 99, 235,0.35)] cursor-pointer active:scale-[0.98]"
-            title="Invite or Provision New Portal Identity"
-          >
-            <UserPlus className="w-4 h-4" />
-            <span>+ Invite / Add New User</span>
-          </button>
-        </div>
-      </div>
-
-      {/* FILTER & SEGMENTED CONTROL BAR (#0D1117 Card, 16px padding) */}
-      <div className="bg-white/70 dark:bg-[#0D1117] rounded-2xl p-3.5 sm:p-4 border border-white/80 dark:border-[#30363D] backdrop-blur-xl shadow-xs flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
-        
-        {/* Left: Search & Role Tabs */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1 min-w-0">
-          {/* Search Input (240px) */}
-          <div className="relative w-full sm:w-[240px] shrink-0">
-            <Search className="w-4 h-4 text-[#8D96A0] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+      {/* 2-ROW RESPONSIVE FILTER & ROLE TABS BAR */}
+      <div className="bg-surface rounded-[20px] p-4 border border-line flex flex-col gap-3">
+        {/* Row 1: Search + Department + Status + Reset */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="relative w-full md:w-72">
+            <Search className="w-4 h-4 text-fg-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
               placeholder="Search by name, email, or ID..."
-              className="w-full bg-slate-100/80 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] focus:border-[#2563EB] rounded-xl pl-10 pr-4 py-2 text-xs text-slate-900 dark:text-[#F0F6FC] placeholder:text-slate-400 dark:placeholder:text-[#8D96A0] focus:outline-none transition-colors"
+              className="w-full min-h-[44px] bg-surface-2 border border-line focus:border-brand rounded-xl pl-10 pr-9 py-2 text-xs text-fg placeholder:text-fg-muted focus:outline-none transition-colors"
             />
             {searchQuery && (
               <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8D96A0] hover:text-[#F0F6FC]"
+                type="button"
+                onClick={() => {
+                  setSearchQuery("");
+                  setCurrentPage(1);
+                }}
+                aria-label="Clear search"
+                className="min-w-[36px] min-h-[36px] inline-flex items-center justify-center absolute right-1.5 top-1/2 -translate-y-1/2 text-fg-muted hover:text-fg cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
 
-          {/* Segmented Role Track */}
-          <div className="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-[#1C2128] border border-slate-200 dark:border-[#30363D]/80 text-xs shrink-0 relative">
-            {[
-              { id: "all", label: "All Users", count: "5,060" },
-              { id: "student", label: "Students", count: "4,820" },
-              { id: "teacher", label: "Faculty", count: "240" },
-              { id: "admin", label: "Admins", count: "12" },
-            ].map((role) => {
-              const isActive = activeTab === role.id;
-              return (
-                <button
-                  key={role.id}
-                  onClick={() => setActiveTab(role.id as any)}
-                  className={`relative px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap z-10 ${
-                    isActive
-                      ? "text-slate-900 dark:text-[#F0F6FC]"
-                      : "text-slate-500 hover:text-slate-900 dark:text-[#8D96A0] dark:hover:text-[#F0F6FC]"
-                  }`}
-                >
-                  {isActive && (
-                    <motion.div
-                      layoutId="admin-users-role-pill"
-                      className="absolute inset-0 bg-white dark:bg-[#161B22] rounded-lg shadow-xs border border-slate-200 dark:border-[#30363D] -z-10"
-                      transition={{ type: "spring", stiffness: 450, damping: 32 }}
-                    />
-                  )}
-                  <span>{role.label}</span>
-                  <span
-                    className={`font-mono text-[10px] px-1.5 py-0.5 rounded transition-colors ${
-                      isActive
-                        ? "bg-brand/10 text-brand border border-brand/30 dark:bg-[#0D1117] dark:text-[#2563EB] dark:border-[#30363D]"
-                        : "text-slate-500 bg-slate-100 dark:text-[#8D96A0] dark:bg-[#161B22]"
-                    }`}
-                  >
-                    {role.count}
-                  </span>
-                </button>
-              );
-            })}
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5">
+            <div className="relative flex-1 sm:flex-none">
+              <select
+                value={selectedDept}
+                onChange={(e) => {
+                  setSelectedDept(e.target.value);
+                  setCurrentPage(1);
+                }}
+                aria-label="Filter by department"
+                className="w-full min-h-[44px] appearance-none bg-surface-2 border border-line text-fg rounded-xl pl-3.5 pr-8 py-2 text-xs focus:outline-none focus:border-brand cursor-pointer transition-colors"
+              >
+                <option value="all">All Departments</option>
+                {CANONICAL_DEPARTMENTS.map((d) => (
+                  <option key={d.id} value={d.code.toLowerCase()}>
+                    {DEPT_META[d.code.toLowerCase() as DeptKey].shortLabel}
+                  </option>
+                ))}
+                <option value="it">Central Administration</option>
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 text-fg-muted absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+
+            <div className="relative flex-1 sm:flex-none">
+              <select
+                value={selectedStatus}
+                onChange={(e) => {
+                  setSelectedStatus(e.target.value);
+                  setCurrentPage(1);
+                }}
+                aria-label="Filter by status"
+                className="w-full min-h-[44px] appearance-none bg-surface-2 border border-line text-fg rounded-xl pl-3.5 pr-8 py-2 text-xs focus:outline-none focus:border-brand cursor-pointer transition-colors"
+              >
+                <option value="all">Status: All Accounts</option>
+                <option value="active">Active Only</option>
+                <option value="pending">Pending Verification</option>
+                <option value="suspended">Suspended</option>
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 text-fg-muted absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+
+            <button
+              type="button"
+              onClick={handleClearFilters}
+              className="min-w-[44px] min-h-[44px] inline-flex items-center justify-center rounded-xl bg-surface-2 border border-line text-fg-muted hover:text-fg transition-colors cursor-pointer shrink-0"
+              title="Reset Filters to Default"
+              aria-label="Reset filters"
+            >
+              <FilterX className="w-4 h-4" />
+            </button>
           </div>
         </div>
 
-        {/* Right: Department & Status Dropdowns + Reset */}
-        <div className="flex items-center gap-2.5 shrink-0">
-          {/* Department Dropdown */}
-          <div className="relative">
-            <select
-              value={selectedDept}
-              onChange={(e) => setSelectedDept(e.target.value)}
-              className="appearance-none bg-white dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] text-slate-800 dark:text-[#F0F6FC] rounded-xl pl-3.5 pr-8 py-2 text-xs focus:outline-none focus:border-[#2563EB] cursor-pointer hover:bg-slate-50 dark:hover:bg-[#1C2128] transition-colors"
-            >
-              <option value="all">All Departments</option>
-              <option value="cse">Computer Science (CSE)</option>
-              <option value="eee">Electrical Eng (EEE)</option>
-              <option value="bba">Business Admin (BBA)</option>
-              <option value="it">IT & Systems</option>
-            </select>
-            <ChevronDown className="w-3.5 h-3.5 text-[#8D96A0] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
-
-          {/* Status Dropdown */}
-          <div className="relative">
-            <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="appearance-none bg-white dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] text-slate-800 dark:text-[#F0F6FC] rounded-xl pl-3.5 pr-8 py-2 text-xs focus:outline-none focus:border-[#2563EB] cursor-pointer hover:bg-slate-50 dark:hover:bg-[#1C2128] transition-colors"
-            >
-              <option value="all">Status: All Accounts</option>
-              <option value="active">Active Only</option>
-              <option value="pending">Pending Verification</option>
-              <option value="suspended">Suspended</option>
-            </select>
-            <ChevronDown className="w-3.5 h-3.5 text-[#8D96A0] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
-
-          {/* Clear Filter Icon */}
-          <button
-            onClick={handleClearFilters}
-            className="p-2 rounded-xl bg-white dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] text-slate-500 dark:text-[#8D96A0] hover:text-slate-900 dark:hover:text-[#F0F6FC] hover:bg-slate-50 dark:hover:bg-[#1C2128] transition-colors cursor-pointer"
-            title="Reset Filters to Default"
-          >
-            <FilterX className="w-4 h-4" />
-          </button>
+        {/* Row 2: Role Filter Tabs (horizontally scrollable on 390px, zero overlap at 1440px) */}
+        <div className="w-full overflow-x-auto max-w-full">
+          <Tabs
+            tabs={roleTabs}
+            value={activeTab}
+            onChange={(nextTab) => {
+              setActiveTab(nextTab);
+              setCurrentPage(1);
+            }}
+            layoutId="admin-users-role-pill"
+            size="sm"
+            ariaLabel="Filter users by role"
+          />
         </div>
       </div>
 
-      {/* USERS DATA TABLE CARD (#0D1117 container, rounded-3xl, 1px #30363D border) */}
-      <div className="bg-white/70 dark:bg-[#0D1117] rounded-3xl border border-white/80 dark:border-[#30363D] backdrop-blur-xl shadow-xl relative overflow-visible">
-        
-        <div className="w-full overflow-x-auto min-h-[440px]">
+      {/* USERS DATA CONTAINER */}
+      <div className="bg-surface rounded-[20px] border border-line relative overflow-visible">
+        {/* DESKTOP TABLE (hidden md:block) */}
+        <div className="hidden md:block w-full overflow-x-auto lg:overflow-visible">
           <table className="w-full text-left border-collapse table-auto">
-            
-            {/* Table Header Row (#161B22) */}
             <thead>
-              <tr className="bg-slate-50 dark:bg-[#161B22] border-b border-slate-200 dark:border-[#30363D] text-[11px] font-mono uppercase tracking-wider text-slate-500 dark:text-[#8D96A0]">
-                <th className="py-3 px-5 sm:px-6 font-semibold min-w-[220px]">User (Name & Email)</th>
-                <th className="py-3 px-4 font-semibold min-w-[120px]">Role Badge</th>
-                <th className="py-3 px-4 font-semibold min-w-[130px]">User ID / Student ID</th>
-                <th className="py-3 px-4 font-semibold min-w-[160px]">Department</th>
-                <th className="py-3 px-4 font-semibold min-w-[110px]">Last Login</th>
-                <th className="py-3 px-4 font-semibold min-w-[140px]">Account Status</th>
-                <th className="py-3 px-5 sm:px-6 font-semibold text-right min-w-[80px]">Actions</th>
+              <tr className="bg-surface-2 border-b border-line text-xs font-mono text-fg-muted">
+                <th className="py-3 px-4 font-semibold">User</th>
+                <th className="py-3 px-3 font-semibold">Role</th>
+                <th className="py-3 px-3 font-semibold whitespace-nowrap">ID</th>
+                <th className="py-3 px-3 font-semibold">Department</th>
+                <th className="py-3 px-3 font-semibold hidden xl:table-cell whitespace-nowrap">
+                  Last Login
+                </th>
+                <th className="py-3 px-3 font-semibold">Status</th>
+                <th className="py-3 px-4 font-semibold text-right w-16">Actions</th>
               </tr>
             </thead>
 
-            {/* Table Body */}
-            <tbody className="divide-y divide-slate-100 dark:divide-[#30363D]/80 text-xs font-sans">
-              {filteredUsers.length === 0 ? (
+            <tbody className="divide-y divide-line text-xs font-sans">
+              {paginatedUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-16 text-center text-[#8D96A0]">
+                  <td colSpan={7} className="py-16 text-center text-fg-muted">
                     <div className="flex flex-col items-center justify-center gap-2">
-                      <AlertCircle className="w-8 h-8 text-[#8D96A0]/50" />
-                      <p className="text-sm font-semibold text-[#F0F6FC]">No user accounts matched your filters</p>
-                      <p className="text-xs text-[#8D96A0]">
+                      <AlertCircle className="w-8 h-8 text-fg-muted/50" />
+                      <p className="text-sm font-semibold text-fg">
+                        No user accounts matched your filters
+                      </p>
+                      <p className="text-xs text-fg-muted">
                         Try clearing the search query or adjusting role and department selections.
                       </p>
-                      <button
-                        onClick={handleClearFilters}
-                        className="mt-2 px-3 py-1.5 rounded-lg bg-white dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] text-xs font-semibold text-slate-700 dark:text-[#F0F6FC] hover:bg-slate-50 dark:hover:bg-[#1C2128] hover:text-brand dark:hover:text-[#2563EB] transition-colors"
-                      >
+                      <Button variant="secondary" size="sm" onClick={handleClearFilters}>
                         Clear All Filters
-                      </button>
+                      </Button>
                     </div>
                   </td>
                 </tr>
               ) : (
-                filteredUsers.map((user) => {
+                paginatedUsers.map((user, index) => {
                   const isPopoverOpen = openPopoverId === user.id;
+                  const openUpward =
+                    index >= paginatedUsers.length - 2 && paginatedUsers.length > 2;
 
                   return (
                     <tr
                       key={user.id}
                       className={`transition-colors h-14 ${
                         isPopoverOpen
-                          ? "bg-blue-50/70 dark:bg-[#161B22]/90 relative z-30"
-                          : "hover:bg-slate-50/80 dark:hover:bg-[#161B22]/60"
+                          ? "bg-surface-2 relative z-30"
+                          : "hover:bg-surface-2/60"
                       }`}
                     >
                       {/* 1. Name & Email */}
-                      <td className="py-2.5 px-5 sm:px-6">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`w-8 h-8 rounded-full bg-gradient-to-tr border flex items-center justify-center shrink-0 font-mono text-xs font-bold ${user.initialsBg}`}
-                          >
+                      <td className="py-2.5 px-4">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-8 h-8 rounded-full bg-brand-soft border border-brand/25 flex items-center justify-center shrink-0 font-mono text-xs font-bold text-brand">
                             {user.initials}
                           </div>
-                          <div className="min-w-0">
-                            <div className="font-manrope font-bold text-slate-900 dark:text-[#F0F6FC] flex items-center gap-1.5 truncate">
-                              <span>{user.name}</span>
+                          <div className="min-w-0 max-w-[210px]">
+                            <div className="font-semibold text-fg flex items-center gap-1.5 truncate">
+                              <span className="truncate">{user.name}</span>
                               {user.verified && (
                                 <span
                                   title="Verified Superadmin Privileges"
-                                  className="inline-flex text-[#2563EB]"
+                                  className="inline-flex text-brand shrink-0"
                                 >
-                                  <CheckCircle2 className="w-3.5 h-3.5 fill-[#2563EB]/20" />
+                                  <CheckCircle2 className="w-3.5 h-3.5" />
                                 </span>
                               )}
                             </div>
-                            <div className="text-[11px] text-slate-500 dark:text-[#8D96A0] font-normal truncate">
+                            <div className="text-xs text-fg-muted font-normal truncate">
                               {user.email}
                             </div>
                           </div>
@@ -547,138 +610,133 @@ export default function AdminUsersPage() {
                       </td>
 
                       {/* 2. Role Badge */}
-                      <td className="py-2.5 px-4 whitespace-nowrap">
+                      <td className="py-2.5 px-3 whitespace-nowrap">
                         {user.role === "admin" && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[rgba(37, 99, 235,0.16)] text-[#2563EB] border border-[#2563EB]/30 text-[11px] font-semibold">
-                            <Shield className="w-3 h-3 fill-[#2563EB]/20" />
+                          <Badge variant="brand">
+                            <Shield className="w-3 h-3" />
                             <span>Admin</span>
-                          </span>
+                          </Badge>
                         )}
-
                         {user.role === "teacher" && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[rgba(88,166,255,0.16)] text-[#58A6FF] border border-[#58A6FF]/30 text-[11px] font-semibold">
+                          <Badge variant="brand">
                             <GraduationCap className="w-3 h-3" />
                             <span>Teacher</span>
-                          </span>
+                          </Badge>
                         )}
-
                         {user.role === "student" && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200 dark:bg-[#1C2128] dark:text-[#8D96A0] dark:border-[#30363D] text-[11px] font-semibold">
+                          <Badge variant="neutral">
                             <User className="w-3 h-3" />
                             <span>Student</span>
-                          </span>
+                          </Badge>
                         )}
                       </td>
 
                       {/* 3. User ID / Student ID */}
-                      <td className="py-2.5 px-4 whitespace-nowrap">
-                        <span className="font-mono text-xs text-slate-800 dark:text-[#F0F6FC] bg-slate-100 dark:bg-[#161B22] px-2 py-1 rounded border border-slate-200 dark:border-[#30363D]/80 tabular-nums">
+                      <td className="py-2.5 px-3 whitespace-nowrap">
+                        <span className="font-mono text-xs text-fg bg-surface-2 px-2 py-1 rounded border border-line tabular-nums">
                           {user.id}
                         </span>
                       </td>
 
                       {/* 4. Department */}
-                      <td className="py-2.5 px-4 text-slate-600 dark:text-[#8D96A0] font-medium whitespace-nowrap">
+                      <td className="py-2.5 px-3 text-fg-muted font-medium max-w-[180px] truncate">
                         {user.department}
                       </td>
 
                       {/* 5. Last Login */}
-                      <td className="py-2.5 px-4 whitespace-nowrap">
-                        {user.isOnlineNow ? (
-                          <span className="font-mono text-[11px] text-[#3FB950] font-medium flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-[#3FB950] animate-pulse"></span>
-                            <span>Online now</span>
-                          </span>
-                        ) : (
-                          <span className="font-mono text-[11px] text-[#8D96A0]">
-                            {user.lastLogin}
-                          </span>
-                        )}
+                      <td className="py-2.5 px-3 whitespace-nowrap hidden xl:table-cell">
+                        <span
+                          className={`font-mono text-xs ${
+                            user.isOnlineNow ? "text-success font-medium" : "text-fg-muted"
+                          }`}
+                        >
+                          {user.lastLogin}
+                        </span>
                       </td>
 
                       {/* 6. Account Status */}
-                      <td className="py-2.5 px-4 whitespace-nowrap">
+                      <td className="py-2.5 px-3 whitespace-nowrap">
                         {user.status === "active" && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[rgba(63,185,80,0.16)] text-[#3FB950] border border-[#3FB950]/30 text-[11px] font-medium">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#3FB950]"></span>
-                            <span>Active</span>
-                          </span>
+                          <Badge variant="success">Active</Badge>
                         )}
-
                         {user.status === "pending" && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[rgba(210,153,34,0.16)] text-[#D29922] border border-[#D29922]/30 text-[11px] font-medium">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#D29922]"></span>
-                            <span>Pending Verification</span>
-                          </span>
+                          <Badge variant="warning">Pending Verification</Badge>
                         )}
-
                         {user.status === "suspended" && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[rgba(248,81,73,0.16)] text-[#F85149] border border-[#F85149]/30 text-[11px] font-medium">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#F85149]"></span>
-                            <span>Suspended</span>
-                          </span>
+                          <Badge variant="danger">Suspended</Badge>
                         )}
                       </td>
 
-                      {/* 7. Action Button & Contextual Popover */}
-                      <td className="py-2.5 px-5 sm:px-6 text-right whitespace-nowrap relative">
+                      {/* 7. Actions */}
+                      <td className="py-2.5 px-4 text-right whitespace-nowrap relative">
                         <button
+                          type="button"
                           data-action-trigger="true"
                           onClick={() => handleTogglePopover(user.id)}
-                          className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                          aria-label={`Manage ${user.name}`}
+                          className={`min-w-[40px] min-h-[40px] inline-flex items-center justify-center rounded-xl transition-colors cursor-pointer ${
                             isPopoverOpen
-                              ? "bg-slate-100 dark:bg-[#1C2128] text-brand dark:text-[#2563EB] border border-brand/40 dark:border-[#2563EB]/50"
-                              : "text-slate-400 dark:text-[#8D96A0] hover:text-slate-900 dark:hover:text-[#F0F6FC] hover:bg-slate-100 dark:hover:bg-[#161B22]"
+                              ? "bg-surface-2 text-brand border border-brand/40"
+                              : "text-fg-muted hover:text-fg hover:bg-surface-2"
                           }`}
                           title="Manage User Account"
                         >
                           <MoreVertical className="w-4 h-4" />
                         </button>
 
-                        {/* Floating Popover Menu */}
                         {isPopoverOpen && (
                           <div
                             ref={popoverRef}
-                            className="absolute right-4 sm:right-6 top-11 w-52 bg-white dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] rounded-xl shadow-2xl p-1.5 z-50 text-left backdrop-blur-md animate-in fade-in zoom-in-95 duration-100"
+                            className={`absolute right-4 ${
+                              openUpward ? "bottom-12" : "top-12"
+                            } w-52 bg-surface border border-line rounded-xl shadow-lg p-1.5 z-50 text-left`}
                           >
-                            <div className="px-2.5 py-1.5 text-[10px] font-mono uppercase tracking-wider text-slate-500 dark:text-[#8D96A0] border-b border-slate-100 dark:border-[#30363D]/70 mb-1 flex items-center justify-between">
+                            <div className="px-2.5 py-1.5 text-xs font-mono text-fg-muted border-b border-line mb-1 flex items-center justify-between gap-2">
                               <span>User Actions</span>
-                              <span className="font-mono text-[9px] text-[#2563EB]">{user.id}</span>
+                              <span className="font-mono text-xs text-brand truncate">
+                                {user.id}
+                              </span>
                             </div>
 
                             <button
+                              type="button"
                               onClick={() => handleEditRole(user)}
-                              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-slate-700 dark:text-[#F0F6FC] hover:bg-slate-50 dark:hover:bg-[#1C2128] hover:text-brand dark:hover:text-[#2563EB] text-xs transition-colors group cursor-pointer"
+                              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-fg hover:bg-surface-2 hover:text-brand text-xs transition-colors cursor-pointer"
                             >
-                              <Shield className="w-3.5 h-3.5 text-[#8D96A0] group-hover:text-[#2563EB] shrink-0" />
-                              <span className="font-medium">Edit Role & Permissions</span>
+                              <Shield className="w-3.5 h-3.5 text-fg-muted shrink-0" />
+                              <span className="font-medium">Edit Role &amp; Permissions</span>
                             </button>
 
                             <button
+                              type="button"
                               onClick={() => handleResetPassword(user)}
-                              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-slate-700 dark:text-[#F0F6FC] hover:bg-slate-50 dark:hover:bg-[#1C2128] text-xs transition-colors group cursor-pointer"
+                              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-fg hover:bg-surface-2 text-xs transition-colors cursor-pointer"
                             >
-                              <KeyRound className="w-3.5 h-3.5 text-[#8D96A0] group-hover:text-[#F0F6FC] shrink-0" />
+                              <KeyRound className="w-3.5 h-3.5 text-fg-muted shrink-0" />
                               <span className="font-medium">Reset Password</span>
                             </button>
 
                             <button
+                              type="button"
                               onClick={() => handleImpersonate(user)}
-                              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-slate-700 dark:text-[#F0F6FC] hover:bg-slate-50 dark:hover:bg-[#1C2128] text-xs transition-colors group cursor-pointer"
+                              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-fg hover:bg-surface-2 text-xs transition-colors cursor-pointer"
                             >
-                              <Eye className="w-3.5 h-3.5 text-[#8D96A0] group-hover:text-[#F0F6FC] shrink-0" />
-                              <span className="font-medium">Impersonate User</span>
+                              <Eye className="w-3.5 h-3.5 text-fg-muted shrink-0" />
+                              <span className="font-medium">Preview Role View</span>
                             </button>
 
-                            <div className="my-1 border-t border-slate-100 dark:border-[#30363D]/70"></div>
+                            <div className="my-1 border-t border-line" />
 
                             <button
+                              type="button"
                               onClick={() => handleSuspendToggle(user)}
-                              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[#F85149] hover:bg-[rgba(248,81,73,0.12)] text-xs transition-colors font-medium cursor-pointer"
+                              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-danger hover:bg-danger-light text-xs transition-colors font-medium cursor-pointer"
                             >
-                              <Ban className="w-3.5 h-3.5 text-[#F85149] shrink-0" />
+                              <Ban className="w-3.5 h-3.5 text-danger shrink-0" />
                               <span>
-                                {user.status === "suspended" ? "Reactivate Account" : "Suspend Account"}
+                                {user.status === "suspended"
+                                  ? "Reactivate Account"
+                                  : "Suspend Account"}
                               </span>
                             </button>
                           </div>
@@ -692,86 +750,202 @@ export default function AdminUsersPage() {
           </table>
         </div>
 
-        {/* TABLE PAGINATION FOOTER (#161B22 bar) */}
-        <div className="h-14 px-5 sm:px-6 bg-slate-50 dark:bg-[#161B22] border-t border-slate-200 dark:border-[#30363D] rounded-b-3xl flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-          {/* Monospace Counter */}
-          <div className="text-slate-500 dark:text-[#8D96A0] font-mono">
-            Showing <span className="text-slate-900 dark:text-[#F0F6FC] font-semibold">1–25</span> of{" "}
-            <span className="text-slate-900 dark:text-[#F0F6FC] font-semibold">5,060</span> users
+        {/* MOBILE CARDS (md:hidden) */}
+        <div className="md:hidden divide-y divide-line">
+          {paginatedUsers.length === 0 ? (
+            <div className="py-12 px-4 text-center text-fg-muted space-y-2">
+              <AlertCircle className="w-8 h-8 text-fg-muted/50 mx-auto" />
+              <p className="text-sm font-semibold text-fg">
+                No user accounts matched your filters
+              </p>
+              <p className="text-xs text-fg-muted">
+                Try clearing the search query or adjusting filters.
+              </p>
+              <Button variant="secondary" size="sm" onClick={handleClearFilters}>
+                Clear All Filters
+              </Button>
+            </div>
+          ) : (
+            paginatedUsers.map((user) => {
+              const isPopoverOpen = openPopoverId === user.id;
+
+              return (
+                <div key={user.id} className="p-4 space-y-3 relative">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-9 h-9 rounded-full bg-brand-soft border border-brand/25 flex items-center justify-center shrink-0 font-mono text-xs font-bold text-brand">
+                        {user.initials}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-fg truncate">
+                          {user.name}
+                        </p>
+                        <p className="text-xs text-fg-muted truncate">{user.email}</p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      data-action-trigger="true"
+                      onClick={() => handleTogglePopover(user.id)}
+                      aria-label={`Manage ${user.name}`}
+                      className="min-w-[44px] min-h-[44px] -mr-2 -mt-1 inline-flex items-center justify-center rounded-xl text-fg-muted hover:text-fg hover:bg-surface-2 cursor-pointer shrink-0"
+                    >
+                      <MoreVertical className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <span className="font-mono text-fg bg-surface-2 px-2 py-0.5 rounded border border-line tabular-nums">
+                      {user.id}
+                    </span>
+                    <Badge variant={user.role === "student" ? "neutral" : "brand"}>
+                      {user.roleLabel}
+                    </Badge>
+                    {user.status === "active" && (
+                      <Badge variant="success">Active</Badge>
+                    )}
+                    {user.status === "pending" && (
+                      <Badge variant="warning">Pending Verification</Badge>
+                    )}
+                    {user.status === "suspended" && (
+                      <Badge variant="danger">Suspended</Badge>
+                    )}
+                  </div>
+
+                  <div className="text-xs text-fg-muted flex items-center justify-between gap-2">
+                    <span className="truncate">{user.department}</span>
+                    <span className="font-mono shrink-0">{user.lastLogin}</span>
+                  </div>
+
+                  {isPopoverOpen && (
+                    <div
+                      ref={popoverRef}
+                      className="mt-2 p-1.5 rounded-xl bg-surface-2 border border-line grid grid-cols-1 gap-1"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => handleEditRole(user)}
+                        className="w-full min-h-[44px] flex items-center gap-2.5 px-3 py-2 rounded-lg text-fg hover:bg-surface text-xs font-medium cursor-pointer"
+                      >
+                        <Shield className="w-3.5 h-3.5 text-fg-muted shrink-0" />
+                        <span>Edit Role &amp; Permissions</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleResetPassword(user)}
+                        className="w-full min-h-[44px] flex items-center gap-2.5 px-3 py-2 rounded-lg text-fg hover:bg-surface text-xs font-medium cursor-pointer"
+                      >
+                        <KeyRound className="w-3.5 h-3.5 text-fg-muted shrink-0" />
+                        <span>Reset Password</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleSuspendToggle(user)}
+                        className="w-full min-h-[44px] flex items-center gap-2.5 px-3 py-2 rounded-lg text-danger hover:bg-danger-light text-xs font-medium cursor-pointer"
+                      >
+                        <Ban className="w-3.5 h-3.5 text-danger shrink-0" />
+                        <span>
+                          {user.status === "suspended"
+                            ? "Reactivate Account"
+                            : "Suspend Account"}
+                        </span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* LIVE PAGINATION FOOTER */}
+        <div className="px-4 sm:px-6 py-3 bg-surface-2 border-t border-line rounded-b-[20px] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          <div className="text-fg-muted font-mono">
+            Showing{" "}
+            <span className="text-fg font-semibold tabular-nums">
+              {filteredUsers.length === 0 ? 0 : startIdx + 1}–
+              {Math.min(startIdx + pageSize, filteredUsers.length)}
+            </span>{" "}
+            of{" "}
+            <span className="text-fg font-semibold tabular-nums">
+              {filteredUsers.length}
+            </span>{" "}
+            accounts
           </div>
 
-          {/* Pagination Controls */}
-          <div className="flex items-center gap-1.5 font-mono">
+          <div className="flex items-center gap-1.5 font-mono flex-wrap justify-center">
             <button
-              className="px-2.5 py-1.5 rounded-lg bg-white dark:bg-[#1C2128] border border-slate-200 dark:border-[#30363D] text-slate-400 dark:text-[#8D96A0] flex items-center gap-1 text-[11px] opacity-60 cursor-not-allowed"
-              disabled
+              type="button"
+              disabled={safePage <= 1}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              className="min-h-[36px] px-2.5 py-1.5 rounded-lg bg-surface border border-line text-fg-muted hover:text-fg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-xs"
             >
-              <span>&lt; Prev</span>
+              &lt; Prev
             </button>
 
-            {/* Page 1 (Active #2563EB) */}
-            <button className="w-8 h-8 rounded-lg bg-[#2563EB] text-white font-bold text-xs flex items-center justify-center shadow-md shadow-[#2563EB]/30 cursor-pointer">
-              1
-            </button>
-            <button className="w-8 h-8 rounded-lg bg-white dark:bg-[#1C2128] border border-slate-200 dark:border-[#30363D] text-slate-600 dark:text-[#8D96A0] hover:text-slate-900 dark:hover:text-[#F0F6FC] hover:bg-slate-100 dark:hover:bg-[#161B22] transition-colors text-xs flex items-center justify-center cursor-pointer">
-              2
-            </button>
-            <button className="w-8 h-8 rounded-lg bg-white dark:bg-[#1C2128] border border-slate-200 dark:border-[#30363D] text-slate-600 dark:text-[#8D96A0] hover:text-slate-900 dark:hover:text-[#F0F6FC] hover:bg-slate-100 dark:hover:bg-[#161B22] transition-colors text-xs flex items-center justify-center cursor-pointer">
-              3
-            </button>
-            <span className="px-1 text-slate-400 dark:text-[#8D96A0]">...</span>
-            <button className="w-8 h-8 rounded-lg bg-white dark:bg-[#1C2128] border border-slate-200 dark:border-[#30363D] text-slate-600 dark:text-[#8D96A0] hover:text-slate-900 dark:hover:text-[#F0F6FC] hover:bg-slate-100 dark:hover:bg-[#161B22] transition-colors text-xs flex items-center justify-center cursor-pointer">
-              203
-            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                type="button"
+                onClick={() => setCurrentPage(page)}
+                className={`min-w-[36px] min-h-[36px] rounded-lg text-xs font-semibold flex items-center justify-center cursor-pointer transition-colors ${
+                  page === safePage
+                    ? "bg-brand text-on-brand"
+                    : "bg-surface border border-line text-fg-muted hover:text-fg"
+                }`}
+              >
+                {page}
+              </button>
+            ))}
 
-            <button className="px-2.5 py-1.5 rounded-lg bg-white dark:bg-[#1C2128] border border-slate-200 dark:border-[#30363D] text-slate-700 dark:text-[#8D96A0] hover:text-slate-900 dark:hover:text-[#F0F6FC] hover:bg-slate-100 dark:hover:bg-[#161B22] hover:border-slate-300 dark:hover:border-[#8D96A0]/60 transition-colors flex items-center gap-1 text-[11px] cursor-pointer">
-              <span>Next &gt;</span>
+            <button
+              type="button"
+              disabled={safePage >= totalPages}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              className="min-h-[36px] px-2.5 py-1.5 rounded-lg bg-surface border border-line text-fg-muted hover:text-fg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-xs"
+            >
+              Next &gt;
             </button>
           </div>
         </div>
-
       </div>
 
-      {/* BOTTOM METADATA STATUS STRIP */}
-      <div className="flex flex-col sm:flex-row items-center justify-between text-[11px] text-[#8D96A0] px-2 font-mono gap-2 pt-1">
+      {/* BOTTOM METADATA STATUS STRIP (Deduplicated, zero status dots, reconciled to 5,072) */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs text-fg-muted px-2 font-mono gap-2 pt-1">
         <div>
-          UniCampus Identity Engine • Auth Strategy: JWT with Refresh Tokens • RBAC Node Sync Active
+          Directory sample: {users.length} accounts ({directoryCounts.active} Active ·{" "}
+          {directoryCounts.pending} Pending · {directoryCounts.suspended} Suspended)
         </div>
-        <div className="flex items-center gap-3">
-          <span className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#3FB950]"></span>
-            <span>4,912 Active</span>
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#D29922]"></span>
-            <span>118 Pending</span>
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#F85149]"></span>
-            <span>30 Suspended</span>
-          </span>
+        <div>
+          Portal Total: {CAMPUS_METRICS.totalUsers.toLocaleString()} (4,924 Active · 118
+          Pending · 30 Suspended)
         </div>
       </div>
 
       {/* MODAL 1: Invite / Add New User */}
       {isInviteModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 dark:bg-black/80 backdrop-blur-xs p-4 animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] rounded-3xl w-full max-w-lg shadow-2xl p-6 relative">
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-[#30363D] pb-4 mb-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="bg-surface border border-line rounded-[20px] w-full max-w-lg shadow-xl p-6 relative">
+            <div className="flex items-center justify-between border-b border-line pb-4 mb-5">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-brand/10 dark:bg-[#2563EB]/20 border border-brand/20 dark:border-[#2563EB]/40 text-brand dark:text-[#2563EB] flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-brand-soft border border-brand/20 text-brand flex items-center justify-center">
                   <UserPlus className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-manrope font-bold text-base text-slate-900 dark:text-[#F0F6FC]">
-                    Invite & Provision User
+                  <h3 className="font-bold text-base text-fg">
+                    Invite &amp; Provision User
                   </h3>
-                  <p className="text-xs text-slate-500 dark:text-[#8D96A0]">Create institutional identity credentials</p>
+                  <p className="text-xs text-fg-muted">
+                    Create institutional identity credentials
+                  </p>
                 </div>
               </div>
               <button
+                type="button"
                 onClick={() => setIsInviteModalOpen(false)}
-                className="p-1.5 rounded-lg text-slate-400 dark:text-[#8D96A0] hover:text-slate-900 dark:hover:text-[#F0F6FC] hover:bg-slate-100 dark:hover:bg-[#161B22]"
+                aria-label="Close modal"
+                className="min-w-[40px] min-h-[40px] inline-flex items-center justify-center rounded-lg text-fg-muted hover:text-fg hover:bg-surface-2 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -779,21 +953,21 @@ export default function AdminUsersPage() {
 
             <form onSubmit={handleCreateUser} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#8D96A0] mb-1.5">
+                <label className="block text-xs font-semibold text-fg-muted mb-1.5">
                   Full Legal Name
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Dr. Sabrina Noor or Tanvir Ahmed"
+                  placeholder="e.g. Dr. Sabrina Noor or Tanvir Mahmud"
                   value={inviteName}
                   onChange={(e) => setInviteName(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] focus:border-brand dark:focus:border-[#2563EB] rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-[#F0F6FC] focus:outline-none"
+                  className="w-full min-h-[44px] bg-surface-2 border border-line focus:border-brand rounded-xl px-3.5 py-2 text-xs text-fg focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#8D96A0] mb-1.5">
+                <label className="block text-xs font-semibold text-fg-muted mb-1.5">
                   Institutional Email
                 </label>
                 <input
@@ -802,19 +976,21 @@ export default function AdminUsersPage() {
                   placeholder="e.g. user@unicampus.edu"
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] focus:border-brand dark:focus:border-[#2563EB] rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-[#F0F6FC] focus:outline-none"
+                  className="w-full min-h-[44px] bg-surface-2 border border-line focus:border-brand rounded-xl px-3.5 py-2 text-xs text-fg focus:outline-none"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#8D96A0] mb-1.5">
+                  <label className="block text-xs font-semibold text-fg-muted mb-1.5">
                     Role Privilege
                   </label>
                   <select
                     value={inviteRole}
-                    onChange={(e) => setInviteRole(e.target.value as any)}
-                    className="w-full bg-slate-50 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] focus:border-brand dark:focus:border-[#2563EB] rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-[#F0F6FC] focus:outline-none cursor-pointer"
+                    onChange={(e) =>
+                      setInviteRole(e.target.value as "student" | "teacher" | "admin")
+                    }
+                    className="w-full min-h-[44px] bg-surface-2 border border-line focus:border-brand rounded-xl px-3.5 py-2 text-xs text-fg focus:outline-none cursor-pointer"
                   >
                     <option value="student">Student</option>
                     <option value="teacher">Teacher / Faculty</option>
@@ -823,24 +999,29 @@ export default function AdminUsersPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-[#8D96A0] mb-1.5">
+                  <label className="block text-xs font-semibold text-fg-muted mb-1.5">
                     Department
                   </label>
                   <select
                     value={inviteDept}
-                    onChange={(e) => setInviteDept(e.target.value as any)}
-                    className="w-full bg-slate-50 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] focus:border-brand dark:focus:border-[#2563EB] rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-[#F0F6FC] focus:outline-none cursor-pointer"
+                    onChange={(e) => setInviteDept(e.target.value as DeptKey)}
+                    className="w-full min-h-[44px] bg-surface-2 border border-line focus:border-brand rounded-xl px-3.5 py-2 text-xs text-fg focus:outline-none cursor-pointer"
                   >
-                    <option value="cse">Computer Science (CSE)</option>
-                    <option value="eee">Electrical Eng (EEE)</option>
-                    <option value="bba">Business Admin (BBA)</option>
-                    <option value="it">IT & Systems</option>
+                    {CANONICAL_DEPARTMENTS.map((d) => {
+                      const key = d.code.toLowerCase() as DeptKey;
+                      return (
+                        <option key={d.id} value={key}>
+                          {DEPT_META[key].shortLabel}
+                        </option>
+                      );
+                    })}
+                    <option value="it">Central Administration</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#8D96A0] mb-1.5">
+                <label className="block text-xs font-semibold text-fg-muted mb-1.5">
                   Student ID / Faculty Code (Optional)
                 </label>
                 <input
@@ -848,24 +1029,21 @@ export default function AdminUsersPage() {
                   placeholder="e.g. 211-15-4499 or FAC-2090"
                   value={inviteId}
                   onChange={(e) => setInviteId(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] focus:border-brand dark:focus:border-[#2563EB] rounded-xl px-3.5 py-2 text-xs font-mono text-slate-900 dark:text-[#F0F6FC] focus:outline-none"
+                  className="w-full min-h-[44px] bg-surface-2 border border-line focus:border-brand rounded-xl px-3.5 py-2 text-xs font-mono text-fg focus:outline-none"
                 />
               </div>
 
-              <div className="pt-2 flex items-center justify-end gap-3 border-t border-slate-200 dark:border-[#30363D]">
-                <button
-                  type="button"
+              <div className="pt-2 flex items-center justify-end gap-3 border-t border-line">
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={() => setIsInviteModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-[#8D96A0] hover:text-slate-900 dark:hover:text-[#F0F6FC] hover:bg-slate-100 dark:hover:bg-[#161B22]"
                 >
                   Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 rounded-xl bg-brand hover:bg-brand-hover dark:bg-[#2563EB] dark:hover:bg-[#5752E5] text-white text-xs font-bold shadow-md shadow-brand/25 dark:shadow-[#2563EB]/25 cursor-pointer"
-                >
+                </Button>
+                <Button type="submit" variant="primary" size="sm">
                   Send Invitation
-                </button>
+                </Button>
               </div>
             </form>
           </div>
@@ -874,76 +1052,79 @@ export default function AdminUsersPage() {
 
       {/* MODAL 2: Bulk Import CSV */}
       {isCsvModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 dark:bg-black/80 backdrop-blur-xs p-4 animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] rounded-3xl w-full max-w-lg shadow-2xl p-6 relative">
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-[#30363D] pb-4 mb-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="bg-surface border border-line rounded-[20px] w-full max-w-lg shadow-xl p-6 relative">
+            <div className="flex items-center justify-between border-b border-line pb-4 mb-5">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-brand/10 dark:bg-[#2563EB]/20 border border-brand/20 dark:border-[#2563EB]/40 text-brand dark:text-[#2563EB] flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-brand-soft border border-brand/20 text-brand flex items-center justify-center">
                   <FileSpreadsheet className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-manrope font-bold text-base text-slate-900 dark:text-[#F0F6FC]">
+                  <h3 className="font-bold text-base text-fg">
                     Bulk Import User Accounts
                   </h3>
-                  <p className="text-xs text-slate-500 dark:text-[#8D96A0]">Upload batch roster via CSV or XLSX file</p>
+                  <p className="text-xs text-fg-muted">
+                    Upload batch roster via CSV or XLSX file
+                  </p>
                 </div>
               </div>
               <button
+                type="button"
                 onClick={() => setIsCsvModalOpen(false)}
-                className="p-1.5 rounded-lg text-slate-400 dark:text-[#8D96A0] hover:text-slate-900 dark:hover:text-[#F0F6FC] hover:bg-slate-100 dark:hover:bg-[#161B22]"
+                aria-label="Close modal"
+                className="min-w-[40px] min-h-[40px] inline-flex items-center justify-center rounded-lg text-fg-muted hover:text-fg hover:bg-surface-2 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="space-y-4">
-              {/* Drag and Drop Zone */}
-              <div className="border-2 border-dashed border-slate-300 dark:border-[#30363D] hover:border-brand dark:hover:border-[#2563EB] rounded-2xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-colors bg-slate-50/60 hover:bg-slate-50 dark:bg-[#161B22]/50 dark:hover:bg-[#161B22]">
-                <div className="w-12 h-12 rounded-2xl bg-brand/10 dark:bg-[#2563EB]/10 text-brand dark:text-[#2563EB] flex items-center justify-center mb-3">
+              <div className="border-2 border-dashed border-line hover:border-brand rounded-2xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-colors bg-surface-2/60">
+                <div className="w-12 h-12 rounded-2xl bg-brand-soft text-brand flex items-center justify-center mb-3">
                   <Upload className="w-6 h-6" />
                 </div>
-                <p className="text-xs font-semibold text-slate-900 dark:text-[#F0F6FC]">
-                  Drag and drop roster CSV here, or <span className="text-brand dark:text-[#2563EB] underline">browse</span>
+                <p className="text-xs font-semibold text-fg">
+                  Drag and drop roster CSV here, or{" "}
+                  <span className="text-brand underline">browse</span>
                 </p>
-                <p className="text-[11px] text-slate-500 dark:text-[#8D96A0] mt-1">
+                <p className="text-xs text-fg-muted mt-1">
                   Supported formats: .CSV, .XLSX (Max file size: 25MB)
                 </p>
               </div>
 
-              {/* Sample Template Download */}
-              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] text-xs">
+              <div className="flex items-center justify-between gap-2 p-3 rounded-xl bg-surface-2 border border-line text-xs">
                 <div className="flex items-center gap-2">
-                  <FileSpreadsheet className="w-4 h-4 text-slate-500 dark:text-[#8D96A0]" />
-                  <span className="text-slate-600 dark:text-[#8D96A0]">Need the correct header schema?</span>
+                  <FileSpreadsheet className="w-4 h-4 text-fg-muted shrink-0" />
+                  <span className="text-fg-muted">Need the correct header format?</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => triggerToast("Sample roster CSV template downloaded.")}
-                  className="flex items-center gap-1.5 text-brand dark:text-[#2563EB] hover:underline font-semibold cursor-pointer"
+                  className="flex items-center gap-1.5 text-brand hover:underline font-semibold cursor-pointer shrink-0"
                 >
                   <Download className="w-3.5 h-3.5" />
                   <span>Download Template</span>
                 </button>
               </div>
 
-              <div className="pt-2 flex items-center justify-end gap-3 border-t border-slate-200 dark:border-[#30363D]">
-                <button
-                  type="button"
+              <div className="pt-2 flex items-center justify-end gap-3 border-t border-line">
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={() => setIsCsvModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-[#8D96A0] hover:text-slate-900 dark:hover:text-[#F0F6FC] hover:bg-slate-100 dark:hover:bg-[#161B22]"
                 >
                   Cancel
-                </button>
-                <button
-                  type="button"
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
                   onClick={() => {
                     setIsCsvModalOpen(false);
                     triggerToast("Imported 124 students from CSE_Spring2026_Batch.csv.");
                   }}
-                  className="px-4 py-2 rounded-xl bg-brand hover:bg-brand-hover dark:bg-[#2563EB] dark:hover:bg-[#5752E5] text-white text-xs font-bold shadow-md shadow-brand/25 dark:shadow-[#2563EB]/25 cursor-pointer"
                 >
                   Process CSV Import
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -952,23 +1133,27 @@ export default function AdminUsersPage() {
 
       {/* MODAL 3: Edit Role & Permissions */}
       {editingUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 dark:bg-black/80 backdrop-blur-xs p-4 animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] rounded-3xl w-full max-w-md shadow-2xl p-6 relative">
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-[#30363D] pb-4 mb-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="bg-surface border border-line rounded-[20px] w-full max-w-md shadow-xl p-6 relative">
+            <div className="flex items-center justify-between border-b border-line pb-4 mb-5">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-brand/10 dark:bg-[#2563EB]/20 border border-brand/20 dark:border-[#2563EB]/40 text-brand dark:text-[#2563EB] flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-brand-soft border border-brand/20 text-brand flex items-center justify-center">
                   <Shield className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-manrope font-bold text-base text-slate-900 dark:text-[#F0F6FC]">
-                    Edit Role & Permissions
+                  <h3 className="font-bold text-base text-fg">
+                    Edit Role &amp; Permissions
                   </h3>
-                  <p className="text-xs text-slate-500 dark:text-[#8D96A0] font-mono">{editingUser.id} • {editingUser.name}</p>
+                  <p className="text-xs text-fg-muted font-mono">
+                    {editingUser.id} • {editingUser.name}
+                  </p>
                 </div>
               </div>
               <button
+                type="button"
                 onClick={() => setEditingUser(null)}
-                className="p-1.5 rounded-lg text-slate-400 dark:text-[#8D96A0] hover:text-slate-900 dark:hover:text-[#F0F6FC] hover:bg-slate-100 dark:hover:bg-[#161B22]"
+                aria-label="Close modal"
+                className="min-w-[40px] min-h-[40px] inline-flex items-center justify-center rounded-lg text-fg-muted hover:text-fg hover:bg-surface-2 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -976,48 +1161,58 @@ export default function AdminUsersPage() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#8D96A0] mb-1.5">
+                <label className="block text-xs font-semibold text-fg-muted mb-1.5">
                   Assigned Role
                 </label>
                 <select
-                  defaultValue={editingUser.role}
-                  className="w-full bg-slate-50 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] focus:border-brand dark:focus:border-[#2563EB] rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-[#F0F6FC] focus:outline-none"
+                  value={editRole}
+                  onChange={(e) =>
+                    setEditRole(e.target.value as "student" | "teacher" | "admin")
+                  }
+                  className="w-full min-h-[44px] bg-surface-2 border border-line focus:border-brand rounded-xl px-3.5 py-2 text-xs text-fg focus:outline-none cursor-pointer"
                 >
                   <option value="student">Student</option>
                   <option value="teacher">Teacher / Faculty</option>
-                  <option value="admin">Central Administrator</option>
+                  <option value="admin">Administrator</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#8D96A0] mb-1.5">
+                <label className="block text-xs font-semibold text-fg-muted mb-1.5">
                   Academic Department
                 </label>
-                <input
-                  type="text"
-                  defaultValue={editingUser.department}
-                  className="w-full bg-slate-50 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] focus:border-brand dark:focus:border-[#2563EB] rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-[#F0F6FC] focus:outline-none"
-                />
+                <select
+                  value={editDeptKey}
+                  onChange={(e) => setEditDeptKey(e.target.value as DeptKey)}
+                  className="w-full min-h-[44px] bg-surface-2 border border-line focus:border-brand rounded-xl px-3.5 py-2 text-xs text-fg focus:outline-none cursor-pointer"
+                >
+                  {CANONICAL_DEPARTMENTS.map((d) => {
+                    const key = d.code.toLowerCase() as DeptKey;
+                    return (
+                      <option key={d.id} value={key}>
+                        {DEPT_META[key].fullName}
+                      </option>
+                    );
+                  })}
+                  <option value="it">Central University Administration</option>
+                </select>
               </div>
 
-              <div className="pt-2 flex items-center justify-end gap-3 border-t border-slate-200 dark:border-[#30363D]">
-                <button
-                  type="button"
+              <div className="pt-2 flex items-center justify-end gap-3 border-t border-line">
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={() => setEditingUser(null)}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-[#8D96A0] hover:text-slate-900 dark:hover:text-[#F0F6FC] hover:bg-slate-100 dark:hover:bg-[#161B22]"
                 >
                   Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditingUser(null);
-                    triggerToast(`Updated role permissions for ${editingUser.name}.`);
-                  }}
-                  className="px-4 py-2 rounded-xl bg-brand hover:bg-brand-hover dark:bg-[#2563EB] dark:hover:bg-[#5752E5] text-white text-xs font-bold shadow-md shadow-brand/25 dark:shadow-[#2563EB]/25 cursor-pointer"
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleSaveRoleChanges}
                 >
                   Save Changes
-                </button>
+                </Button>
               </div>
             </div>
           </div>

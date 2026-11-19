@@ -8,7 +8,6 @@ import {
   CheckCheck, 
   Paperclip, 
   MessageSquare,
-  Sparkles, 
   Mail, 
   ArrowLeft, 
   Calendar, 
@@ -17,10 +16,8 @@ import {
   Video,
   Info,
   Smile,
-  Image as ImageIcon,
   Mic,
   MicOff,
-  ThumbsUp,
   MoreHorizontal,
   Bell,
   BellOff,
@@ -30,7 +27,6 @@ import {
   ChevronRight,
   Download,
   ShieldCheck,
-  Palette,
   X,
   PhoneOff,
   VideoOff,
@@ -41,17 +37,12 @@ import {
   Play,
   Pause,
   Monitor,
-  Share2,
-  Trash2,
   Maximize2,
   Edit3,
   Check
 } from "lucide-react";
-import { themeTokens } from "@/lib/theme";
 import ProfileAvatar from "@/components/common/ProfileAvatar";
 import { useAdminAuth } from "@/context/AdminAuthContext";
-import ClickSpark from "@/components/bits/ClickSpark";
-import DecryptedText from "@/components/bits/DecryptedText";
 
 export type MessengerTheme = "classic" | "violet" | "sunset" | "emerald";
 
@@ -111,13 +102,13 @@ export interface Conversation {
 
 const THEME_GRADIENTS: Record<MessengerTheme, { bubble: string; ring: string; label: string }> = {
   classic: {
-    bubble: "bg-gradient-to-r from-[#1D5BD8] via-[#2563EB] to-[#817CFF] text-white",
-    ring: "from-[#1D5BD8] to-[#2563EB]",
+    bubble: "bg-brand text-white",
+    ring: "from-brand to-brand",
     label: "Brand Indigo"
   },
   violet: {
-    bubble: "bg-gradient-to-r from-[#2563EB] via-[#7B3FE4] to-[#B339E0] text-white",
-    ring: "from-[#2563EB] to-[#B339E0]",
+    bubble: "bg-gradient-to-r from-[var(--color-brand, #605BFF)] via-[#7B3FE4] to-[#B339E0] text-white",
+    ring: "from-[var(--color-brand, #605BFF)] to-[#B339E0]",
     label: "Cyber Violet"
   },
   sunset: {
@@ -396,14 +387,6 @@ const INITIAL_TEACHER_CONVERSATIONS: Conversation[] = [
   }
 ];
 
-const SUGGESTED_QUICK_CHIPS = [
-  "Can I schedule a consultation during office hours?",
-  "I've pushed the assignment update to the repo.",
-  "When will the midterm grades be published?",
-  "Could you clarify the rubric for Question 3?",
-  "Can I submit the lab report by tonight?"
-];
-
 export default function MessagesPage() {
   const { currentUser } = useAdminAuth();
   const isTeacher = currentUser?.role === "teacher";
@@ -418,7 +401,7 @@ export default function MessagesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [inputText, setInputText] = useState("");
   const [isMobileConversationOpen, setIsMobileConversationOpen] = useState(false);
-  const [isDetailsOpen, setIsDetailsOpen] = useState(true);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [activeReactionMessageId, setActiveReactionMessageId] = useState<string | null>(null);
 
   // Messenger Advanced States
@@ -608,16 +591,6 @@ export default function MessagesPage() {
     handleSendMessage(undefined, false, undefined, true, durationStr);
   };
 
-  const handleSendPhotoMock = () => {
-    const samplePhotos = [
-      "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=600&auto=format&fit=crop&q=80"
-    ];
-    const randomPhoto = samplePhotos[Math.floor(Math.random() * samplePhotos.length)];
-    handleSendMessage("Shared a lab diagram screenshot", false, randomPhoto);
-  };
-
   const handleToggleReaction = (messageId: string, emoji: string) => {
     playMessengerChime("pop");
     setConversations(prev => prev.map(conv => {
@@ -760,18 +733,18 @@ export default function MessagesPage() {
       {/* ========================================================= */}
       {/* COLUMN 1: CHATS DIRECTORY (Messenger Sidebar)              */}
       {/* ========================================================= */}
-      <aside className={`w-full md:w-[var(--left-panel-width)] border-r ${themeTokens.border} bg-white dark:bg-[#0D1117] flex flex-col shrink-0 ${
+      <aside className={`w-full md:w-[var(--left-panel-width)] border-r border-line bg-white dark:bg-surface flex flex-col shrink-0 ${
         isMobileConversationOpen ? "hidden md:flex" : "flex"
       }`}>
         
         {/* Messenger Header: Bold 'Chats' + Action icons */}
-        <div className="p-3.5 pb-2 border-b border-slate-100 dark:border-[#21262D]">
+        <div className="p-3.5 pb-2 border-b border-slate-100 dark:border-line">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-[#F0F6FC]">
+              <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-fg">
                 Chats
               </h1>
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
             </div>
 
             <div className="flex items-center gap-1">
@@ -779,14 +752,14 @@ export default function MessagesPage() {
                 onClick={() => setIsNewChatModalOpen(true)}
                 title="New Conversation"
                 aria-label="New Conversation"
-                className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-[#161B22] dark:hover:bg-[#21262D] text-slate-700 dark:text-[#F0F6FC] flex items-center justify-center transition-colors cursor-pointer"
+                className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-surface-2 dark:hover:bg-surface-2 text-slate-700 dark:text-fg flex items-center justify-center transition-colors cursor-pointer"
               >
                 <SquarePen className="w-4 h-4" />
               </button>
               <button 
                 title="Chat Options"
                 aria-label="Chat Options"
-                className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-[#161B22] dark:hover:bg-[#21262D] text-slate-700 dark:text-[#F0F6FC] flex items-center justify-center transition-colors cursor-pointer"
+                className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-surface-2 dark:hover:bg-surface-2 text-slate-700 dark:text-fg flex items-center justify-center transition-colors cursor-pointer"
               >
                 <MoreHorizontal className="w-4 h-4" />
               </button>
@@ -795,14 +768,14 @@ export default function MessagesPage() {
 
           {/* Search Messenger Input */}
           <div className="relative mb-2.5">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-[#6E747D]" />
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-fg-muted" />
             <input 
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search Messenger"
               aria-label="Search Messenger"
-              className="w-full pl-10 pr-3.5 py-2 text-xs sm:text-sm rounded-full bg-slate-100 dark:bg-[#161B22] border border-transparent focus:border-brand focus:ring-2 focus:ring-brand/40 text-slate-900 dark:text-[#F0F6FC] placeholder:text-slate-400 dark:placeholder:text-[#6E747D] outline-none transition-colors"
+              className="w-full pl-10 pr-3.5 py-2 text-xs sm:text-sm rounded-full bg-slate-100 dark:bg-surface-2 border border-transparent focus:border-brand focus:ring-2 focus:ring-brand/40 text-slate-900 dark:text-fg placeholder:text-slate-400 dark:placeholder:text-fg-muted outline-none transition-colors"
             />
           </div>
 
@@ -821,8 +794,8 @@ export default function MessagesPage() {
                 onClick={() => setActiveCategory(tab.id as typeof activeCategory)}
                 className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors cursor-pointer whitespace-nowrap focus-visible:ring-2 focus-visible:ring-brand ${
                   activeCategory === tab.id
-                    ? "bg-slate-900 text-white dark:bg-[#F0F6FC] dark:text-[#010409] shadow-xs"
-                    : "bg-slate-100 hover:bg-slate-200 text-slate-600 dark:bg-[#161B22] dark:hover:bg-[#21262D] dark:text-[#8D96A0] dark:hover:text-[#F0F6FC]"
+                    ? "bg-slate-900 text-white dark:bg-fg dark:text-[#010409] shadow-xs"
+                    : "bg-slate-100 hover:bg-slate-200 text-slate-600 dark:bg-surface-2 dark:hover:bg-surface-2 dark:text-fg-muted dark:hover:text-fg"
                 }`}
               >
                 {tab.label}
@@ -832,13 +805,13 @@ export default function MessagesPage() {
         </div>
 
         {/* ACTIVE NOW CONTACT STORIES TRAY (Messenger Signature) */}
-        <div className="px-3 pt-2 pb-2.5 border-b border-slate-100 dark:border-[#21262D] bg-slate-50/50 dark:bg-[#0D1117]/50">
+        <div className="px-3 pt-2 pb-2.5 border-b border-slate-100 dark:border-line bg-slate-50/50 dark:bg-surface/50">
           <div className="flex items-center justify-between mb-1 px-1">
-            <span className="text-[11px] font-bold text-slate-500 dark:text-[#8D96A0] uppercase tracking-wider">
+            <span className="text-xs font-bold text-slate-500 dark:text-fg-muted uppercase tracking-wider">
               Active Now
             </span>
-            <span className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               {conversations.filter(c => c.isOnline).length} Online
             </span>
           </div>
@@ -852,20 +825,21 @@ export default function MessagesPage() {
               title="Leave a campus note"
               aria-label="Leave a campus note"
             >
-              <div className="relative w-12 h-12 rounded-full border-2 border-dashed border-brand/50 dark:border-brand/40 flex items-center justify-center group-hover:border-brand transition-colors bg-white dark:bg-[#161B22]">
+              <div className="relative w-12 h-12 rounded-full border-2 border-dashed border-brand/50 dark:border-brand/40 flex items-center justify-center group-hover:border-brand transition-colors bg-white dark:bg-surface-2">
                 <Plus className="w-5 h-5 text-brand group-hover:scale-110 transition-transform" />
-                <span className="absolute -bottom-1 -right-0.5 w-4 h-4 rounded-full bg-brand text-white text-[9px] font-bold flex items-center justify-center shadow-xs">
+                <span className="absolute -bottom-1 -right-0.5 w-4 h-4 rounded-full bg-brand text-white text-xs font-bold flex items-center justify-center shadow-xs">
                   +
                 </span>
               </div>
-              <span className="text-[10px] font-semibold text-slate-600 dark:text-[#8D96A0] max-w-[56px] truncate text-center">
+              <span className="text-xs font-semibold text-slate-600 dark:text-fg-muted max-w-[56px] truncate text-center">
                 {userStatusNote ? userStatusNote.slice(0, 8) + ".." : "Your note"}
               </span>
             </button>
 
             {/* Active Online Contacts */}
             {conversations.filter(c => c.isOnline).map(c => {
-              const firstName = c.name.split(" ")[0] || c.name;
+              const cleanName = c.name.replace(/^(Dr\.|Prof\.|Engr\.|Ms\.|Mr\.)\s+/i, "");
+              const shortLabel = cleanName.split(" ")[0] || c.name;
               const isSelected = c.id === activeConv.id;
               return (
                 <button
@@ -879,18 +853,18 @@ export default function MessagesPage() {
                   aria-label={`${c.name} • ${c.userNote || "Active now"}`}
                 >
                   <div className={`relative w-12 h-12 rounded-full p-0.5 transition-transform duration-150 group-hover:scale-105 ${
-                    isSelected ? "ring-2 ring-brand" : "ring-1 ring-slate-200 dark:ring-[#30363D]"
+                    isSelected ? "ring-2 ring-brand" : "ring-1 ring-slate-200 dark:ring-border-line"
                   }`}>
                     <ProfileAvatar 
                       className="w-full h-full"
                       iconClassName="w-6 h-6"
                     />
-                    <span className="w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white dark:border-[#0D1117] absolute bottom-0 right-0 shadow-xs" />
+                    <span className="w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white dark:border-surface absolute bottom-0 right-0 shadow-xs" />
                   </div>
-                  <span className={`text-[10px] font-bold max-w-[58px] truncate text-center ${
-                    isSelected ? "text-brand" : "text-slate-700 dark:text-[#F0F6FC]"
+                  <span className={`text-xs font-bold max-w-[58px] truncate text-center ${
+                    isSelected ? "text-brand" : "text-slate-700 dark:text-fg"
                   }`}>
-                    {firstName}
+                    {shortLabel}
                   </span>
                 </button>
               );
@@ -902,8 +876,8 @@ export default function MessagesPage() {
         <div className="flex-1 overflow-y-auto p-2 space-y-1">
           {filteredConversations.length === 0 ? (
             <div className="p-8 text-center">
-              <MessageSquare className="w-10 h-10 text-slate-300 dark:text-[#30363D] mx-auto mb-2" />
-              <p className="text-xs font-semibold text-slate-500 dark:text-[#8D96A0]">No chats match your search.</p>
+              <MessageSquare className="w-10 h-10 text-slate-300 dark:text-border-line mx-auto mb-2" />
+              <p className="text-xs font-semibold text-slate-500 dark:text-fg-muted">No chats match your search.</p>
             </div>
           ) : (
             filteredConversations.map(conv => {
@@ -931,18 +905,18 @@ export default function MessagesPage() {
                   }}
                   className={`group relative w-full p-2.5 rounded-2xl flex items-center gap-3 cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none ${
                     isSelected
-                      ? "bg-slate-100 dark:bg-[#161B22]"
-                      : "hover:bg-slate-50 dark:hover:bg-[#161B22]/60"
+                      ? "bg-slate-100 dark:bg-surface-2"
+                      : "hover:bg-slate-50 dark:hover:bg-surface-2/60"
                   }`}
                 >
                   {/* Avatar with Messenger Active Dot & Note Bubble */}
                   <div className="relative shrink-0">
                     <ProfileAvatar 
-                      className="w-13 h-13 border border-slate-200/80 dark:border-[#30363D]"
+                      className="w-13 h-13 border border-slate-200/80 dark:border-line"
                       iconClassName="w-6 h-6"
                     />
                     {conv.isOnline && (
-                      <span className="w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white dark:border-[#0D1117] absolute bottom-0 right-0 shadow-xs" />
+                      <span className="w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white dark:border-surface absolute bottom-0 right-0 shadow-xs" />
                     )}
                   </div>
 
@@ -950,11 +924,11 @@ export default function MessagesPage() {
                   <div className="flex-1 min-w-0 pr-1">
                     <div className="flex items-center justify-between mb-0.5">
                       <h3 className={`text-sm truncate ${
-                        conv.unreadCount > 0 ? "font-black text-slate-900 dark:text-white" : "font-semibold text-slate-800 dark:text-[#F0F6FC]"
+                        conv.unreadCount > 0 ? "font-black text-slate-900 dark:text-white" : "font-semibold text-slate-800 dark:text-fg"
                       }`}>
                         {conv.nickname || conv.name}
                       </h3>
-                      <span className="text-[10px] text-slate-400 dark:text-[#6E747D] shrink-0 font-medium">
+                      <span className="text-xs text-slate-400 dark:text-fg-muted shrink-0 font-medium">
                         {conv.lastTime}
                       </span>
                     </div>
@@ -972,8 +946,8 @@ export default function MessagesPage() {
                       ) : (
                         <p className={`text-xs truncate ${
                           conv.unreadCount > 0 
-                            ? "font-bold text-slate-900 dark:text-[#F0F6FC]" 
-                            : "text-slate-500 dark:text-[#8D96A0]"
+                            ? "font-bold text-slate-900 dark:text-fg" 
+                            : "text-slate-500 dark:text-fg-muted"
                         }`}>
                           {conv.lastMessage}
                         </p>
@@ -986,7 +960,7 @@ export default function MessagesPage() {
                   </div>
 
                   {/* Quick Action Button on Hover (Messenger Style) */}
-                  <div className="hidden group-hover:flex items-center gap-1 absolute right-2.5 bg-slate-100/90 dark:bg-[#161B22]/90 backdrop-blur-xs px-1 py-0.5 rounded-full shadow-xs">
+                  <div className="hidden group-hover:flex items-center gap-1 absolute right-2.5 bg-slate-100/90 dark:bg-surface-2/90 backdrop-blur-xs px-1 py-0.5 rounded-full shadow-xs">
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
@@ -1032,7 +1006,7 @@ export default function MessagesPage() {
         }`}
       >
         <div className={`w-0.5 h-8 rounded-full transition-colors ${
-          isDraggingLeft ? "bg-brand" : "bg-slate-300 dark:bg-[#30363D] group-hover:bg-brand"
+          isDraggingLeft ? "bg-brand" : "bg-slate-300 dark:bg-border-line group-hover:bg-brand"
         }`} />
       </div>
 
@@ -1044,11 +1018,11 @@ export default function MessagesPage() {
       }`}>
         
         {/* Messenger Chat Header */}
-        <div className={`h-16 px-4 border-b ${themeTokens.border} bg-white dark:bg-[#0D1117] flex items-center justify-between shrink-0 shadow-2xs z-10`}>
+        <div className={`h-16 px-4 border-b border-line bg-white dark:bg-surface flex items-center justify-between shrink-0 shadow-2xs z-10`}>
           <div className="flex items-center gap-3 min-w-0">
             <button
               onClick={() => setIsMobileConversationOpen(false)}
-              className="p-2 rounded-full text-slate-500 hover:bg-slate-100 dark:hover:bg-[#161B22] md:hidden cursor-pointer"
+              className="p-2 rounded-full text-slate-500 hover:bg-slate-100 dark:hover:bg-surface-2 md:hidden cursor-pointer"
               title="Back to conversation list"
               aria-label="Back to conversation list"
             >
@@ -1058,23 +1032,23 @@ export default function MessagesPage() {
             <div className="relative shrink-0">
               <ProfileAvatar 
                 size="md"
-                className="border border-slate-200 dark:border-[#30363D]"
+                className="border border-slate-200 dark:border-line"
               />
               {activeConv.isOnline && (
-                <span className="w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-[#0D1117] absolute bottom-0 right-0 shadow-xs" />
+                <span className="w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-surface absolute bottom-0 right-0 shadow-xs" />
               )}
             </div>
 
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h2 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-[#F0F6FC] truncate">
+                <h2 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-fg truncate">
                   {activeConv.nickname || activeConv.name}
                 </h2>
                 {activeConv.isMuted && (
                   <BellOff className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                 )}
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-[#8D96A0] flex items-center gap-1.5 truncate">
+              <p className="text-xs text-slate-500 dark:text-fg-muted flex items-center gap-1.5 truncate">
                 <span className={`w-1.5 h-1.5 rounded-full ${activeConv.isOnline ? "bg-emerald-500" : "bg-slate-400"}`} />
                 <span>{activeConv.lastActive}</span>
                 <span>•</span>
@@ -1088,7 +1062,7 @@ export default function MessagesPage() {
             <button
               onClick={() => setIsSearchInChatOpen(!isSearchInChatOpen)}
               className={`p-2.5 rounded-full transition-colors cursor-pointer ${
-                isSearchInChatOpen ? "bg-brand/10 text-brand" : "text-slate-500 hover:bg-slate-100 dark:hover:bg-[#161B22]"
+                isSearchInChatOpen ? "bg-brand/10 text-brand" : "text-slate-500 hover:bg-slate-100 dark:hover:bg-surface-2"
               }`}
               title="Search in conversation"
               aria-label="Search in conversation"
@@ -1119,7 +1093,7 @@ export default function MessagesPage() {
               className={`p-2.5 rounded-full transition-colors cursor-pointer ${
                 isDetailsOpen 
                   ? "bg-brand/10 text-brand dark:bg-brand/20" 
-                  : "text-slate-500 hover:bg-slate-100 dark:hover:bg-[#161B22]"
+                  : "text-slate-500 hover:bg-slate-100 dark:hover:bg-surface-2"
               }`}
               title="Conversation information"
               aria-label="Conversation information"
@@ -1131,19 +1105,19 @@ export default function MessagesPage() {
 
         {/* IN-CHAT SEARCH BAR (Messenger feature) */}
         {isSearchInChatOpen && (
-          <div className="px-4 py-2 bg-slate-50 dark:bg-[#161B22] border-b border-slate-200 dark:border-[#30363D] flex items-center gap-2">
-            <Search className="w-4 h-4 text-slate-400 dark:text-[#6E747D] shrink-0" />
+          <div className="px-4 py-2 bg-slate-50 dark:bg-surface-2 border-b border-slate-200 dark:border-line flex items-center gap-2">
+            <Search className="w-4 h-4 text-slate-400 dark:text-fg-muted shrink-0" />
             <input 
               type="text"
               value={inChatSearchTerm}
               onChange={(e) => setInChatSearchTerm(e.target.value)}
               placeholder="Search in this conversation..."
               aria-label="Search in this conversation"
-              className="flex-1 text-xs bg-transparent text-slate-900 dark:text-[#F0F6FC] outline-none focus:ring-1 focus:ring-brand rounded px-1"
+              className="flex-1 text-xs bg-transparent text-slate-900 dark:text-fg outline-none focus:ring-1 focus:ring-brand rounded px-1"
               autoFocus
             />
             {inChatSearchTerm && (
-              <span className="text-[10px] text-slate-400 dark:text-[#6E747D] font-mono">
+              <span className="text-xs text-slate-400 dark:text-fg-muted font-mono">
                 {activeConv.messages.filter(m => m.text.toLowerCase().includes(inChatSearchTerm.toLowerCase())).length} matches
               </span>
             )}
@@ -1166,12 +1140,12 @@ export default function MessagesPage() {
           <div className="px-4 py-2 bg-indigo-50/80 dark:bg-indigo-950/40 border-b border-indigo-100 dark:border-indigo-900/50 flex items-center justify-between gap-3 text-xs text-indigo-950 dark:text-indigo-200 shrink-0">
             <div className="flex items-center gap-2 truncate">
               <Pin className="w-3.5 h-3.5 text-brand shrink-0" />
-              <span className="font-bold text-[11px] text-brand shrink-0 uppercase tracking-wider">Pinned:</span>
+              <span className="font-bold text-xs text-brand shrink-0 uppercase tracking-wider">Pinned:</span>
               <span className="truncate font-medium">{pinnedMessage.text}</span>
             </div>
             <button 
               onClick={() => handleTogglePinMessage(pinnedMessage.id)}
-              className="text-[10px] text-indigo-600 dark:text-indigo-400 hover:underline font-bold shrink-0 cursor-pointer"
+              className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-bold shrink-0 cursor-pointer"
             >
               Unpin
             </button>
@@ -1180,35 +1154,6 @@ export default function MessagesPage() {
 
         {/* Message History Canvas */}
         <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 space-y-4 [scrollbar-gutter:stable]">
-          
-          {/* Messenger 'Start of Conversation' Profile Card */}
-          <div className="py-6 flex flex-col items-center text-center space-y-2 border-b border-slate-100 dark:border-[#21262D] mb-6">
-            <div className="relative w-20 h-20 rounded-full p-1 bg-gradient-to-tr from-brand via-indigo-400 to-purple-500 shadow-md">
-              <ProfileAvatar 
-                className="w-full h-full border-2 border-white dark:border-[#0D1117]"
-                iconClassName="w-10 h-10"
-              />
-            </div>
-
-            <h3 className="text-base font-black text-slate-900 dark:text-[#F0F6FC]">
-              {activeConv.name}
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-[#8D96A0] max-w-sm">
-              {activeConv.role}
-            </p>
-
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] text-[11px] font-medium text-slate-600 dark:text-[#8D96A0]">
-              <Lock className="w-3 h-3 text-emerald-500" />
-              <DecryptedText text="UniCampus End-to-End Encrypted" speed={40} maxIterations={10} animateOn="view" />
-            </div>
-
-            {activeConv.consultationHours && (
-              <div className="flex items-center gap-1.5 text-xs text-brand font-semibold pt-1">
-                <Calendar className="w-3.5 h-3.5" />
-                <span>{activeConv.consultationHours}</span>
-              </div>
-            )}
-          </div>
 
           {/* Message Stream or Empty State */}
           {activeConv.messages.length === 0 ? (
@@ -1216,10 +1161,10 @@ export default function MessagesPage() {
               <div className="w-14 h-14 rounded-full bg-brand/10 text-brand flex items-center justify-center mb-3">
                 <MessageSquare className="w-6 h-6" />
               </div>
-              <h4 className="text-sm font-bold text-slate-800 dark:text-[#F0F6FC]">
+              <h4 className="text-sm font-bold text-slate-800 dark:text-fg">
                 Start the conversation
               </h4>
-              <p className={`text-xs ${themeTokens.textMuted} max-w-xs mt-1`}>
+              <p className={`text-xs text-fg-muted max-w-xs mt-1`}>
                 Send a message, voice note, or shared file to begin collaborating with {activeConv.name}.
               </p>
             </div>
@@ -1227,7 +1172,7 @@ export default function MessagesPage() {
             <>
               {/* Date Separator */}
               <div className="flex items-center justify-center my-3">
-                <span className="px-3 py-1 rounded-full bg-slate-100 dark:bg-[#161B22] text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-[#6E747D]">
+                <span className="px-3 py-1 rounded-full bg-slate-100 dark:bg-surface-2 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-fg-muted">
                   Today
                 </span>
               </div>
@@ -1250,14 +1195,14 @@ export default function MessagesPage() {
                     {/* Contact Avatar for Incoming Messages */}
                     {!isMe && (
                       <ProfileAvatar 
-                        className="w-7 h-7 border border-slate-200 dark:border-[#30363D] mb-1"
+                        className="w-7 h-7 border border-slate-200 dark:border-line mb-1"
                         iconClassName="w-3.5 h-3.5"
                       />
                     )}
 
                     {/* Floating Reaction Bar + Reply + Pin Actions (Messenger Style) */}
                     {activeReactionMessageId === msg.id && (
-                      <div className={`absolute -top-9 z-20 flex items-center gap-1 px-2 py-1 rounded-full bg-white dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] shadow-lg  ${
+                      <div className={`absolute -top-9 z-20 flex items-center gap-1 px-2 py-1 rounded-full bg-white dark:bg-surface-2 border border-slate-200 dark:border-line shadow-lg  ${
                         isMe ? "right-0" : "left-9"
                       }`}>
                         {EMOJI_REACTIONS_LIST.map(emoji => (
@@ -1272,11 +1217,11 @@ export default function MessagesPage() {
                           </button>
                         ))}
                         
-                        <span className="w-px h-3.5 bg-slate-200 dark:bg-[#30363D] mx-0.5" />
+                        <span className="w-px h-3.5 bg-slate-200 dark:bg-border-line mx-0.5" />
 
                         <button
                           onClick={() => setReplyingToMessage(msg)}
-                          className="p-1 hover:bg-slate-100 dark:hover:bg-[#21262D] rounded-full text-slate-500 hover:text-brand cursor-pointer"
+                          className="p-1 hover:bg-slate-100 dark:hover:bg-surface-2 rounded-full text-slate-500 hover:text-brand cursor-pointer"
                           title="Reply"
                           aria-label="Reply to message"
                         >
@@ -1285,7 +1230,7 @@ export default function MessagesPage() {
 
                         <button
                           onClick={() => handleTogglePinMessage(msg.id)}
-                          className="p-1 hover:bg-slate-100 dark:hover:bg-[#21262D] rounded-full text-slate-500 hover:text-amber-500 cursor-pointer"
+                          className="p-1 hover:bg-slate-100 dark:hover:bg-surface-2 rounded-full text-slate-500 hover:text-amber-500 cursor-pointer"
                           title="Pin message"
                           aria-label="Pin message"
                         >
@@ -1299,10 +1244,10 @@ export default function MessagesPage() {
                   
                   {/* Quoted Message Preview if replying */}
                   {msg.replyTo && (
-                    <div className={`text-[11px] mb-1 px-3 py-1.5 rounded-xl border flex items-center gap-2 opacity-85 truncate ${
+                    <div className={`text-xs mb-1 px-3 py-1.5 rounded-xl border flex items-center gap-2 opacity-85 truncate ${
                       isMe 
                         ? "bg-slate-200/50 dark:bg-white/10 border-white/20 text-slate-900 dark:text-white" 
-                        : "bg-slate-200/50 dark:bg-[#161B22] border-slate-300 dark:border-[#30363D] text-slate-700 dark:text-[#8D96A0]"
+                        : "bg-slate-200/50 dark:bg-surface-2 border-slate-300 dark:border-line text-slate-700 dark:text-fg-muted"
                     }`}>
                       <Reply className="w-3 h-3 shrink-0 rotate-180" />
                       <span className="font-bold shrink-0">{msg.replyTo.sender}:</span>
@@ -1314,7 +1259,7 @@ export default function MessagesPage() {
                   {msg.imageAttachment && (
                     <div 
                       onClick={() => setLightboxImage(msg.imageAttachment || null)}
-                      className="relative w-64 h-48 rounded-2xl overflow-hidden mb-1.5 cursor-pointer border border-slate-200 dark:border-[#30363D] group/img shadow-sm"
+                      className="relative w-64 h-48 rounded-2xl overflow-hidden mb-1.5 cursor-pointer border border-slate-200 dark:border-line group/img shadow-sm"
                     >
                       <Image 
                         src={msg.imageAttachment} 
@@ -1334,7 +1279,7 @@ export default function MessagesPage() {
                     <div className={`px-4 py-3 rounded-[20px] shadow-2xs flex items-center gap-3 ${
                       isMe 
                         ? `${activeTheme.bubble} rounded-br-[4px]` 
-                        : "bg-slate-100 dark:bg-[#21262D] text-slate-900 dark:text-[#F0F6FC] rounded-bl-[4px] border border-slate-200/50 dark:border-[#30363D]/40"
+                        : "bg-slate-100 dark:bg-surface-2 text-slate-900 dark:text-fg rounded-bl-[4px] border border-slate-200/50 dark:border-line"
                     }`}>
                       <button 
                         onClick={() => setPlayingVoiceId(playingVoiceId === msg.id ? null : msg.id)}
@@ -1358,7 +1303,7 @@ export default function MessagesPage() {
                         ))}
                       </div>
 
-                      <span className="text-[11px] font-mono font-bold shrink-0 opacity-90">
+                      <span className="text-xs font-mono font-bold shrink-0 opacity-90">
                         {msg.voiceDuration || "0:14"}
                       </span>
                     </div>
@@ -1373,8 +1318,8 @@ export default function MessagesPage() {
                     /* Bubble Content: Regular Message Text */
                     <div className={`px-4 py-2.5 text-sm leading-relaxed shadow-2xs font-normal ${
                       isMe 
-                        ? `${activeTheme.bubble} rounded-[20px] rounded-br-[4px]`
-                        : "bg-slate-100 dark:bg-[#21262D] text-slate-900 dark:text-[#F0F6FC] rounded-[20px] rounded-bl-[4px] border border-slate-200/50 dark:border-[#30363D]/40"
+                        ? "bg-brand text-white rounded-[20px] rounded-br-[4px]"
+                        : "bg-surface-2 text-fg rounded-[20px] rounded-bl-[4px] border border-line"
                     }`}>
                       {msg.text}
                     </div>
@@ -1382,20 +1327,20 @@ export default function MessagesPage() {
 
                   {/* Attached Emoji Reactions Badge */}
                   {msg.reactions && msg.reactions.length > 0 && (
-                    <div className={`absolute -bottom-2.5 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-white dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] shadow-xs text-[11px] ${
+                    <div className={`absolute -bottom-2.5 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-white dark:bg-surface-2 border border-slate-200 dark:border-line shadow-xs text-xs ${
                       isMe ? "right-1" : "left-1"
                     }`}>
                       {msg.reactions.map((r, i) => (
                         <span key={i} className="flex items-center gap-0.5 font-bold">
                           <span>{r.emoji}</span>
-                          {r.count > 1 && <span className="text-[10px] text-slate-500 dark:text-[#8D96A0]">{r.count}</span>}
+                          {r.count > 1 && <span className="text-xs text-slate-500 dark:text-fg-muted">{r.count}</span>}
                         </span>
                       ))}
                     </div>
                   )}
 
                   {/* Message Time & Messenger 'Seen' Mini Avatar status */}
-                  <div className={`flex items-center gap-1.5 mt-1 px-1 text-[10px] text-slate-400 dark:text-[#6E747D] ${
+                  <div className={`flex items-center gap-1.5 mt-1 px-1 text-xs text-slate-400 dark:text-fg-muted ${
                     isMe ? "justify-end" : "justify-start"
                   }`}>
                     <span>{msg.time}</span>
@@ -1403,7 +1348,7 @@ export default function MessagesPage() {
                       isLastSent ? (
                         /* Messenger Iconic Mini Seen Avatar Indicator */
                         <ProfileAvatar 
-                          className="w-3.5 h-3.5 border border-white dark:border-[#0D1117] shrink-0"
+                          className="w-3.5 h-3.5 border border-white dark:border-surface shrink-0"
                           iconClassName="w-2 h-2"
                         />
                       ) : (
@@ -1422,11 +1367,11 @@ export default function MessagesPage() {
           {isTyping && (
             <div className="flex items-end gap-2">
               <ProfileAvatar 
-                className="w-7 h-7 border border-slate-200 dark:border-[#30363D] mb-1"
+                className="w-7 h-7 border border-slate-200 dark:border-line mb-1"
                 iconClassName="w-3.5 h-3.5"
               />
 
-              <div className="px-4 py-3 rounded-[20px] rounded-bl-[4px] bg-slate-100 dark:bg-[#21262D] flex items-center gap-1.5 shadow-2xs border border-slate-200/50 dark:border-[#30363D]/40">
+              <div className="px-4 py-3 rounded-[20px] rounded-bl-[4px] bg-slate-100 dark:bg-surface-2 flex items-center gap-1.5 shadow-2xs border border-slate-200/50 dark:border-line">
                 <span className="w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-500 animate-bounce [animation-delay:0ms]" />
                 <span className="w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-500 animate-bounce [animation-delay:150ms]" />
                 <span className="w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-500 animate-bounce [animation-delay:300ms]" />
@@ -1439,11 +1384,11 @@ export default function MessagesPage() {
 
         {/* Replying To Quote Bar (if active) */}
         {replyingToMessage && (
-          <div className="px-4 py-2 bg-slate-100 dark:bg-[#161B22] border-t border-slate-200 dark:border-[#30363D] flex items-center justify-between text-xs">
+          <div className="px-4 py-2 bg-slate-100 dark:bg-surface-2 border-t border-slate-200 dark:border-line flex items-center justify-between text-xs">
             <div className="flex items-center gap-2 truncate">
               <Reply className="w-3.5 h-3.5 text-brand shrink-0 rotate-180" />
               <span className="font-bold text-slate-900 dark:text-white">Replying to {replyingToMessage.sender === "me" ? "yourself" : activeConv.name}:</span>
-              <span className="text-slate-500 dark:text-[#8D96A0] truncate italic">{replyingToMessage.text}</span>
+              <span className="text-slate-500 dark:text-fg-muted truncate italic">{replyingToMessage.text}</span>
             </div>
             <button 
               onClick={() => setReplyingToMessage(null)}
@@ -1456,25 +1401,8 @@ export default function MessagesPage() {
           </div>
         )}
 
-        {/* Quick Suggestion Chips */}
-        <div className="px-4 py-1.5 bg-slate-50 dark:bg-[#0D1117] border-t border-slate-100 dark:border-[#21262D] flex items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-          <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-[#6E747D] shrink-0 mr-1">
-            Prompt:
-          </span>
-          {SUGGESTED_QUICK_CHIPS.map((chip, idx) => (
-            <button
-              key={idx}
-              onClick={() => handleSendMessage(chip)}
-              className="px-3 py-1 rounded-full text-xs font-medium border border-slate-200 dark:border-[#30363D] hover:border-brand text-slate-600 dark:text-[#8D96A0] hover:text-brand bg-white dark:bg-[#161B22] whitespace-nowrap transition-colors cursor-pointer shrink-0"
-            >
-              {chip}
-            </button>
-          ))}
-        </div>
-
         {/* MESSENGER INPUT COMPOSER / VOICE RECORDER */}
-        <div className="p-3 sm:p-4 bg-white dark:bg-[#0D1117] border-t border-slate-100 dark:border-[#21262D]">
+        <div className="p-3 sm:p-4 bg-white dark:bg-surface border-t border-slate-100 dark:border-line">
           {isRecordingVoice ? (
             /* Live Audio Recording State */
             <div className="flex items-center justify-between gap-3 max-w-5xl mx-auto p-1">
@@ -1498,7 +1426,7 @@ export default function MessagesPage() {
                 <button
                   type="button"
                   onClick={() => setIsRecordingVoice(false)}
-                  className="px-3 py-1.5 rounded-full text-xs font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-[#161B22] transition-colors cursor-pointer"
+                  className="px-3 py-1.5 rounded-full text-xs font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-surface-2 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1521,36 +1449,16 @@ export default function MessagesPage() {
               }}
               className="flex items-center gap-2.5 w-full max-w-5xl mx-auto"
             >
-              {/* Attachment Actions */}
-              <div className="flex items-center gap-0.5 shrink-0 text-brand">
-                <button
-                  type="button"
-                  onClick={handleSendPhotoMock}
-                  className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-[#161B22] text-slate-500 dark:text-[#8D96A0] hover:text-brand transition-colors cursor-pointer"
-                  title="Send photo"
-                  aria-label="Send photo"
-                >
-                  <ImageIcon className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSendMessage("Shared assignment PDF: 3NF_Review.pdf")}
-                  className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-[#161B22] text-slate-500 dark:text-[#8D96A0] hover:text-brand transition-colors cursor-pointer"
-                  title="Attach files & documents"
-                  aria-label="Attach files & documents"
-                >
-                  <Paperclip className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsRecordingVoice(true)}
-                  className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-[#161B22] text-slate-500 dark:text-[#8D96A0] hover:text-brand transition-colors cursor-pointer"
-                  title="Record voice note"
-                  aria-label="Record voice note"
-                >
-                  <Mic className="w-4 h-4" />
-                </button>
-              </div>
+              {/* Attachment Action (Clean single button) */}
+              <button
+                type="button"
+                onClick={() => handleSendMessage("Shared assignment PDF: 3NF_Review.pdf")}
+                className="p-2 rounded-full hover:bg-surface-2 text-fg-muted hover:text-brand transition-colors cursor-pointer shrink-0"
+                title="Attach files"
+                aria-label="Attach files"
+              >
+                <Paperclip className="w-4 h-4" />
+              </button>
 
               {/* Messenger Pill Input Field */}
               <div className="relative flex-1 min-w-0">
@@ -1560,12 +1468,12 @@ export default function MessagesPage() {
                   onChange={(e) => setInputText(e.target.value)}
                   placeholder={`Message ${activeConv.nickname || activeConv.name.split(" ")[0]}...`}
                   aria-label={`Message ${activeConv.nickname || activeConv.name.split(" ")[0]}`}
-                  className="w-full h-11 pl-4.5 pr-11 text-xs sm:text-sm font-medium rounded-full bg-slate-100 dark:bg-[#161B22] text-slate-900 dark:text-[#F0F6FC] placeholder:text-slate-400 dark:placeholder:text-[#6E747D] outline-none border border-slate-200/60 dark:border-[#30363D]/60 hover:border-slate-300 dark:hover:border-[#484F58] focus:border-brand dark:focus:border-brand focus:ring-2 focus:ring-brand/30 shadow-2xs transition-all"
+                  className="w-full h-11 pl-4.5 pr-11 text-xs sm:text-sm font-medium rounded-full bg-slate-100 dark:bg-surface-2 text-slate-900 dark:text-fg placeholder:text-slate-400 dark:placeholder:text-fg-muted outline-none border border-slate-200/60 dark:border-line hover:border-slate-300 dark:hover:border-line focus:border-brand dark:focus:border-brand focus:ring-2 focus:ring-brand/30 shadow-2xs transition-all"
                 />
                 <button
                   type="button"
                   onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 dark:text-[#6E747D] hover:text-brand transition-colors cursor-pointer rounded-full hover:bg-slate-200/50 dark:hover:bg-[#21262D]"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 dark:text-fg-muted hover:text-brand transition-colors cursor-pointer rounded-full hover:bg-slate-200/50 dark:hover:bg-surface-2"
                   title="Stickers & Emoji"
                   aria-label="Stickers & Emoji"
                 >
@@ -1574,8 +1482,8 @@ export default function MessagesPage() {
 
                 {/* Emoji Quick Picker Popup */}
                 {showEmojiPicker && (
-                  <div className="absolute right-0 bottom-14 z-30 p-2 rounded-2xl bg-white dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] shadow-xl flex gap-1">
-                    {["👍", "❤️", "🔥", "🎉", "👏", "💡", "📚", "✨"].map((em) => (
+                  <div className="absolute right-0 bottom-14 z-30 p-2 rounded-2xl bg-white dark:bg-surface-2 border border-slate-200 dark:border-line shadow-xl flex gap-1">
+                    {["👍", "❤️", "🔥", "🎉", "👏", "💡", "📚", "🎯"].map((em) => (
                       <button
                         key={em}
                         type="button"
@@ -1583,7 +1491,7 @@ export default function MessagesPage() {
                           setInputText(prev => prev + em);
                           setShowEmojiPicker(false);
                         }}
-                        className="p-1.5 hover:bg-slate-100 dark:hover:bg-[#21262D] rounded-lg text-lg cursor-pointer"
+                        className="p-1.5 hover:bg-slate-100 dark:hover:bg-surface-2 rounded-lg text-lg cursor-pointer"
                         aria-label={`Insert emoji ${em}`}
                       >
                         {em}
@@ -1593,8 +1501,8 @@ export default function MessagesPage() {
                 )}
               </div>
 
-              {/* DYNAMIC ACTION: Messenger Thumbs-Up 👍 vs Send Button with ClickSpark */}
-              <ClickSpark className="shrink-0 w-10 h-10" sparkColor={["#0084FF", "#1D5BD8", "#FF5E62", "#10B981"]} sparkCount={8} sparkSize={9}>
+              {/* Action Button: Send Message */}
+              
                 {inputText.trim().length === 0 ? (
                   <button
                     type="button"
@@ -1615,7 +1523,7 @@ export default function MessagesPage() {
                     <Send className="w-4 h-4 ml-0.5" />
                   </button>
                 )}
-              </ClickSpark>
+              
             </form>
           )}
         </div>
@@ -1659,20 +1567,20 @@ export default function MessagesPage() {
             }`}
           >
             <div className={`w-0.5 h-8 rounded-full transition-colors ${
-              isDraggingRight ? "bg-brand" : "bg-slate-300 dark:bg-[#30363D] group-hover:bg-brand"
+              isDraggingRight ? "bg-brand" : "bg-slate-300 dark:bg-border-line group-hover:bg-brand"
             }`} />
           </div>
 
-          <aside className="fixed inset-y-0 right-0 z-40 w-80 sm:w-[340px] xl:static xl:w-[var(--right-panel-width)] xl:z-auto shadow-2xl xl:shadow-none border-l border-slate-200 dark:border-[#30363D] bg-white dark:bg-[#0D1117] flex flex-col shrink-0 overflow-y-auto">
+          <aside className="fixed inset-y-0 right-0 z-40 w-80 sm:w-[340px] xl:static xl:w-[var(--right-panel-width)] xl:z-auto shadow-2xl xl:shadow-none border-l border-slate-200 dark:border-line bg-white dark:bg-surface flex flex-col shrink-0 overflow-y-auto">
             
             {/* Header */}
-            <div className="h-16 px-4 border-b border-slate-100 dark:border-[#21262D] flex items-center justify-between shrink-0">
-              <h3 className="text-sm font-extrabold text-slate-900 dark:text-[#F0F6FC]">
+            <div className="h-16 px-4 border-b border-slate-100 dark:border-line flex items-center justify-between shrink-0">
+              <h3 className="text-sm font-extrabold text-slate-900 dark:text-fg">
                 Chat Details
               </h3>
               <button
                 onClick={() => setIsDetailsOpen(false)}
-                className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-[#161B22] text-slate-500 cursor-pointer"
+                className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-surface-2 text-slate-500 cursor-pointer"
                 title="Close details"
                 aria-label="Close details"
               >
@@ -1685,7 +1593,7 @@ export default function MessagesPage() {
             {/* Contact Large Avatar & Identity */}
             <div className="flex flex-col items-center text-center pt-2">
               <ProfileAvatar 
-                className="w-20 h-20 border-2 border-slate-200 dark:border-[#30363D] mb-3"
+                className="w-20 h-20 border-2 border-slate-200 dark:border-line mb-3"
                 iconClassName="w-10 h-10"
               />
               
@@ -1697,7 +1605,7 @@ export default function MessagesPage() {
                     onChange={(e) => setNicknameInput(e.target.value)}
                     placeholder="Nickname..."
                     aria-label="Edit nickname"
-                    className="px-2 py-1 text-xs rounded-lg border border-brand bg-white dark:bg-[#161B22] text-slate-900 dark:text-white outline-none"
+                    className="px-2 py-1 text-xs rounded-lg border border-brand bg-white dark:bg-surface-2 text-slate-900 dark:text-white outline-none"
                     autoFocus
                   />
                   <button 
@@ -1711,7 +1619,7 @@ export default function MessagesPage() {
                 </div>
               ) : (
                 <div className="flex items-center gap-1.5">
-                  <h4 className="text-base font-black text-slate-900 dark:text-[#F0F6FC]">
+                  <h4 className="text-base font-black text-slate-900 dark:text-fg">
                     {activeConv.nickname || activeConv.name}
                   </h4>
                   <button 
@@ -1719,7 +1627,7 @@ export default function MessagesPage() {
                       setNicknameInput(activeConv.nickname || activeConv.name);
                       setIsEditingNickname(true);
                     }}
-                    className="p-1 text-slate-400 dark:text-[#6E747D] hover:text-brand cursor-pointer"
+                    className="p-1 text-slate-400 dark:text-fg-muted hover:text-brand cursor-pointer"
                     title="Edit nickname"
                     aria-label="Edit nickname"
                   >
@@ -1728,10 +1636,10 @@ export default function MessagesPage() {
                 </div>
               )}
 
-              <p className="text-xs text-slate-500 dark:text-[#8D96A0] mt-0.5 max-w-[240px]">
+              <p className="text-xs text-slate-500 dark:text-fg-muted mt-0.5 max-w-[240px]">
                 {activeConv.role}
               </p>
-              <span className="inline-flex items-center gap-1.5 mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              <span className="inline-flex items-center gap-1.5 mt-2 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                 {activeConv.isOnline ? "Active Now" : "Offline"}
               </span>
@@ -1740,69 +1648,69 @@ export default function MessagesPage() {
             {/* Messenger Circular Action Buttons: Profile, Mute, Search */}
             <div className="grid grid-cols-3 gap-2 px-2">
               <button 
-                className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-[#161B22] transition-colors cursor-pointer group"
+                className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-surface-2 transition-colors cursor-pointer group"
                 title="View academic profile"
                 aria-label="View academic profile"
               >
-                <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#161B22] group-hover:bg-brand/10 flex items-center justify-center text-slate-700 dark:text-[#F0F6FC] group-hover:text-brand transition-colors">
+                <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-surface-2 group-hover:bg-brand/10 flex items-center justify-center text-slate-700 dark:text-fg group-hover:text-brand transition-colors">
                   <User className="w-4 h-4" />
                 </div>
-                <span className="text-[11px] font-semibold text-slate-600 dark:text-[#8D96A0]">
+                <span className="text-xs font-semibold text-slate-600 dark:text-fg-muted">
                   Profile
                 </span>
               </button>
 
               <button 
                 onClick={handleToggleMute}
-                className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-[#161B22] transition-colors cursor-pointer group"
+                className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-surface-2 transition-colors cursor-pointer group"
                 title={activeConv.isMuted ? "Unmute notifications" : "Mute notifications"}
                 aria-label={activeConv.isMuted ? "Unmute notifications" : "Mute notifications"}
               >
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
                   activeConv.isMuted 
                     ? "bg-amber-500/15 text-amber-500" 
-                    : "bg-slate-100 dark:bg-[#161B22] group-hover:bg-brand/10 text-slate-700 dark:text-[#F0F6FC] group-hover:text-brand"
+                    : "bg-slate-100 dark:bg-surface-2 group-hover:bg-brand/10 text-slate-700 dark:text-fg group-hover:text-brand"
                 }`}>
                   {activeConv.isMuted ? <BellOff className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
                 </div>
-                <span className="text-[11px] font-semibold text-slate-600 dark:text-[#8D96A0]">
+                <span className="text-xs font-semibold text-slate-600 dark:text-fg-muted">
                   {activeConv.isMuted ? "Muted" : "Mute"}
                 </span>
               </button>
 
               <button 
                 onClick={() => setIsSearchInChatOpen(true)}
-                className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-[#161B22] transition-colors cursor-pointer group"
+                className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-surface-2 transition-colors cursor-pointer group"
                 title="Search conversation"
                 aria-label="Search conversation"
               >
-                <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#161B22] group-hover:bg-brand/10 flex items-center justify-center text-slate-700 dark:text-[#F0F6FC] group-hover:text-brand transition-colors">
+                <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-surface-2 group-hover:bg-brand/10 flex items-center justify-center text-slate-700 dark:text-fg group-hover:text-brand transition-colors">
                   <Search className="w-4 h-4" />
                 </div>
-                <span className="text-[11px] font-semibold text-slate-600 dark:text-[#8D96A0]">
+                <span className="text-xs font-semibold text-slate-600 dark:text-fg-muted">
                   Search
                 </span>
               </button>
             </div>
 
             {/* Accordion 1: Campus Chat Info */}
-            <div className="border border-slate-200 dark:border-[#30363D] rounded-2xl overflow-hidden">
+            <div className="border border-slate-200 dark:border-line rounded-2xl overflow-hidden">
               <button
                 onClick={() => setExpandedSection(expandedSection === "info" ? null : "info")}
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-[#161B22] flex items-center justify-between font-bold text-xs text-slate-800 dark:text-[#F0F6FC] cursor-pointer"
+                className="w-full px-4 py-3 bg-slate-50 dark:bg-surface-2 flex items-center justify-between font-bold text-xs text-slate-800 dark:text-fg cursor-pointer"
               >
                 <span>Academic & Campus Info</span>
                 {expandedSection === "info" ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
               </button>
 
               {expandedSection === "info" && (
-                <div className="p-3.5 space-y-3 bg-white dark:bg-[#0D1117] text-xs">
+                <div className="p-3.5 space-y-3 bg-white dark:bg-surface text-xs">
                   {activeConv.consultationHours && (
                     <div>
-                      <div className="text-[10px] uppercase font-bold text-slate-400 dark:text-[#6E747D]">
+                      <div className="text-xs uppercase font-bold text-slate-400 dark:text-fg-muted">
                         Consultation Schedule
                       </div>
-                      <div className="text-slate-800 dark:text-[#F0F6FC] font-medium mt-0.5">
+                      <div className="text-slate-800 dark:text-fg font-medium mt-0.5">
                         {activeConv.consultationHours}
                       </div>
                     </div>
@@ -1810,10 +1718,10 @@ export default function MessagesPage() {
 
                   {activeConv.cabin && (
                     <div>
-                      <div className="text-[10px] uppercase font-bold text-slate-400 dark:text-[#6E747D]">
+                      <div className="text-xs uppercase font-bold text-slate-400 dark:text-fg-muted">
                         Faculty Cabin / Office
                       </div>
-                      <div className="text-slate-800 dark:text-[#F0F6FC] font-medium mt-0.5">
+                      <div className="text-slate-800 dark:text-fg font-medium mt-0.5">
                         {activeConv.cabin}
                       </div>
                     </div>
@@ -1821,7 +1729,7 @@ export default function MessagesPage() {
 
                   {activeConv.email && (
                     <div>
-                      <div className="text-[10px] uppercase font-bold text-slate-400 dark:text-[#6E747D]">
+                      <div className="text-xs uppercase font-bold text-slate-400 dark:text-fg-muted">
                         University Email
                       </div>
                       <a 
@@ -1838,20 +1746,20 @@ export default function MessagesPage() {
             </div>
 
             {/* Accordion 2: Messenger Customization (Theme & Quick Emoji) */}
-            <div className="border border-slate-200 dark:border-[#30363D] rounded-2xl overflow-hidden">
+            <div className="border border-slate-200 dark:border-line rounded-2xl overflow-hidden">
               <button
                 onClick={() => setExpandedSection(expandedSection === "customize" ? null : "customize")}
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-[#161B22] flex items-center justify-between font-bold text-xs text-slate-800 dark:text-[#F0F6FC] cursor-pointer"
+                className="w-full px-4 py-3 bg-slate-50 dark:bg-surface-2 flex items-center justify-between font-bold text-xs text-slate-800 dark:text-fg cursor-pointer"
               >
                 <span>Customize Chat</span>
                 {expandedSection === "customize" ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
               </button>
 
               {expandedSection === "customize" && (
-                <div className="p-3.5 space-y-4 bg-white dark:bg-[#0D1117]">
+                <div className="p-3.5 space-y-4 bg-white dark:bg-surface">
                   {/* Theme Gradient Selector */}
                   <div>
-                    <label className="text-[11px] font-bold text-slate-500 dark:text-[#8D96A0] mb-2 block">
+                    <label className="text-xs font-bold text-slate-500 dark:text-fg-muted mb-2 block">
                       Chat Gradient Theme
                     </label>
                     <div className="grid grid-cols-2 gap-2">
@@ -1865,11 +1773,11 @@ export default function MessagesPage() {
                             className={`p-2 rounded-xl border flex items-center gap-2 cursor-pointer transition-all ${
                               isCurrent 
                                 ? "border-brand bg-brand/5 dark:bg-brand/10 ring-1 ring-brand" 
-                                : "border-slate-200 dark:border-[#30363D] hover:bg-slate-50 dark:hover:bg-[#161B22]"
+                                : "border-slate-200 dark:border-line hover:bg-slate-50 dark:hover:bg-surface-2"
                             }`}
                           >
                             <span className={`w-4 h-4 rounded-full bg-gradient-to-tr ${t.ring} shadow-xs shrink-0`} />
-                            <span className="text-[11px] font-bold truncate text-slate-800 dark:text-[#F0F6FC]">
+                            <span className="text-xs font-bold truncate text-slate-800 dark:text-fg">
                               {t.label}
                             </span>
                           </button>
@@ -1880,7 +1788,7 @@ export default function MessagesPage() {
 
                   {/* Change Quick Emoji */}
                   <div>
-                    <label className="text-[11px] font-bold text-slate-500 dark:text-[#8D96A0] mb-2 block">
+                    <label className="text-xs font-bold text-slate-500 dark:text-fg-muted mb-2 block">
                       Quick Reaction Emoji
                     </label>
                     <div className="flex items-center gap-2">
@@ -1891,7 +1799,7 @@ export default function MessagesPage() {
                           className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg transition-transform cursor-pointer ${
                             activeConv.quickEmoji === emoji 
                               ? "bg-brand/15 ring-2 ring-brand scale-110" 
-                              : "bg-slate-100 hover:bg-slate-200 dark:bg-[#161B22] dark:hover:bg-[#21262D]"
+                              : "bg-slate-100 hover:bg-slate-200 dark:bg-surface-2 dark:hover:bg-surface-2"
                           }`}
                         >
                           {emoji}
@@ -1904,34 +1812,34 @@ export default function MessagesPage() {
             </div>
 
             {/* Accordion 3: Shared Files & Documents */}
-            <div className="border border-slate-200 dark:border-[#30363D] rounded-2xl overflow-hidden">
+            <div className="border border-slate-200 dark:border-line rounded-2xl overflow-hidden">
               <button
                 onClick={() => setExpandedSection(expandedSection === "files" ? null : "files")}
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-[#161B22] flex items-center justify-between font-bold text-xs text-slate-800 dark:text-[#F0F6FC] cursor-pointer"
+                className="w-full px-4 py-3 bg-slate-50 dark:bg-surface-2 flex items-center justify-between font-bold text-xs text-slate-800 dark:text-fg cursor-pointer"
               >
                 <span>Shared Files & Documents</span>
                 {expandedSection === "files" ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
               </button>
 
               {expandedSection === "files" && (
-                <div className="p-3 bg-white dark:bg-[#0D1117] space-y-2">
+                <div className="p-3 bg-white dark:bg-surface space-y-2">
                   {(!activeConv.sharedFiles || activeConv.sharedFiles.length === 0) ? (
-                    <p className="text-xs text-slate-400 dark:text-[#6E747D] p-2 text-center">No files shared yet.</p>
+                    <p className="text-xs text-slate-400 dark:text-fg-muted p-2 text-center">No files shared yet.</p>
                   ) : (
                     activeConv.sharedFiles.map(file => (
                       <div 
                         key={file.id}
-                        className="p-2 rounded-xl bg-slate-50 dark:bg-[#161B22] border border-slate-200/80 dark:border-[#30363D] flex items-center justify-between gap-2"
+                        className="p-2 rounded-xl bg-slate-50 dark:bg-surface-2 border border-slate-200/80 dark:border-line flex items-center justify-between gap-2"
                       >
                         <div className="flex items-center gap-2 min-w-0">
                           <div className="w-8 h-8 rounded-lg bg-red-500/10 text-red-500 flex items-center justify-center shrink-0">
                             <FileText className="w-4 h-4" />
                           </div>
                           <div className="min-w-0">
-                            <p className="text-xs font-bold text-slate-800 dark:text-[#F0F6FC] truncate">
+                            <p className="text-xs font-bold text-slate-800 dark:text-fg truncate">
                               {file.name}
                             </p>
-                            <p className="text-[10px] text-slate-400 dark:text-[#6E747D] font-mono">
+                            <p className="text-xs text-slate-400 dark:text-fg-muted font-mono">
                               {file.size} • {file.date}
                             </p>
                           </div>
@@ -1939,7 +1847,7 @@ export default function MessagesPage() {
 
                         <button 
                           onClick={() => alert(`Downloading ${file.name}...`)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-brand hover:bg-white dark:hover:bg-[#21262D] transition-colors cursor-pointer shrink-0"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-brand hover:bg-white dark:hover:bg-surface-2 transition-colors cursor-pointer shrink-0"
                           title="Download document"
                           aria-label={`Download document ${file.name}`}
                         >
@@ -1953,19 +1861,19 @@ export default function MessagesPage() {
             </div>
 
             {/* Accordion 4: Shared Photos Gallery */}
-            <div className="border border-slate-200 dark:border-[#30363D] rounded-2xl overflow-hidden">
+            <div className="border border-slate-200 dark:border-line rounded-2xl overflow-hidden">
               <button
                 onClick={() => setExpandedSection(expandedSection === "photos" ? null : "photos")}
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-[#161B22] flex items-center justify-between font-bold text-xs text-slate-800 dark:text-[#F0F6FC] cursor-pointer"
+                className="w-full px-4 py-3 bg-slate-50 dark:bg-surface-2 flex items-center justify-between font-bold text-xs text-slate-800 dark:text-fg cursor-pointer"
               >
                 <span>Shared Media & Photos</span>
                 {expandedSection === "photos" ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
               </button>
 
               {expandedSection === "photos" && (
-                <div className="p-3 bg-white dark:bg-[#0D1117]">
+                <div className="p-3 bg-white dark:bg-surface">
                   {(!activeConv.sharedPhotos || activeConv.sharedPhotos.length === 0) ? (
-                    <p className="text-xs text-slate-400 dark:text-[#6E747D] p-2 text-center">No photos shared.</p>
+                    <p className="text-xs text-slate-400 dark:text-fg-muted p-2 text-center">No photos shared.</p>
                   ) : (
                     <div className="grid grid-cols-2 gap-2">
                       {activeConv.sharedPhotos.map((photo, i) => (
@@ -1973,7 +1881,7 @@ export default function MessagesPage() {
                           type="button"
                           key={i} 
                           onClick={() => setLightboxImage(photo)}
-                          className="relative h-24 rounded-xl overflow-hidden border border-slate-200 dark:border-[#30363D] cursor-pointer hover:opacity-90 transition-opacity w-full block text-left"
+                          className="relative h-24 rounded-xl overflow-hidden border border-slate-200 dark:border-line cursor-pointer hover:opacity-90 transition-opacity w-full block text-left"
                           aria-label={`View photo ${i + 1}`}
                         >
                           <Image src={photo} alt="Shared" fill sizes="120px" className="object-cover" />
@@ -1986,24 +1894,24 @@ export default function MessagesPage() {
             </div>
 
             {/* Accordion 5: Privacy & Verification */}
-            <div className="border border-slate-200 dark:border-[#30363D] rounded-2xl overflow-hidden">
+            <div className="border border-slate-200 dark:border-line rounded-2xl overflow-hidden">
               <button
                 onClick={() => setExpandedSection(expandedSection === "privacy" ? null : "privacy")}
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-[#161B22] flex items-center justify-between font-bold text-xs text-slate-800 dark:text-[#F0F6FC] cursor-pointer"
+                className="w-full px-4 py-3 bg-slate-50 dark:bg-surface-2 flex items-center justify-between font-bold text-xs text-slate-800 dark:text-fg cursor-pointer"
               >
                 <span>Privacy & Verification</span>
                 {expandedSection === "privacy" ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
               </button>
 
               {expandedSection === "privacy" && (
-                <div className="p-3.5 space-y-3 bg-white dark:bg-[#0D1117] text-xs">
-                  <div className="flex items-start gap-2.5 text-slate-600 dark:text-[#8D96A0]">
+                <div className="p-3.5 space-y-3 bg-white dark:bg-surface text-xs">
+                  <div className="flex items-start gap-2.5 text-slate-600 dark:text-fg-muted">
                     <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                     <span>Messages and calls are end-to-end encrypted with UniCampus 256-bit Security.</span>
                   </div>
 
-                  <div className="pt-2 border-t border-slate-100 dark:border-[#21262D] flex items-center justify-between">
-                    <span className="text-xs font-semibold text-slate-700 dark:text-[#F0F6FC]">Report Academic Issue</span>
+                  <div className="pt-2 border-t border-slate-100 dark:border-line flex items-center justify-between">
+                    <span className="text-xs font-semibold text-slate-700 dark:text-fg">Report Academic Issue</span>
                     <button 
                       onClick={() => alert("Report submitted to Campus Integrity Desk.")}
                       className="text-xs text-red-500 hover:underline font-bold cursor-pointer"
@@ -2059,12 +1967,12 @@ export default function MessagesPage() {
       {/* ========================================================= */}
       {isNoteModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-          <div className="w-full max-w-sm rounded-3xl bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] p-5 shadow-2xl">
+          <div className="w-full max-w-sm rounded-3xl bg-white dark:bg-surface border border-slate-200 dark:border-line p-5 shadow-2xl">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-black text-slate-900 dark:text-white">Share a note</h3>
               <button 
                 onClick={() => setIsNoteModalOpen(false)} 
-                className="text-slate-400 dark:text-[#6E747D] hover:text-slate-700 dark:hover:text-white cursor-pointer"
+                className="text-slate-400 dark:text-fg-muted hover:text-slate-700 dark:hover:text-white cursor-pointer"
                 title="Close dialog"
                 aria-label="Close dialog"
               >
@@ -2077,7 +1985,7 @@ export default function MessagesPage() {
                 className="w-16 h-16 border-2 border-brand mb-2"
                 iconClassName="w-8 h-8"
               />
-              <p className={`text-[11px] ${themeTokens.textMuted}`}>Your note will be visible to classmates for 24 hours.</p>
+              <p className={`text-xs text-fg-muted`}>Your note will be visible to classmates for 24 hours.</p>
             </div>
 
             <input 
@@ -2087,7 +1995,7 @@ export default function MessagesPage() {
               onChange={(e) => setUserStatusNote(e.target.value)}
               placeholder="Share what's on your mind..."
               aria-label="Share what's on your mind"
-              className="w-full px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-[#161B22] text-xs text-slate-900 dark:text-white outline-none border border-transparent focus:border-brand focus:ring-2 focus:ring-brand/40 mb-3"
+              className="w-full px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-surface-2 text-xs text-slate-900 dark:text-white outline-none border border-transparent focus:border-brand focus:ring-2 focus:ring-brand/40 mb-3"
             />
 
             <div className="flex items-center gap-1.5 flex-wrap mb-4">
@@ -2095,7 +2003,7 @@ export default function MessagesPage() {
                 <button
                   key={idx}
                   onClick={() => setUserStatusNote(preset)}
-                  className="text-[10px] px-2 py-1 rounded-lg bg-slate-100 dark:bg-[#161B22] text-slate-600 dark:text-[#8D96A0] hover:text-brand cursor-pointer"
+                  className="text-xs px-2 py-1 rounded-lg bg-slate-100 dark:bg-surface-2 text-slate-600 dark:text-fg-muted hover:text-brand cursor-pointer"
                 >
                   {preset}
                 </button>
@@ -2104,7 +2012,7 @@ export default function MessagesPage() {
 
             <button 
               onClick={() => setIsNoteModalOpen(false)}
-              className={`w-full py-2.5 ${themeTokens.btnPrimary} text-xs font-bold cursor-pointer`}
+              className={`w-full py-2.5 bg-brand text-white hover:bg-brand-hover text-xs font-bold cursor-pointer`}
             >
               Share Note
             </button>
@@ -2117,12 +2025,12 @@ export default function MessagesPage() {
       {/* ========================================================= */}
       {isNewChatModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-3xl bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] p-5 shadow-2xl">
+          <div className="w-full max-w-md rounded-3xl bg-white dark:bg-surface border border-slate-200 dark:border-line p-5 shadow-2xl">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-black text-slate-900 dark:text-white">New Message</h3>
               <button 
                 onClick={() => setIsNewChatModalOpen(false)} 
-                className="text-slate-400 dark:text-[#6E747D] hover:text-slate-700 dark:hover:text-white cursor-pointer"
+                className="text-slate-400 dark:text-fg-muted hover:text-slate-700 dark:hover:text-white cursor-pointer"
                 title="Close dialog"
                 aria-label="Close dialog"
               >
@@ -2131,17 +2039,17 @@ export default function MessagesPage() {
             </div>
 
             <div className="relative mb-3">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-[#6E747D]" />
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-fg-muted" />
               <input 
                 type="text"
                 placeholder="To: Type a student, teacher, or department..."
                 aria-label="To: Type a student, teacher, or department"
-                className="w-full pl-9 pr-3 py-2 text-xs rounded-full bg-slate-100 dark:bg-[#161B22] text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-brand/40"
+                className="w-full pl-9 pr-3 py-2 text-xs rounded-full bg-slate-100 dark:bg-surface-2 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-brand/40"
               />
             </div>
 
             <div className="max-h-60 overflow-y-auto space-y-1">
-              <p className="text-[10px] uppercase font-bold text-slate-400 dark:text-[#6E747D] px-1 mb-1">Suggested Contacts</p>
+              <p className="text-xs uppercase font-bold text-slate-400 dark:text-fg-muted px-1 mb-1">Suggested Contacts</p>
               {conversations.map(c => (
                 <button 
                   type="button"
@@ -2151,15 +2059,15 @@ export default function MessagesPage() {
                     setIsNewChatModalOpen(false);
                   }}
                   aria-label={`Start conversation with ${c.name}`}
-                  className="w-full text-left p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-[#161B22] flex items-center gap-2.5 cursor-pointer"
+                  className="w-full text-left p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-surface-2 flex items-center gap-2.5 cursor-pointer"
                 >
                   <ProfileAvatar 
-                    className="w-8 h-8 border border-slate-200 dark:border-[#30363D]"
+                    className="w-8 h-8 border border-slate-200 dark:border-line"
                     iconClassName="w-4 h-4"
                   />
                   <div className="min-w-0">
                     <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{c.name}</p>
-                    <p className="text-[10px] text-slate-400 dark:text-[#6E747D] truncate">{c.role}</p>
+                    <p className="text-xs text-slate-400 dark:text-fg-muted truncate">{c.role}</p>
                   </div>
                 </button>
               ))}
@@ -2172,13 +2080,13 @@ export default function MessagesPage() {
       {/* SIMULATED MESSENGER AUDIO / VIDEO CALL MODAL              */}
       {/* ========================================================= */}
       {activeCallType && (
-        <div className={`fixed inset-0 z-50 flex items-center justify-center ${themeTokens.modalOverlay} p-4`}>
-          <div className={`w-full max-w-xl rounded-3xl ${themeTokens.modalBox} overflow-hidden text-center relative shadow-2xl flex flex-col`}>
+        <div className={`fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4`}>
+          <div className={`w-full max-w-xl rounded-3xl bg-surface border border-line overflow-hidden text-center relative shadow-2xl flex flex-col`}>
             
             {/* Top Bar */}
             <div className="p-4 flex items-center justify-between z-10">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-mono font-bold">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                <span className="w-2 h-2 rounded-full bg-emerald-500" />
                 <span>Messenger {activeCallType === "video" ? "Video Call" : "Audio Call"} • {formatTimer(callDuration)}</span>
               </div>
 
@@ -2205,38 +2113,37 @@ export default function MessagesPage() {
                 ) : (
                   <div className="flex flex-col items-center">
                     <ProfileAvatar className="w-20 h-20 border-2 border-brand mb-2" iconClassName="w-10 h-10" />
-                    <p className={`text-xs ${themeTokens.textMuted}`}>Camera is paused</p>
+                    <p className={`text-xs text-fg-muted`}>Camera is paused</p>
                   </div>
                 )}
 
                 {/* Picture in Picture Self-View */}
                 <div className="absolute top-3 right-3 w-28 h-20 rounded-2xl overflow-hidden border-2 border-white/40 shadow-lg bg-slate-800 flex items-center justify-center">
                   <ProfileAvatar className="w-12 h-12" iconClassName="w-6 h-6" />
-                  <span className="absolute bottom-1 right-1 text-[8px] bg-black/70 px-1 rounded text-white font-mono">You</span>
+                  <span className="absolute bottom-1 right-1 text-xs bg-black/70 px-1 rounded text-white font-mono">You</span>
                 </div>
               </div>
             ) : (
               <div className="py-12">
                 <div className="relative w-28 h-28 mx-auto mb-4">
-                  <div className="absolute inset-0 rounded-full bg-brand/30 animate-ping" />
                   <ProfileAvatar className="w-full h-full border-4 border-brand relative z-10" iconClassName="w-14 h-14" />
                 </div>
 
-                <h3 className="text-xl font-black mb-1 text-slate-900 dark:text-[#F0F6FC]">
+                <h3 className="text-xl font-black mb-1 text-slate-900 dark:text-fg">
                   {activeConv.name}
                 </h3>
-                <p className={`text-xs ${themeTokens.textMuted} font-mono`}>
+                <p className={`text-xs text-fg-muted font-mono`}>
                   Connected • VoIP 256-bit Encrypted
                 </p>
               </div>
             )}
 
             {/* Bottom Call Control Action Bar */}
-            <div className={`p-4 bg-slate-50 dark:bg-[#161B22] border-t ${themeTokens.border} flex items-center justify-center gap-4`}>
+            <div className={`p-4 bg-slate-50 dark:bg-surface-2 border-t border-line flex items-center justify-center gap-4`}>
               <button 
                 onClick={() => setIsCallMuted(!isCallMuted)}
                 className={`w-12 h-12 rounded-full flex items-center justify-center cursor-pointer transition-colors ${
-                  isCallMuted ? "bg-red-500/20 text-red-500" : "bg-white dark:bg-[#21262D] hover:bg-slate-100 dark:hover:bg-[#30363D] text-slate-700 dark:text-white border border-slate-200 dark:border-[#30363D]"
+                  isCallMuted ? "bg-red-500/20 text-red-500" : "bg-white dark:bg-surface-2 hover:bg-slate-100 dark:hover:bg-surface-2 text-slate-700 dark:text-white border border-slate-200 dark:border-line"
                 }`}
                 title={isCallMuted ? "Unmute mic" : "Mute mic"}
                 aria-label={isCallMuted ? "Unmute microphone" : "Mute microphone"}
@@ -2249,7 +2156,7 @@ export default function MessagesPage() {
                   <button 
                     onClick={() => setIsCameraOff(!isCameraOff)}
                     className={`w-12 h-12 rounded-full flex items-center justify-center cursor-pointer transition-colors ${
-                      isCameraOff ? "bg-red-500/20 text-red-500" : "bg-white dark:bg-[#21262D] hover:bg-slate-100 dark:hover:bg-[#30363D] text-slate-700 dark:text-white border border-slate-200 dark:border-[#30363D]"
+                      isCameraOff ? "bg-red-500/20 text-red-500" : "bg-white dark:bg-surface-2 hover:bg-slate-100 dark:hover:bg-surface-2 text-slate-700 dark:text-white border border-slate-200 dark:border-line"
                     }`}
                     title={isCameraOff ? "Turn camera on" : "Turn camera off"}
                     aria-label={isCameraOff ? "Turn camera on" : "Turn camera off"}
@@ -2260,7 +2167,7 @@ export default function MessagesPage() {
                   <button 
                     onClick={() => setIsScreenSharing(!isScreenSharing)}
                     className={`w-12 h-12 rounded-full flex items-center justify-center cursor-pointer transition-colors ${
-                      isScreenSharing ? "bg-brand text-white" : "bg-white dark:bg-[#21262D] hover:bg-slate-100 dark:hover:bg-[#30363D] text-slate-700 dark:text-white border border-slate-200 dark:border-[#30363D]"
+                      isScreenSharing ? "bg-brand text-white" : "bg-white dark:bg-surface-2 hover:bg-slate-100 dark:hover:bg-surface-2 text-slate-700 dark:text-white border border-slate-200 dark:border-line"
                     }`}
                     title="Share screen"
                     aria-label="Share screen"

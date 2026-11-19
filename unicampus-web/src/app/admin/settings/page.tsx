@@ -26,9 +26,6 @@ import {
 } from "lucide-react";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { SuperAdminGate } from "@/components/admin/SuperAdminGate";
-import { themeTokens } from "@/lib/theme";
-import ClickSpark from "@/components/bits/ClickSpark";
-import DecryptedText from "@/components/bits/DecryptedText";
 
 type SettingsTab = "appearance" | "security" | "database" | "api" | "maintenance";
 
@@ -45,7 +42,7 @@ export default function AdminSettingsPage() {
   const [requireMFA, setRequireMFA] = useState(true);
   const [sessionTimeoutMinutes, setSessionTimeoutMinutes] = useState(45);
   const [autoBackupDaily, setAutoBackupDaily] = useState(true);
-  const [accentColor, setAccentColor] = useState("#1D5BD8");
+  const [accentColor, setAccentColor] = useState("#605BFF");
   const [highDensityTable, setHighDensityTable] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
 
@@ -61,7 +58,7 @@ export default function AdminSettingsPage() {
   const tabs = [
     { id: "appearance", label: "Appearance & Theme", icon: Monitor, badge: null },
     { id: "security", label: "Security & Auth Gate", icon: ShieldCheck, badge: "Active" },
-    { id: "database", label: "Supabase & Storage", icon: Database, badge: "Connected" },
+    { id: "database", label: "Database & Storage", icon: Database, badge: "Connected" },
     { id: "api", label: "API Keys & Webhooks", icon: Key, badge: null },
     { id: "maintenance", label: "Maintenance & System", icon: ServerCrash, badge: maintenanceMode ? "ACTIVE" : null },
   ] as const;
@@ -70,19 +67,19 @@ export default function AdminSettingsPage() {
     <SuperAdminGate featureName="System Settings & Infrastructure">
       <div className="space-y-6 w-full pb-16">
       {/* Software Page Header */}
-      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 ${themeTokens.card}`}>
+      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-[20px] bg-surface border border-line`}>
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="text-[11px] font-mono tracking-wider uppercase text-emerald-600 dark:text-emerald-400 font-bold">
-              System Control Console
+            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 font-bold">
+              System Configuration
             </span>
           </div>
-          <h1 className="text-2xl font-black text-slate-900 dark:text-[#F0F6FC] tracking-tight">
+          <h1 className="text-2xl font-black text-slate-900 dark:text-fg tracking-tight">
             Administrative Settings &amp; Configuration
           </h1>
-          <p className={themeTokens.subheading}>
-            Manage UI design tokens, Supabase database bindings, role policies, and system runtime controls.
+          <p className={"text-xs text-fg-muted mt-1"}>
+            Configure institutional branding, data storage connections, role policies, and system controls.
           </p>
         </div>
 
@@ -93,23 +90,23 @@ export default function AdminSettingsPage() {
               Settings Synced
             </div>
           )}
-          <ClickSpark sparkColor="#1D5BD8" sparkCount={8} sparkRadius={22}>
+          
             <button
               onClick={handleSave}
-              className="bg-brand hover:bg-brand-hover dark:bg-[#2563EB] dark:hover:bg-[#5752E5] text-white font-bold rounded-2xl px-5 py-2.5 flex items-center gap-2 text-xs cursor-pointer shadow-[0_4px_16px_rgba(29, 91, 216,0.30)] hover:shadow-[0_6px_20px_rgba(29, 91, 216,0.40)] transition-all active:scale-[0.98]"
+              className="bg-brand hover:bg-brand-hover dark:bg-brand dark:hover:bg-brand-hover text-white font-bold rounded-2xl px-5 py-2.5 flex items-center gap-2 text-xs cursor-pointer shadow-[0_4px_16px_rgba(29, 91, 216,0.30)] hover:shadow-[0_6px_20px_rgba(29, 91, 216,0.40)] transition-all active:scale-[0.98]"
             >
               <Save className="w-4 h-4" />
               Apply &amp; Save
             </button>
-          </ClickSpark>
+          
         </div>
       </div>
 
       {/* Main Settings Grid */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
         {/* Navigation Sidebar */}
-        <div className={`md:col-span-4 lg:col-span-3 space-y-1.5 p-3 ${themeTokens.card}`}>
-          <div className={`px-3 py-2 text-[10px] font-bold uppercase tracking-wider font-mono ${themeTokens.textMuted}`}>
+        <div className={`md:col-span-4 lg:col-span-3 space-y-1.5 p-3 rounded-[20px] bg-surface border border-line`}>
+          <div className={`px-3 py-2 text-xs font-bold font-mono text-fg-muted`}>
             Navigation Sections
           </div>
           {tabs.map((tab) => {
@@ -122,25 +119,25 @@ export default function AdminSettingsPage() {
                 className={`relative w-full text-left px-3.5 py-3 rounded-xl text-xs font-bold flex items-center justify-between transition-colors cursor-pointer z-10 ${
                   isActive
                     ? "text-slate-900 dark:text-white"
-                    : "text-slate-600 hover:text-slate-900 dark:text-[#8D96A0] dark:hover:text-white hover:bg-slate-100/50 dark:hover:bg-[#161B22]/50"
+                    : "text-slate-600 hover:text-slate-900 dark:text-fg-muted dark:hover:text-white hover:bg-slate-100/50 dark:hover:bg-surface-2/50"
                 }`}
               >
                 {isActive && (
                   <motion.div
                     layoutId="admin-settings-tab"
-                    className="absolute inset-0 bg-white dark:bg-[#161B22] border border-slate-200/80 dark:border-[#30363D] shadow-sm rounded-xl -z-10"
+                    className="absolute inset-0 bg-white dark:bg-surface-2 border border-slate-200/80 dark:border-line shadow-sm rounded-xl -z-10"
                     transition={{ type: "spring", stiffness: 450, damping: 32 }}
                   />
                 )}
                 <div className="flex items-center gap-2.5">
-                  <Icon className={`w-4 h-4 ${isActive ? "text-brand" : "text-slate-400 dark:text-[#6E747D]"}`} />
+                  <Icon className={`w-4 h-4 ${isActive ? "text-brand" : "text-slate-400 dark:text-fg-muted"}`} />
                   <span>{tab.label}</span>
                 </div>
                 {tab.badge && (
                   <span
-                    className={`text-[10px] font-mono px-2 py-0.5 rounded-full uppercase ${
+                    className={`text-xs font-mono px-2 py-0.5 rounded-full ${
                       tab.id === "maintenance" && maintenanceMode
-                        ? "bg-rose-500/20 text-rose-500 dark:text-rose-400 border border-rose-500/40 animate-pulse font-extrabold"
+                        ? "bg-rose-500/20 text-rose-500 dark:text-rose-400 border border-rose-500/40 font-extrabold"
                         : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
                     }`}
                   >
@@ -151,10 +148,10 @@ export default function AdminSettingsPage() {
             );
           })}
 
-          <div className={`pt-4 mt-4 border-t ${themeTokens.border} px-3`}>
-            <div className={`flex items-center gap-2 text-[11px] font-mono ${themeTokens.textMuted}`}>
+          <div className={`pt-4 mt-4 border-t border-line px-3`}>
+            <div className={`flex items-center gap-2 text-xs font-mono text-fg-muted`}>
               <Cpu className="w-3.5 h-3.5" />
-              <span>Core Engine v1.0.0-prod</span>
+              <span>Campus Engine · Spring 2026</span>
             </div>
           </div>
         </div>
@@ -174,14 +171,14 @@ export default function AdminSettingsPage() {
           {activeTab === "appearance" && (
             <div className="space-y-6">
               {/* Theme Preference */}
-              <div className={`p-6 space-y-5 ${themeTokens.card}`}>
+              <div className={`p-6 space-y-5 rounded-[20px] bg-surface border border-line`}>
                 <div>
-                  <h3 className={`text-base font-bold flex items-center gap-2 ${themeTokens.textPrimary}`}>
+                  <h3 className={`text-base font-bold flex items-center gap-2 text-fg`}>
                     <Monitor className="w-4 h-4 text-brand" />
                     Desktop Interface Color Theme
                   </h3>
-                  <p className={themeTokens.subheading}>
-                    Select your preferred software display theme. Dark mode is calibrated to the GitHub theme standard: Canvas #010409, Surface #0D1117, Subtitle #6E747D, Border #30363D.
+                  <p className={"text-xs text-fg-muted mt-1"}>
+                    Choose between Dark and Light mode. Calibrated for low eye strain during long academic sessions.
                   </p>
                 </div>
 
@@ -190,19 +187,19 @@ export default function AdminSettingsPage() {
                     onClick={(e) => executeThemeTransition({ theme: "dark", event: e, setTheme, currentTheme: theme })}
                     className={`p-4 rounded-xl border text-left flex flex-col gap-3 transition-all cursor-pointer ${
                       theme === "dark"
-                        ? `border-brand ring-1 ring-brand/40 ${themeTokens.tabActive}`
-                        : `${themeTokens.cardRecessed} hover:border-slate-400 dark:hover:border-[#6E747D]`
+                        ? `border-brand ring-1 ring-brand/40 ${"bg-surface text-fg font-bold shadow-xs rounded-lg px-3 py-1.5 text-xs transition-colors"}`
+                        : `rounded-xl bg-canvas border border-line hover:border-slate-400 dark:hover:border-fg-muted`
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-brand border ${themeTokens.surface} ${themeTokens.border}`}>
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center text-brand border bg-surface border-line">
                         <Moon className="w-4 h-4" />
                       </div>
                       {theme === "dark" && <Check className="w-4 h-4 text-brand" />}
                     </div>
                     <div>
-                      <div className={`text-xs font-black ${themeTokens.textPrimary}`}>Dark Mode (GitHub Palette)</div>
-                      <div className={`text-[11px] mt-0.5 ${themeTokens.textMuted}`}>Deep #010409 canvas, #0D1117 surface</div>
+                      <div className="text-xs font-semibold text-fg">Dark Mode (Calm Campus)</div>
+                      <div className="text-xs mt-0.5 text-fg-muted">Balanced dark contrast for low-light environments</div>
                     </div>
                   </button>
 
@@ -210,19 +207,19 @@ export default function AdminSettingsPage() {
                     onClick={(e) => executeThemeTransition({ theme: "light", event: e, setTheme, currentTheme: theme })}
                     className={`p-4 rounded-xl border text-left flex flex-col gap-3 transition-all cursor-pointer ${
                       theme === "light"
-                        ? `border-brand ring-1 ring-brand/40 ${themeTokens.tabActive}`
-                        : `${themeTokens.cardRecessed} hover:border-slate-400 dark:hover:border-[#6E747D]`
+                        ? `border-brand ring-1 ring-brand/40 bg-surface text-fg font-bold shadow-xs rounded-lg px-3 py-1.5 text-xs transition-colors`
+                        : `rounded-xl bg-canvas border border-line hover:border-slate-400 dark:hover:border-fg-muted`
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-amber-500 border ${themeTokens.surface} ${themeTokens.border}`}>
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center text-amber-500 border bg-surface border-line">
                         <Sun className="w-4 h-4" />
                       </div>
                       {theme === "light" && <Check className="w-4 h-4 text-brand" />}
                     </div>
                     <div>
-                      <div className={`text-xs font-black ${themeTokens.textPrimary}`}>Light Mode</div>
-                      <div className={`text-[11px] mt-0.5 ${themeTokens.textMuted}`}>Crisp clean daylight layout</div>
+                      <div className="text-xs font-semibold text-fg">Light Mode</div>
+                      <div className="text-xs mt-0.5 text-fg-muted">High clarity presentation for daytime classrooms</div>
                     </div>
                   </button>
 
@@ -230,36 +227,36 @@ export default function AdminSettingsPage() {
                     onClick={(e) => executeThemeTransition({ theme: "system", event: e, setTheme, currentTheme: theme })}
                     className={`p-4 rounded-xl border text-left flex flex-col gap-3 transition-all cursor-pointer ${
                       theme === "system"
-                        ? `border-brand ring-1 ring-brand/40 ${themeTokens.tabActive}`
-                        : `${themeTokens.cardRecessed} hover:border-slate-400 dark:hover:border-[#6E747D]`
+                        ? `border-brand ring-1 ring-brand/40 bg-surface text-fg font-bold shadow-xs rounded-lg px-3 py-1.5 text-xs transition-colors`
+                        : `rounded-xl bg-canvas border border-line hover:border-slate-400 dark:hover:border-fg-muted`
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center border ${themeTokens.surface} ${themeTokens.border} ${themeTokens.textMuted}`}>
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center border bg-surface border-line text-fg-muted">
                         <Monitor className="w-4 h-4" />
                       </div>
                       {theme === "system" && <Check className="w-4 h-4 text-brand" />}
                     </div>
                     <div>
-                      <div className={`text-xs font-black ${themeTokens.textPrimary}`}>System Synchronized</div>
-                      <div className={`text-[11px] mt-0.5 ${themeTokens.textMuted}`}>Follows OS configuration</div>
+                      <div className="text-xs font-semibold text-fg">System Synchronized</div>
+                      <div className="text-xs mt-0.5 text-fg-muted">Follows OS configuration</div>
                     </div>
                   </button>
                 </div>
               </div>
 
               {/* Data Density & Layout preferences */}
-              <div className={`p-6 space-y-4 ${themeTokens.card}`}>
-                <h3 className={`text-base font-bold flex items-center gap-2 ${themeTokens.textPrimary}`}>
+              <div className={`p-6 space-y-4 rounded-[20px] bg-surface border border-line`}>
+                <h3 className={`text-base font-bold flex items-center gap-2 text-fg`}>
                   <Sliders className="w-4 h-4 text-brand" />
                   Information Density &amp; Layout
                 </h3>
 
-                <div className={`divide-y divide-slate-100 dark:divide-[#21262D]`}>
+                <div className={`divide-y divide-slate-100 dark:divide-line`}>
                   <div className="py-3 flex items-center justify-between">
                     <div>
-                      <div className={`text-xs font-bold ${themeTokens.textPrimary}`}>High-Density Data Tables</div>
-                      <div className={`text-[11px] ${themeTokens.textMuted}`}>Compact row heights and monospace key values for high-volume transactions</div>
+                      <div className={`text-xs font-bold text-fg`}>High-Density Data Tables</div>
+                      <div className={`text-xs text-fg-muted`}>Compact row heights and monospace key values for high-volume transactions</div>
                     </div>
                     <Switch
                       checked={highDensityTable}
@@ -270,8 +267,8 @@ export default function AdminSettingsPage() {
 
                   <div className="py-3 flex items-center justify-between">
                     <div>
-                      <div className={`text-xs font-bold ${themeTokens.textPrimary}`}>Instant Desktop Push Notifications</div>
-                      <div className={`text-[11px] ${themeTokens.textMuted}`}>Receive toasts when new students submit approval requests or fee slips</div>
+                      <div className={`text-xs font-bold text-fg`}>Instant Desktop Push Notifications</div>
+                      <div className={`text-xs text-fg-muted`}>Receive toasts when new students submit approval requests or fee slips</div>
                     </div>
                     <Switch
                       checked={pushNotifications}
@@ -287,38 +284,38 @@ export default function AdminSettingsPage() {
           {/* TAB 2: SECURITY */}
           {activeTab === "security" && (
             <div className="space-y-6">
-              <div className={`p-6 space-y-5 ${themeTokens.card}`}>
+              <div className={`p-6 space-y-5 rounded-[20px] bg-surface border border-line`}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className={`text-base font-bold flex items-center gap-2 ${themeTokens.textPrimary}`}>
+                    <h3 className={`text-base font-bold flex items-center gap-2 text-fg`}>
                       <Lock className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                       Role-Based Access Control (RBAC) &amp; Gate
                     </h3>
-                    <p className={themeTokens.subheading}>
-                      Supabase Row-Level Security policy enforcement and identity verification.
+                    <p className={"text-xs text-fg-muted mt-1"}>
+                      Role-based access control and identity verification.
                     </p>
                   </div>
                   <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-mono font-bold">
-                    RLS Active
+                    RBAC Active
                   </span>
                 </div>
 
-                <div className={`p-4 rounded-xl border space-y-3 ${themeTokens.cardRecessed}`}>
+                <div className={`p-4 rounded-xl border space-y-3 rounded-xl bg-canvas border border-line`}>
                   <div className="flex items-center justify-between">
-                    <span className={`text-xs font-bold ${themeTokens.textSecondary}`}>Active Admin Identity</span>
-                    <span className="text-[11px] font-mono text-brand font-bold">
+                    <span className={`text-xs font-bold text-fg-muted`}>Active Admin Identity</span>
+                    <span className="text-xs font-mono text-brand font-bold">
                       {currentUser?.role?.toUpperCase()}
                     </span>
                   </div>
-                  <div className={`flex items-center justify-between text-xs ${themeTokens.textMuted}`}>
+                  <div className={`flex items-center justify-between text-xs text-fg-muted`}>
                     <span>Full Name</span>
-                    <span className={`font-semibold ${themeTokens.textPrimary}`}>{currentUser?.full_name}</span>
+                    <span className={`font-semibold text-fg`}>{currentUser?.full_name}</span>
                   </div>
-                  <div className={`flex items-center justify-between text-xs ${themeTokens.textMuted}`}>
+                  <div className={`flex items-center justify-between text-xs text-fg-muted`}>
                     <span>Email Address</span>
-                    <span className={`font-mono ${themeTokens.textSecondary}`}>{currentUser?.email}</span>
+                    <span className={`font-mono text-fg-muted`}>{currentUser?.email}</span>
                   </div>
-                  <div className={`flex items-center justify-between text-xs ${themeTokens.textMuted}`}>
+                  <div className={`flex items-center justify-between text-xs text-fg-muted`}>
                     <span>Approval Status</span>
                     <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
                       <CheckCircle2 className="w-3.5 h-3.5" /> Approved
@@ -328,26 +325,26 @@ export default function AdminSettingsPage() {
 
                 {/* Session Timeout */}
                 <div className="pt-2 space-y-2">
-                  <label className={`text-xs font-bold ${themeTokens.textSecondary}`}>
+                  <label className={`text-xs font-bold text-fg-muted`}>
                     Idle Session Expiration (Minutes)
                   </label>
                   <input
                     type="number"
                     value={sessionTimeoutMinutes}
                     onChange={(e) => setSessionTimeoutMinutes(Number(e.target.value))}
-                    className={`w-full sm:w-48 px-3 py-2 font-mono ${themeTokens.input}`}
+                    className={`w-full sm:w-48 px-3 py-2 font-mono rounded-xl bg-canvas border border-line text-fg placeholder:text-fg-muted text-xs outline-hidden focus:border-brand`}
                   />
-                  <p className={themeTokens.subheading}>
+                  <p className={"text-xs text-fg-muted mt-1"}>
                     Administrators will be asked to re-authenticate after continuous inactivity.
                   </p>
                 </div>
 
                 {/* Demo Role Switcher for Test Evaluation */}
-                <div className={`pt-4 border-t ${themeTokens.border} space-y-3`}>
-                  <div className={`text-xs font-bold ${themeTokens.textSecondary}`}>
-                    Simulate Role Switcher (Developer Sandbox)
+                <div className={`pt-4 border-t border-line space-y-3`}>
+                  <div className={`text-xs font-bold text-fg-muted`}>
+                    Switch Portal Preview Role
                   </div>
-                  <p className={themeTokens.subheading}>
+                  <p className={"text-xs text-fg-muted mt-1"}>
                     Switch your current session role to evaluate strict route gating and approval redirects.
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -355,7 +352,7 @@ export default function AdminSettingsPage() {
                       onClick={() => switchUserRole("admin", true)}
                       className="px-3 py-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-300 text-xs font-bold hover:bg-emerald-500/25 transition-colors cursor-pointer"
                     >
-                      SuperAdmin (Approved)
+                      System Administrator
                     </button>
                     <button
                       onClick={() => switchUserRole("teacher", true)}
@@ -365,7 +362,7 @@ export default function AdminSettingsPage() {
                     </button>
                     <button
                       onClick={() => switchUserRole("student", true)}
-                      className="px-3 py-1.5 rounded-lg bg-brand/15 border border-brand/30 text-brand dark:text-[#60A5FA] text-xs font-bold hover:bg-brand/25 transition-colors cursor-pointer"
+                      className="px-3 py-1.5 rounded-lg bg-brand/15 border border-brand/30 text-brand dark:text-brand text-xs font-bold hover:bg-brand/25 transition-colors cursor-pointer"
                     >
                       Student Account
                     </button>
@@ -373,7 +370,7 @@ export default function AdminSettingsPage() {
                       onClick={() => switchUserRole("admin", false)}
                       className="px-3 py-1.5 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-600 dark:text-rose-300 text-xs font-bold hover:bg-rose-500/25 transition-colors cursor-pointer"
                     >
-                      Unapproved Admin (Test Gate)
+                      Restricted Admin (Pending Approval)
                     </button>
                   </div>
                 </div>
@@ -384,43 +381,43 @@ export default function AdminSettingsPage() {
           {/* TAB 3: DATABASE */}
           {activeTab === "database" && (
             <div className="space-y-6">
-              <div className={`p-6 space-y-5 ${themeTokens.card}`}>
+              <div className={`p-6 space-y-5 rounded-[20px] bg-surface border border-line`}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className={`text-base font-bold flex items-center gap-2 ${themeTokens.textPrimary}`}>
+                    <h3 className={`text-base font-bold flex items-center gap-2 text-fg`}>
                       <Database className="w-4 h-4 text-brand" />
-                      Supabase PostgreSQL Health &amp; Telemetry
+                      PostgreSQL Database Cluster &amp; Storage
                     </h3>
-                    <p className={themeTokens.subheading}>
+                    <p className={"text-xs text-fg-muted mt-1"}>
                       Live cluster metrics and verified entity tables.
                     </p>
                   </div>
                   <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                     Operational
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className={`p-4 rounded-xl border ${themeTokens.cardRecessed}`}>
-                    <div className={`text-[10px] font-mono uppercase ${themeTokens.textMuted}`}>Total Rows Indexed</div>
-                    <div className={`text-xl font-mono font-bold mt-1 ${themeTokens.textPrimary}`}>14,892</div>
-                    <div className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-1">Across 9 core schemas</div>
+                  <div className={`p-4 rounded-xl border rounded-xl bg-canvas border border-line`}>
+                    <div className={`text-xs font-mono text-fg-muted`}>Total Rows Indexed</div>
+                    <div className={`text-xl font-mono font-bold mt-1 text-fg`}>14,892</div>
+                    <div className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">Across 9 core schemas</div>
                   </div>
-                  <div className={`p-4 rounded-xl border ${themeTokens.cardRecessed}`}>
-                    <div className={`text-[10px] font-mono uppercase ${themeTokens.textMuted}`}>Storage Bucket</div>
-                    <div className={`text-xl font-mono font-bold mt-1 ${themeTokens.textPrimary}`}>notices (Public)</div>
-                    <div className={`text-[10px] mt-1 ${themeTokens.textMuted}`}>PDF &amp; Image attachments</div>
+                  <div className={`p-4 rounded-xl border rounded-xl bg-canvas border border-line`}>
+                    <div className={`text-xs font-mono text-fg-muted`}>Storage Bucket</div>
+                    <div className={`text-xl font-mono font-bold mt-1 text-fg`}>notices (Public)</div>
+                    <div className={`text-xs mt-1 text-fg-muted`}>PDF &amp; Image attachments</div>
                   </div>
-                  <div className={`p-4 rounded-xl border ${themeTokens.cardRecessed}`}>
-                    <div className={`text-[10px] font-mono uppercase ${themeTokens.textMuted}`}>Query Latency</div>
-                    <div className={`text-xl font-mono font-bold mt-1 ${themeTokens.textPrimary}`}>18 ms</div>
-                    <div className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-1">Edge Cache Active</div>
+                  <div className={`p-4 rounded-xl border rounded-xl bg-canvas border border-line`}>
+                    <div className={`text-xs font-mono text-fg-muted`}>Query Latency</div>
+                    <div className={`text-xl font-mono font-bold mt-1 text-fg`}>18 ms</div>
+                    <div className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">Edge Cache Active</div>
                   </div>
                 </div>
 
                 <div className="pt-2 space-y-3">
-                  <div className={`text-xs font-bold ${themeTokens.textSecondary}`}>Schema Integrity Check</div>
+                  <div className={`text-xs font-bold text-fg-muted`}>Schema Integrity Check</div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs font-mono">
                     {[
                       "profiles",
@@ -435,7 +432,7 @@ export default function AdminSettingsPage() {
                     ].map((tbl) => (
                       <div
                         key={tbl}
-                        className={`p-2.5 rounded-lg border flex items-center justify-between ${themeTokens.cardRecessed} ${themeTokens.textPrimary}`}
+                        className={`p-2.5 rounded-lg border flex items-center justify-between rounded-xl bg-canvas border border-line text-fg`}
                       >
                         <span>{tbl}</span>
                         <Check className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" />
@@ -450,39 +447,39 @@ export default function AdminSettingsPage() {
           {/* TAB 4: API KEYS */}
           {activeTab === "api" && (
             <div className="space-y-6">
-              <div className={`p-6 space-y-5 ${themeTokens.card}`}>
+              <div className={`p-6 space-y-5 rounded-[20px] bg-surface border border-line`}>
                 <div>
-                  <h3 className={`text-base font-bold flex items-center gap-2 ${themeTokens.textPrimary}`}>
+                  <h3 className={`text-base font-bold flex items-center gap-2 text-fg`}>
                     <Key className="w-4 h-4 text-brand" />
-                    Supabase Project Credentials &amp; Edge Functions
+                    Database Project Credentials &amp; API Keys
                   </h3>
-                  <p className={themeTokens.subheading}>
-                    Production connection string tokens configured in `.env.local`.
+                  <p className={"text-xs text-fg-muted mt-1"}>
+                    Production connection string tokens configured in system environment.
                   </p>
                 </div>
 
                 <div className="space-y-4">
                   <div className="space-y-1.5">
-                    <label className={`text-xs font-bold ${themeTokens.textSecondary}`}>
-                      NEXT_PUBLIC_SUPABASE_URL
+                    <label className={`text-xs font-bold text-fg-muted`}>
+                      Database Connection Endpoint
                     </label>
                     <input
                       type="text"
                       readOnly
                       value="https://unicampus-core-cluster.supabase.co"
-                      className={`w-full px-3.5 py-2.5 font-mono ${themeTokens.input}`}
+                      className={`w-full px-3.5 py-2.5 font-mono rounded-xl bg-canvas border border-line text-fg placeholder:text-fg-muted text-xs outline-hidden focus:border-brand`}
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className={`text-xs font-bold ${themeTokens.textSecondary}`}>
-                      NEXT_PUBLIC_SUPABASE_ANON_KEY
+                    <label className={`text-xs font-bold text-fg-muted`}>
+                      Public Anon API Key
                     </label>
                     <input
                       type="password"
                       readOnly
                       value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.unicampus-anon-public-key"
-                      className={`w-full px-3.5 py-2.5 font-mono ${themeTokens.input}`}
+                      className={`w-full px-3.5 py-2.5 font-mono rounded-xl bg-canvas border border-line text-fg placeholder:text-fg-muted text-xs outline-hidden focus:border-brand`}
                     />
                   </div>
                 </div>
@@ -493,37 +490,37 @@ export default function AdminSettingsPage() {
           {/* TAB 5: MAINTENANCE & DANGER ZONE */}
           {activeTab === "maintenance" && (
             <div className="space-y-6">
-              <div className={`p-6 border border-rose-500/30 space-y-5 ${themeTokens.card}`}>
+              <div className={`p-6 border border-rose-500/30 space-y-5 rounded-[20px] bg-surface border border-line`}>
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-base font-bold text-rose-500 dark:text-rose-400 flex items-center gap-2">
                       <AlertTriangle className="w-4 h-4 text-rose-500" />
                       Campus Maintenance Lockdown Mode
                     </h3>
-                    <p className={themeTokens.subheading}>
+                    <p className={"text-xs text-fg-muted mt-1"}>
                       Locks student and faculty portals with a maintenance banner during grading periods or financial audits.
                     </p>
                   </div>
                   <span
-                    className={`text-xs font-mono px-3 py-1 rounded-full uppercase font-bold border ${
+                    className={`text-xs font-mono px-3 py-1 rounded-full font-bold border ${
                       maintenanceMode
-                        ? "bg-rose-500/20 text-rose-500 dark:text-rose-400 border-rose-500/40 animate-pulse"
-                        : "bg-slate-100 dark:bg-[#161B22] text-slate-500 dark:text-[#6E747D] border-slate-200 dark:border-[#30363D]"
+                        ? "bg-rose-500/20 text-rose-500 dark:text-rose-400 border-rose-500/40"
+                        : "bg-slate-100 dark:bg-surface-2 text-slate-500 dark:text-fg-muted border-slate-200 dark:border-line"
                     }`}
                   >
                     {maintenanceMode ? "Lockdown Enabled" : "Normal Operations"}
                   </span>
                 </div>
 
-                <div className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${themeTokens.cardRecessed}`}>
+                <div className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl bg-canvas border border-line`}>
                   <div>
-                    <div className={`text-xs font-bold ${themeTokens.textPrimary}`}>System Maintenance Toggle</div>
-                    <div className={`text-[11px] mt-0.5 ${themeTokens.textMuted}`}>
+                    <div className={`text-xs font-bold text-fg`}>System Maintenance Toggle</div>
+                    <div className={`text-xs mt-0.5 text-fg-muted`}>
                       Only verified Administrators will retain console access.
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-xs font-semibold text-slate-600 dark:text-[#8D96A0]">
+                    <span className="text-xs font-semibold text-slate-600 dark:text-fg-muted">
                       {maintenanceMode ? "Lockdown Enabled" : "Normal Mode"}
                     </span>
                     <Switch
@@ -536,14 +533,14 @@ export default function AdminSettingsPage() {
 
                 {maintenanceMode && (
                   <div className="space-y-2">
-                    <label className={`text-xs font-bold ${themeTokens.textSecondary}`}>
+                    <label className={`text-xs font-bold text-fg-muted`}>
                       Public Maintenance Notice Message
                     </label>
                     <input
                       type="text"
                       value={maintenanceReason}
                       onChange={(e) => setMaintenanceReason(e.target.value)}
-                      className={`w-full px-3.5 py-2.5 ${themeTokens.input} border-rose-500/40`}
+                      className={`w-full px-3.5 py-2.5 rounded-xl bg-canvas border border-line text-fg placeholder:text-fg-muted text-xs outline-hidden focus:border-brand border-rose-500/40`}
                     />
                   </div>
                 )}

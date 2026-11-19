@@ -18,16 +18,13 @@ import {
   ChevronDown,
   Users,
   Lock,
-  Crown
+  Crown,
+  MoreHorizontal
 } from "lucide-react";
 import { adminService } from "@/lib/services/adminService";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { Notice, NoticeTargetRole, Department } from "@/types/admin";
-import { themeTokens } from "@/lib/theme";
-import SpotlightCard from "@/components/bits/SpotlightCard";
 import CountUp from "@/components/bits/CountUp";
-import ClickSpark from "@/components/bits/ClickSpark";
-import DecryptedText from "@/components/bits/DecryptedText";
 
 export default function AdminNoticesPage() {
   const { currentUser, isSuperAdmin, isDeptAdmin, effectiveDeptId, adminDepartmentName } = useAdminAuth();
@@ -48,6 +45,7 @@ export default function AdminNoticesPage() {
   const [editingNotice, setEditingNotice] = useState<Notice | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [activeActionMenuId, setActiveActionMenuId] = useState<string | null>(null);
 
   // Form Fields
   const [formTitle, setFormTitle] = useState("");
@@ -244,17 +242,17 @@ export default function AdminNoticesPage() {
       )}
 
       {/* Software Header Bar */}
-      <div className={`flex flex-col md:flex-row md:items-center justify-between gap-4 ${themeTokens.card} p-5`}>
+      <div className={`flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-[20px] bg-surface border border-line p-5`}>
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-[#F0F6FC] tracking-tight">
-              Institutional Bulletin &amp; Broadcast Manager
+            <h1 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-fg tracking-tight">
+              Campus Announcements &amp; Notices
             </h1>
-            <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wider uppercase ${themeTokens.tabActive}`}>
+            <span className={`px-2 py-0.5 rounded-md text-xs font-bold ${"bg-surface text-fg font-bold shadow-xs rounded-lg px-3 py-1.5 text-xs transition-colors"}`}>
               Broadcast
             </span>
           </div>
-          <p className={`text-xs ${themeTokens.textMuted} mt-1`}>
+          <p className={`text-xs text-fg-muted mt-1`}>
             Dispatch urgent notices, upload official documents, and target student or faculty groups.
           </p>
         </div>
@@ -270,72 +268,72 @@ export default function AdminNoticesPage() {
             </button>
           )}
 
-          <ClickSpark sparkColor="#1D5BD8" sparkCount={8} sparkRadius={20}>
+          
             <button 
               onClick={handleOpenCompose}
-              className={`${themeTokens.btnHero} px-4 py-2 flex items-center gap-1.5 text-xs cursor-pointer shadow-md`}
+              className={`bg-brand text-white hover:bg-brand-hover rounded-xl font-bold px-4 py-2 flex items-center gap-1.5 text-xs cursor-pointer shadow-md`}
             >
               <Plus className="w-4 h-4" />
               Compose Notice
             </button>
-          </ClickSpark>
+          
         </div>
       </div>
 
       {/* Top Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <SpotlightCard className={`${themeTokens.card} p-4 flex items-center gap-3.5`} spotlightColor="rgba(99, 102, 241, 0.15)">
+        <div className="rounded-[20px] bg-surface border border-line p-4 flex items-center gap-3.5">
           <div className="w-11 h-11 rounded-xl bg-brand/15 border border-brand/25 flex items-center justify-center shrink-0">
             <Megaphone className="w-5 h-5 text-brand" />
           </div>
           <div>
-            <p className={`text-[10px] font-bold ${themeTokens.textMuted} uppercase tracking-wider mb-0.5`}>Active Notices</p>
-            <h3 className="text-xl font-bold text-slate-900 dark:text-[#F0F6FC]">
+            <p className={`text-xs font-bold text-fg-muted mb-0.5`}>Active Notices</p>
+            <h3 className="text-xl font-bold text-slate-900 dark:text-fg">
               <CountUp to={notices.length} duration={0.8} />
             </h3>
           </div>
-        </SpotlightCard>
+        </div>
 
-        <SpotlightCard className={`${themeTokens.card} p-4 flex items-center gap-3.5`} spotlightColor="rgba(245, 158, 11, 0.15)">
+        <div className="rounded-[20px] bg-surface border border-line p-4 flex items-center gap-3.5">
           <div className="w-11 h-11 rounded-xl bg-amber-500/15 border border-amber-500/25 flex items-center justify-center shrink-0">
             <Pin className="w-5 h-5 text-amber-400" />
           </div>
           <div>
-            <p className={`text-[10px] font-bold ${themeTokens.textMuted} uppercase tracking-wider mb-0.5`}>Pinned Priority</p>
-            <h3 className="text-xl font-bold text-slate-900 dark:text-[#F0F6FC]">
+            <p className={`text-xs font-bold text-fg-muted mb-0.5`}>Pinned Priority</p>
+            <h3 className="text-xl font-bold text-slate-900 dark:text-fg">
               <CountUp to={pinnedCount} duration={0.8} />
             </h3>
           </div>
-        </SpotlightCard>
+        </div>
 
-        <SpotlightCard className={`${themeTokens.card} p-4 flex items-center gap-3.5`} spotlightColor="rgba(16, 185, 129, 0.15)">
+        <div className="rounded-[20px] bg-surface border border-line p-4 flex items-center gap-3.5">
           <div className="w-11 h-11 rounded-xl bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center shrink-0">
             <Eye className="w-5 h-5 text-emerald-400" />
           </div>
           <div>
-            <p className={`text-[10px] font-bold ${themeTokens.textMuted} uppercase tracking-wider mb-0.5`}>Broadcast Readership</p>
-            <h3 className="text-xl font-bold text-slate-900 dark:text-[#F0F6FC]">
+            <p className={`text-xs font-bold text-fg-muted mb-0.5`}>Broadcast Readership</p>
+            <h3 className="text-xl font-bold text-slate-900 dark:text-fg">
               <CountUp to={totalViews} duration={1.0} suffix=" reads" />
             </h3>
           </div>
-        </SpotlightCard>
+        </div>
       </div>
 
       {/* Tabs & Search Filter */}
-      <div className={`${themeTokens.card} p-4 flex flex-col md:flex-row gap-4 items-center justify-between`}>
-        <div className={`flex items-center gap-1.5 p-1 ${themeTokens.tabTrack} w-full md:w-auto relative`}>
+      <div className={`rounded-[20px] bg-surface border border-line p-4 flex flex-col md:flex-row gap-4 items-center justify-between`}>
+        <div className={`flex items-center gap-1.5 p-1 rounded-xl bg-canvas border border-line p-1 w-full md:w-auto relative`}>
           <button
             onClick={() => setActiveTab('all')}
             className={`relative px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer z-10 ${
               activeTab === 'all'
                 ? "text-slate-900 dark:text-white"
-                : "text-slate-600 hover:text-slate-900 dark:text-[#8D96A0] dark:hover:text-white"
+                : "text-slate-600 hover:text-slate-900 dark:text-fg-muted dark:hover:text-white"
             }`}
           >
             {activeTab === 'all' && (
               <motion.div
                 layoutId="admin-notices-tab-pill"
-                className="absolute inset-0 bg-white dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] rounded-lg shadow-xs -z-10"
+                className="absolute inset-0 bg-white dark:bg-surface-2 border border-slate-200 dark:border-line rounded-lg shadow-xs -z-10"
                 transition={{ type: "spring", stiffness: 450, damping: 32 }}
               />
             )}
@@ -363,13 +361,13 @@ export default function AdminNoticesPage() {
 
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
           <div className="relative w-full sm:w-64">
-            <Search className={`w-3.5 h-3.5 ${themeTokens.textMuted} absolute left-3.5 top-1/2 -translate-y-1/2`} />
+            <Search className={`w-3.5 h-3.5 text-fg-muted absolute left-3.5 top-1/2 -translate-y-1/2`} />
             <input 
               type="text" 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search announcements..." 
-              className={`w-full pl-9 pr-3.5 py-2 ${themeTokens.input}`}
+              className={`w-full pl-9 pr-3.5 py-2 rounded-xl bg-canvas border border-line text-fg placeholder:text-fg-muted text-xs outline-hidden focus:border-brand`}
             />
           </div>
 
@@ -377,7 +375,7 @@ export default function AdminNoticesPage() {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className={`w-full pl-3 pr-8 py-2 ${themeTokens.select} appearance-none cursor-pointer`}
+              className={`w-full pl-3 pr-8 py-2 rounded-xl bg-canvas border border-line text-fg text-xs outline-hidden focus:border-brand cursor-pointer appearance-none cursor-pointer`}
             >
               <option value="all">All Categories</option>
               <option value="Academics">Academics</option>
@@ -386,17 +384,17 @@ export default function AdminNoticesPage() {
               <option value="Events">Events</option>
               <option value="Emergency">Emergency</option>
             </select>
-            <ChevronDown className={`w-3.5 h-3.5 ${themeTokens.textMuted} absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none`} />
+            <ChevronDown className={`w-3.5 h-3.5 text-fg-muted absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none`} />
           </div>
         </div>
       </div>
 
       {/* Notices Display: Mobile Cards + Desktop Table */}
-      <div className={`${themeTokens.card} overflow-hidden`}>
+      <div className={`rounded-[20px] bg-surface border border-line overflow-hidden`}>
         {/* Mobile View: Cards */}
-        <div className="block md:hidden divide-y divide-slate-100 dark:divide-[#21262D]">
+        <div className="block md:hidden divide-y divide-slate-100 dark:divide-line">
           {filteredNotices.length === 0 ? (
-            <div className={`px-6 py-12 text-center ${themeTokens.textMuted} text-xs font-medium`}>
+            <div className={`px-6 py-12 text-center text-fg-muted text-xs font-medium`}>
               No notices found matching the filter criteria.
             </div>
           ) : (
@@ -415,22 +413,22 @@ export default function AdminNoticesPage() {
                     >
                       <Pin className={`w-3.5 h-3.5 ${notice.pinned ? 'fill-amber-400' : ''}`} />
                     </button>
-                    <span className="px-2 py-0.5 bg-slate-100 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] text-slate-700 dark:text-[#8D96A0] rounded-md text-[10px] font-semibold uppercase tracking-wider">
+                    <span className="px-2 py-0.5 bg-slate-100 dark:bg-surface-2 border border-slate-200 dark:border-line text-slate-700 dark:text-fg-muted rounded-md text-xs font-semibold">
                       {notice.category}
                     </span>
                     {notice.pinned && (
-                      <span className="px-2 py-0.5 bg-amber-500/15 border border-amber-500/30 text-amber-500 dark:text-amber-300 rounded-md text-[10px] font-bold uppercase tracking-wider">
+                      <span className="px-2 py-0.5 bg-amber-500/15 border border-amber-500/30 text-amber-500 dark:text-amber-300 rounded-md text-xs font-bold">
                         Pinned
                       </span>
                     )}
                   </div>
 
-                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold border ${
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold border ${
                     notice.target_role === 'student'
                       ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
                       : notice.target_role === 'teacher'
-                      ? 'bg-brand/10 text-brand dark:text-[#60A5FA] border-brand/20'
-                      : 'bg-slate-100 dark:bg-[#161B22] text-slate-700 dark:text-[#8D96A0] border-slate-200 dark:border-[#30363D]'
+                      ? 'bg-brand/10 text-brand dark:text-brand border-brand/20'
+                      : 'bg-slate-100 dark:bg-surface-2 text-slate-700 dark:text-fg-muted border-slate-200 dark:border-line'
                   }`}>
                     {notice.target_role === 'all' ? 'All' : notice.target_role === 'student' ? 'Students' : 'Faculty'}
                   </span>
@@ -439,47 +437,93 @@ export default function AdminNoticesPage() {
                 <div>
                   <h4 
                     onClick={() => setViewingNotice(notice)}
-                    className="text-xs font-bold text-slate-900 dark:text-[#F0F6FC] hover:text-brand cursor-pointer transition-colors"
+                    className="text-xs font-bold text-slate-900 dark:text-fg hover:text-brand cursor-pointer transition-colors"
                   >
                     {notice.title}
                   </h4>
-                  <p className={`text-[11px] ${themeTokens.textMuted} line-clamp-2 mt-1 leading-relaxed`}>
+                  <p className={`text-xs text-fg-muted line-clamp-2 mt-1 leading-relaxed`}>
                     {notice.body}
                   </p>
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-[#21262D] text-[11px]">
-                  <div className="flex items-center gap-2 text-slate-400 dark:text-[#6E747D]">
-                    <span>{notice.views || 142} reads</span>
+                <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-line text-xs">
+                  <div className="flex items-center gap-2 text-slate-400 dark:text-fg-muted">
+                    <span>{(notice.views || 142).toLocaleString()} reads</span>
                     <span>•</span>
                     <span>{new Date(notice.created_at).toLocaleDateString()}</span>
                   </div>
 
-                  <div className="flex items-center gap-1.5">
+                  <div className="relative">
                     <button
-                      onClick={() => setViewingNotice(notice)}
-                      title="View Announcement"
-                      aria-label="View Announcement"
-                      className={`p-1.5 ${themeTokens.btnSecondary} rounded-lg text-xs`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveActionMenuId(activeActionMenuId === notice.id ? null : notice.id);
+                      }}
+                      title="Notice Actions"
+                      aria-label="Notice Actions"
+                      className="p-1.5 rounded-lg text-fg-muted hover:text-fg hover:bg-surface-2 transition-colors cursor-pointer"
                     >
-                      <Eye className="w-3.5 h-3.5" />
+                      <MoreHorizontal className="w-4 h-4" />
                     </button>
-                    <button
-                      onClick={() => handleOpenEdit(notice)}
-                      title="Edit Announcement"
-                      aria-label="Edit Announcement"
-                      className={`p-1.5 ${themeTokens.btnSecondary} rounded-lg text-xs`}
-                    >
-                      <Edit3 className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => setConfirmDeleteId(notice.id)}
-                      title="Delete Notice"
-                      aria-label="Delete Notice"
-                      className="p-1.5 hover:bg-rose-500/10 text-rose-500 rounded-lg transition-colors border border-transparent hover:border-rose-500/20 cursor-pointer"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+
+                    {activeActionMenuId === notice.id && (
+                      <>
+                        <div 
+                          className="fixed inset-0 z-20" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveActionMenuId(null);
+                          }} 
+                        />
+                        <div className="absolute right-0 bottom-8 z-30 w-44 rounded-xl bg-surface border border-line shadow-lg p-1.5 text-left transition-all">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setViewingNotice(notice);
+                              setActiveActionMenuId(null);
+                            }}
+                            className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-fg hover:bg-surface-2 transition-colors cursor-pointer"
+                          >
+                            <Eye className="w-3.5 h-3.5 text-fg-muted" />
+                            <span>View Details</span>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenEdit(notice);
+                              setActiveActionMenuId(null);
+                            }}
+                            className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-fg hover:bg-surface-2 transition-colors cursor-pointer"
+                          >
+                            <Edit3 className="w-3.5 h-3.5 text-fg-muted" />
+                            <span>Edit Notice</span>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleTogglePin(notice.id);
+                              setActiveActionMenuId(null);
+                            }}
+                            className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-fg hover:bg-surface-2 transition-colors cursor-pointer"
+                          >
+                            <Pin className="w-3.5 h-3.5 text-amber-500" />
+                            <span>{notice.pinned ? "Unpin Notice" : "Pin to Top"}</span>
+                          </button>
+                          <div className="my-1 border-t border-line" />
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setConfirmDeleteId(notice.id);
+                              setActiveActionMenuId(null);
+                            }}
+                            className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Delete Notice</span>
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -491,13 +535,13 @@ export default function AdminNoticesPage() {
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className={themeTokens.tableHeader}>
+              <tr className={"bg-canvas font-mono text-xs text-fg-muted border-b border-line"}>
                 <th className="px-5 py-3 w-12 text-center">
                   <input
                     type="checkbox"
                     checked={filteredNotices.length > 0 && selectedNoticeIds.length === filteredNotices.length}
                     onChange={toggleSelectAll}
-                    className="rounded border-slate-300 dark:border-[#30363D] bg-white dark:bg-[#010409] text-brand focus:ring-brand"
+                    className="rounded border-slate-300 dark:border-line bg-white dark:bg-canvas text-brand focus:ring-brand"
                   />
                 </th>
                 <th className="px-4 py-3">Announcement</th>
@@ -507,22 +551,22 @@ export default function AdminNoticesPage() {
                 <th className="px-5 py-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-[#21262D]">
+            <tbody className="divide-y divide-slate-100 dark:divide-line">
               {filteredNotices.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className={`px-6 py-12 text-center ${themeTokens.textMuted} text-xs font-medium`}>
+                  <td colSpan={6} className={`px-6 py-12 text-center text-fg-muted text-xs font-medium`}>
                     No notices found matching the filter criteria.
                   </td>
                 </tr>
               ) : (
                 filteredNotices.map((notice) => (
-                  <tr key={notice.id} className={themeTokens.tableRow + " group"}>
+                  <tr key={notice.id} className={"hover:bg-surface-2/60 border-b border-line transition-colors" + " group"}>
                     <td className="px-5 py-3 text-center">
                       <input
                         type="checkbox"
                         checked={selectedNoticeIds.includes(notice.id)}
                         onChange={() => toggleSelectNotice(notice.id)}
-                        className="rounded border-slate-300 dark:border-[#30363D] bg-white dark:bg-[#010409] text-brand focus:ring-brand"
+                        className="rounded border-slate-300 dark:border-line bg-white dark:bg-canvas text-brand focus:ring-brand"
                       />
                     </td>
 
@@ -541,22 +585,22 @@ export default function AdminNoticesPage() {
                         </button>
                         <div>
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="px-2 py-0.5 bg-slate-100 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] text-slate-700 dark:text-[#8D96A0] rounded-md text-[10px] font-semibold uppercase tracking-wider">
+                            <span className="px-2 py-0.5 bg-slate-100 dark:bg-surface-2 border border-slate-200 dark:border-line text-slate-700 dark:text-fg-muted rounded-md text-xs font-semibold">
                               {notice.category}
                             </span>
                             {notice.pinned && (
-                              <span className="px-2 py-0.5 bg-amber-500/15 border border-amber-500/30 text-amber-500 dark:text-amber-300 rounded-md text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+                              <span className="px-2 py-0.5 bg-amber-500/15 border border-amber-500/30 text-amber-500 dark:text-amber-300 rounded-md text-xs font-bold flex items-center gap-1">
                                 Pinned
                               </span>
                             )}
                           </div>
                           <h4 
                             onClick={() => setViewingNotice(notice)}
-                            className="text-xs font-bold text-slate-900 dark:text-[#F0F6FC] hover:text-brand dark:hover:text-brand cursor-pointer line-clamp-1 transition-colors"
+                            className="text-xs font-bold text-slate-900 dark:text-fg hover:text-brand dark:hover:text-brand cursor-pointer line-clamp-1 transition-colors"
                           >
                             {notice.title}
                           </h4>
-                          <p className={`text-[11px] ${themeTokens.textMuted} line-clamp-1 mt-0.5`}>
+                          <p className={`text-xs text-fg-muted line-clamp-1 mt-0.5`}>
                             {notice.body}
                           </p>
                         </div>
@@ -564,12 +608,12 @@ export default function AdminNoticesPage() {
                     </td>
 
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold border ${
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-semibold border ${
                         notice.target_role === 'student'
                           ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
                           : notice.target_role === 'teacher'
-                          ? 'bg-brand/10 text-brand dark:text-[#60A5FA] border-brand/20'
-                          : 'bg-slate-100 dark:bg-[#161B22] text-slate-700 dark:text-[#8D96A0] border-slate-200 dark:border-[#30363D]'
+                          ? 'bg-brand/10 text-brand dark:text-brand border-brand/20'
+                          : 'bg-slate-100 dark:bg-surface-2 text-slate-700 dark:text-fg-muted border-slate-200 dark:border-line'
                       }`}>
                         <Users className="w-3 h-3" />
                         {notice.target_role === 'all' 
@@ -579,53 +623,102 @@ export default function AdminNoticesPage() {
                           : 'Faculty Only'}
                       </span>
                       {notice.department_name && notice.department_name !== 'Campus Wide' && (
-                        <p className={`text-[10px] font-medium ${themeTokens.textMuted} mt-1`}>{notice.department_name}</p>
+                        <p className={`text-xs font-medium text-fg-muted mt-1`}>{notice.department_name}</p>
                       )}
                     </td>
 
                     <td className="px-4 py-3">
                       {notice.attachments && notice.attachments.length > 0 ? (
-                        <div className="flex items-center gap-1.5 text-slate-700 dark:text-[#F0F6FC] text-xs font-semibold">
+                        <div className="flex items-center gap-1.5 text-slate-700 dark:text-fg text-xs font-semibold">
                           <Paperclip className="w-3.5 h-3.5 text-brand" />
                           <span>{notice.attachments.length} file{notice.attachments.length > 1 ? 's' : ''}</span>
                         </div>
                       ) : (
-                        <span className={`text-[11px] ${themeTokens.textMuted}`}>None</span>
+                        <span className={`text-xs text-fg-muted`}>None</span>
                       )}
                     </td>
 
                     <td className="px-4 py-3">
-                      <div className="text-xs font-medium text-slate-800 dark:text-[#F0F6FC]">
+                      <div className="text-xs font-medium text-slate-800 dark:text-fg">
                         {notice.views || 142} reads
                       </div>
-                      <div className={`text-[10px] ${themeTokens.textMuted} mt-0.5`}>
+                      <div className={`text-xs text-fg-muted mt-0.5`}>
                         {new Date(notice.created_at).toLocaleDateString()}
                       </div>
                     </td>
 
-                    <td className="px-5 py-3 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
+                    <td className="px-5 py-3 text-right relative">
+                      <div className="flex items-center justify-end">
                         <button
-                          onClick={() => setViewingNotice(notice)}
-                          title="View Announcement"
-                          className={`p-1.5 ${themeTokens.btnSecondary} rounded-lg`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveActionMenuId(activeActionMenuId === notice.id ? null : notice.id);
+                          }}
+                          title="Notice Actions"
+                          aria-label="Notice Actions"
+                          className="p-1.5 rounded-lg text-fg-muted hover:text-fg hover:bg-surface-2 transition-colors cursor-pointer"
                         >
-                          <Eye className="w-3.5 h-3.5" />
+                          <MoreHorizontal className="w-4 h-4" />
                         </button>
-                        <button
-                          onClick={() => handleOpenEdit(notice)}
-                          title="Edit Announcement"
-                          className={`p-1.5 ${themeTokens.btnSecondary} rounded-lg`}
-                        >
-                          <Edit3 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => setConfirmDeleteId(notice.id)}
-                          title="Delete Notice"
-                          className="p-1.5 hover:bg-rose-500/10 text-rose-500 rounded-lg transition-colors border border-transparent hover:border-rose-500/20 cursor-pointer"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+
+                        {activeActionMenuId === notice.id && (
+                          <>
+                            <div 
+                              className="fixed inset-0 z-20" 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveActionMenuId(null);
+                              }} 
+                            />
+                            <div className="absolute right-5 top-12 z-30 w-44 rounded-xl bg-surface border border-line shadow-lg p-1.5 text-left transition-all">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setViewingNotice(notice);
+                                  setActiveActionMenuId(null);
+                                }}
+                                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-fg hover:bg-surface-2 transition-colors cursor-pointer"
+                              >
+                                <Eye className="w-3.5 h-3.5 text-fg-muted" />
+                                <span>View Details</span>
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleOpenEdit(notice);
+                                  setActiveActionMenuId(null);
+                                }}
+                                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-fg hover:bg-surface-2 transition-colors cursor-pointer"
+                              >
+                                <Edit3 className="w-3.5 h-3.5 text-fg-muted" />
+                                <span>Edit Notice</span>
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleTogglePin(notice.id);
+                                  setActiveActionMenuId(null);
+                                }}
+                                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-fg hover:bg-surface-2 transition-colors cursor-pointer"
+                              >
+                                <Pin className="w-3.5 h-3.5 text-amber-500" />
+                                <span>{notice.pinned ? "Unpin Notice" : "Pin to Top"}</span>
+                              </button>
+                              <div className="my-1 border-t border-line" />
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setConfirmDeleteId(notice.id);
+                                  setActiveActionMenuId(null);
+                                }}
+                                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span>Delete Notice</span>
+                              </button>
+                            </div>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -638,43 +731,43 @@ export default function AdminNoticesPage() {
 
       {/* VIEW NOTICE DETAIL MODAL */}
       {viewingNotice && (
-        <div className={themeTokens.modalOverlay}>
-          <div className={`w-full max-w-xl ${themeTokens.modalBox} p-6 max-h-[90vh] overflow-y-auto`}>
-            <div className={`flex items-start justify-between pb-4 border-b ${themeTokens.border} mb-4`}>
+        <div className={"fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"}>
+          <div className={`w-full max-w-xl rounded-[20px] bg-surface border border-line shadow-2xl p-6 max-h-[90vh] overflow-y-auto`}>
+            <div className={`flex items-start justify-between pb-4 border-b border-line mb-4`}>
               <div>
                 <div className="flex items-center gap-2 mb-1.5">
-                  <span className="px-2 py-0.5 bg-slate-100 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] text-slate-700 dark:text-[#8D96A0] rounded-md text-[10px] font-bold uppercase tracking-wider">
+                  <span className="px-2 py-0.5 bg-slate-100 dark:bg-surface-2 border border-slate-200 dark:border-line text-slate-700 dark:text-fg-muted rounded-md text-xs font-bold">
                     {viewingNotice.category}
                   </span>
                   {viewingNotice.pinned && (
-                    <span className="px-2 py-0.5 bg-amber-500/15 border border-amber-500/30 text-amber-500 dark:text-amber-300 rounded-md text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+                    <span className="px-2 py-0.5 bg-amber-500/15 border border-amber-500/30 text-amber-500 dark:text-amber-300 rounded-md text-xs font-bold flex items-center gap-1">
                       <Pin className="w-3 h-3 fill-amber-400" /> Pinned
                     </span>
                   )}
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-[#F0F6FC]">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-fg">
                   {viewingNotice.title}
                 </h3>
-                <p className={`text-xs ${themeTokens.textMuted} mt-1`}>
+                <p className={`text-xs text-fg-muted mt-1`}>
                   Issued by {viewingNotice.author_name} • {new Date(viewingNotice.created_at).toLocaleString()}
                 </p>
               </div>
               <button 
                 onClick={() => setViewingNotice(null)} 
-                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-[#161B22] cursor-pointer"
+                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-surface-2 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="py-2 text-xs text-slate-700 dark:text-[#F0F6FC] leading-relaxed whitespace-pre-wrap">
+            <div className="py-2 text-xs text-slate-700 dark:text-fg leading-relaxed whitespace-pre-wrap">
               {viewingNotice.body}
             </div>
 
             {/* Attachments view */}
             {viewingNotice.attachments && viewingNotice.attachments.length > 0 && (
-              <div className={`mt-5 pt-4 border-t ${themeTokens.border}`}>
-                <h4 className="text-xs font-bold text-slate-800 dark:text-[#F0F6FC] mb-2 flex items-center gap-1.5">
+              <div className={`mt-5 pt-4 border-t border-line`}>
+                <h4 className="text-xs font-bold text-slate-800 dark:text-fg mb-2 flex items-center gap-1.5">
                   <Paperclip className="w-3.5 h-3.5 text-brand" /> Attached Official Documents
                 </h4>
                 <div className="space-y-1.5">
@@ -682,10 +775,10 @@ export default function AdminNoticesPage() {
                     const name = att.includes('::') ? att.split('::')[0] : att.split('/').pop() || `Attachment ${idx + 1}`;
                     const url = att.includes('::') ? att.split('::')[1] : att;
                     return (
-                      <div key={idx} className={`flex items-center justify-between p-2.5 ${themeTokens.cardRecessed} text-xs`}>
+                      <div key={idx} className={`flex items-center justify-between p-2.5 rounded-xl bg-canvas border border-line text-xs`}>
                         <div className="flex items-center gap-2 truncate">
                           <FileText className="w-4 h-4 text-brand shrink-0" />
-                          <span className="font-semibold text-slate-800 dark:text-[#F0F6FC] truncate">{name}</span>
+                          <span className="font-semibold text-slate-800 dark:text-fg truncate">{name}</span>
                         </div>
                         <a 
                           href={url} 
@@ -702,13 +795,13 @@ export default function AdminNoticesPage() {
               </div>
             )}
 
-            <div className={`flex justify-end gap-2.5 pt-4 border-t ${themeTokens.border} mt-4`}>
+            <div className={`flex justify-end gap-2.5 pt-4 border-t border-line mt-4`}>
               <button
                 onClick={() => {
                   setViewingNotice(null);
                   handleOpenEdit(viewingNotice);
                 }}
-                className={`px-4 py-2 ${themeTokens.btnSecondary} text-xs flex items-center gap-1.5`}
+                className={`px-4 py-2 bg-canvas hover:bg-surface-2 text-fg border border-line rounded-xl font-semibold text-xs flex items-center gap-1.5`}
               >
                 <Edit3 className="w-3.5 h-3.5" /> Edit Notice
               </button>
@@ -727,18 +820,18 @@ export default function AdminNoticesPage() {
 
       {/* COMPOSE / EDIT NOTICE MODAL */}
       {isComposeOpen && (
-        <div className={themeTokens.modalOverlay}>
-          <div className={`w-full max-w-xl ${themeTokens.modalBox} p-6 max-h-[90vh] overflow-y-auto`}>
-            <div className={`flex items-center justify-between pb-3.5 border-b ${themeTokens.border} mb-5`}>
+        <div className={"fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"}>
+          <div className={`w-full max-w-xl rounded-[20px] bg-surface border border-line shadow-2xl p-6 max-h-[90vh] overflow-y-auto`}>
+            <div className={`flex items-center justify-between pb-3.5 border-b border-line mb-5`}>
               <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-[#F0F6FC]">
+                <h3 className="text-base font-bold text-slate-900 dark:text-fg">
                   {editingNotice ? 'Edit University Notice' : 'Dispatch New Announcement'}
                 </h3>
-                <p className={`text-xs ${themeTokens.textMuted} mt-0.5`}>
+                <p className={`text-xs text-fg-muted mt-0.5`}>
                   Publish to campus dashboards and push notification services
                 </p>
               </div>
-              <button onClick={() => setIsComposeOpen(false)} className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-[#161B22] cursor-pointer">
+              <button onClick={() => setIsComposeOpen(false)} className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-surface-2 cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -752,7 +845,7 @@ export default function AdminNoticesPage() {
                   onChange={(e) => setFormTitle(e.target.value)}
                   placeholder="e.g. Schedule for 4th Semester Lab Examinations"
                   required
-                  className={`w-full px-3.5 py-2 ${themeTokens.input}`}
+                  className={`w-full px-3.5 py-2 rounded-xl bg-canvas border border-line text-fg placeholder:text-fg-muted text-xs outline-hidden focus:border-brand`}
                 />
               </div>
 
@@ -762,7 +855,7 @@ export default function AdminNoticesPage() {
                   <select 
                     value={formCategory}
                     onChange={(e) => setFormCategory(e.target.value)}
-                    className={`w-full px-3.5 py-2 ${themeTokens.select}`}
+                    className={`w-full px-3.5 py-2 rounded-xl bg-canvas border border-line text-fg text-xs outline-hidden focus:border-brand cursor-pointer`}
                   >
                     <option value="Academics">Academics</option>
                     <option value="Administrative">Administrative</option>
@@ -777,7 +870,7 @@ export default function AdminNoticesPage() {
                   <select 
                     value={formTargetRole}
                     onChange={(e) => setFormTargetRole(e.target.value as NoticeTargetRole)}
-                    className={`w-full px-3.5 py-2 ${themeTokens.select}`}
+                    className={`w-full px-3.5 py-2 rounded-xl bg-canvas border border-line text-fg text-xs outline-hidden focus:border-brand cursor-pointer`}
                   >
                     <option value="all">Everyone (All Campus)</option>
                     <option value="student">Students Only</option>
@@ -790,7 +883,7 @@ export default function AdminNoticesPage() {
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Target Department Scope</label>
                   {isDeptAdmin ? (
-                    <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] text-xs font-bold text-slate-700 dark:text-[#8D96A0]">
+                    <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-surface-2 border border-slate-200 dark:border-line text-xs font-bold text-slate-700 dark:text-fg-muted">
                       <Lock className="w-3.5 h-3.5 text-blue-500 shrink-0" />
                       <span>{adminDepartmentName || 'Department'} (Governed)</span>
                     </div>
@@ -798,7 +891,7 @@ export default function AdminNoticesPage() {
                     <select 
                       value={formDeptId}
                       onChange={(e) => setFormDeptId(e.target.value)}
-                      className={`w-full px-3.5 py-2 ${themeTokens.select}`}
+                      className={`w-full px-3.5 py-2 rounded-xl bg-canvas border border-line text-fg text-xs outline-hidden focus:border-brand cursor-pointer`}
                     >
                       <option value="">Campus Wide (All Departments)</option>
                       {departments.map((dept) => (
@@ -809,14 +902,14 @@ export default function AdminNoticesPage() {
                 </div>
 
                 <div className="flex flex-col justify-end">
-                  <label className={`flex items-center gap-2 p-2 ${themeTokens.cardRecessed} cursor-pointer`}>
+                  <label className={`flex items-center gap-2 p-2 rounded-xl bg-canvas border border-line cursor-pointer`}>
                     <input 
                       type="checkbox"
                       checked={formPinned}
                       onChange={(e) => setFormPinned(e.target.checked)}
-                      className="rounded border-slate-300 dark:border-[#30363D] bg-white dark:bg-[#010409] text-brand focus:ring-brand"
+                      className="rounded border-slate-300 dark:border-line bg-white dark:bg-canvas text-brand focus:ring-brand"
                     />
-                    <span className="text-xs font-semibold text-slate-800 dark:text-[#F0F6FC] flex items-center gap-1.5">
+                    <span className="text-xs font-semibold text-slate-800 dark:text-fg flex items-center gap-1.5">
                       <Pin className="w-3.5 h-3.5 text-amber-400" /> Pin announcement to top
                     </span>
                   </label>
@@ -831,7 +924,7 @@ export default function AdminNoticesPage() {
                   onChange={(e) => setFormBody(e.target.value)}
                   placeholder="Enter complete notice text and details..."
                   required
-                  className={`w-full px-3.5 py-2 ${themeTokens.input} resize-none`}
+                  className={`w-full px-3.5 py-2 rounded-xl bg-canvas border border-line text-fg placeholder:text-fg-muted text-xs outline-hidden focus:border-brand resize-none`}
                 ></textarea>
               </div>
 
@@ -862,8 +955,8 @@ export default function AdminNoticesPage() {
                     {formAttachments.map((att, idx) => {
                       const name = att.includes('::') ? att.split('::')[0] : att.split('/').pop() || `File ${idx + 1}`;
                       return (
-                        <div key={idx} className={`flex items-center justify-between p-2.5 ${themeTokens.cardRecessed} text-xs`}>
-                          <span className="font-semibold text-slate-800 dark:text-[#F0F6FC] truncate max-w-xs">{name}</span>
+                        <div key={idx} className={`flex items-center justify-between p-2.5 rounded-xl bg-canvas border border-line text-xs`}>
+                          <span className="font-semibold text-slate-800 dark:text-fg truncate max-w-xs">{name}</span>
                           <button 
                             type="button" 
                             onClick={() => removeAttachment(idx)}
@@ -878,25 +971,25 @@ export default function AdminNoticesPage() {
                 ) : (
                   <div 
                     onClick={() => fileInputRef.current?.click()}
-                    className={`p-4 border border-dashed ${themeTokens.border} rounded-xl text-center cursor-pointer hover:bg-slate-50 dark:hover:bg-[#161B22] transition-colors`}
+                    className={`p-4 border border-dashed border-line rounded-xl text-center cursor-pointer hover:bg-slate-50 dark:hover:bg-surface-2 transition-colors`}
                   >
                     <Paperclip className="w-5 h-5 text-slate-400 mx-auto mb-1" />
-                    <p className={`text-xs font-medium ${themeTokens.textMuted}`}>Click to attach circular PDFs, examination routines, or flyers</p>
+                    <p className={`text-xs font-medium text-fg-muted`}>Click to attach circular PDFs, examination routines, or flyers</p>
                   </div>
                 )}
               </div>
 
-              <div className={`pt-4 flex justify-end gap-2.5 border-t ${themeTokens.border} mt-5`}>
+              <div className={`pt-4 flex justify-end gap-2.5 border-t border-line mt-5`}>
                 <button
                   type="button"
                   onClick={() => setIsComposeOpen(false)}
-                  className={`px-4 py-2 ${themeTokens.btnSecondary} text-xs`}
+                  className={`px-4 py-2 bg-canvas hover:bg-surface-2 text-fg border border-line rounded-xl font-semibold text-xs`}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className={`px-4 py-2 ${themeTokens.btnHero} text-xs`}
+                  className={`px-4 py-2 bg-brand text-white hover:bg-brand-hover rounded-xl font-bold text-xs`}
                 >
                   {editingNotice ? 'Update Announcement' : 'Publish Broadcast'}
                 </button>
@@ -908,21 +1001,21 @@ export default function AdminNoticesPage() {
 
       {/* DELETE CONFIRMATION MODAL */}
       {confirmDeleteId && (
-        <div className={themeTokens.modalOverlay}>
-          <div className={`w-full max-w-md ${themeTokens.modalBox} p-6 border-rose-500/30 text-center`}>
+        <div className={"fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"}>
+          <div className={`w-full max-w-md rounded-[20px] bg-surface border border-line shadow-2xl p-6 border-rose-500/30 text-center`}>
             <div className="w-11 h-11 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center mx-auto mb-3.5">
               <Trash2 className="w-5 h-5 text-rose-500" />
             </div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-[#F0F6FC] mb-1.5">
+            <h3 className="text-base font-bold text-slate-900 dark:text-fg mb-1.5">
               Delete Announcement Broadcast?
             </h3>
-            <p className={`text-xs ${themeTokens.textMuted} mb-5 leading-relaxed`}>
+            <p className={`text-xs text-fg-muted mb-5 leading-relaxed`}>
               This notice will be permanently deleted from the student noticeboard and administrative records.
             </p>
             <div className="flex items-center justify-center gap-2.5">
               <button
                 onClick={() => setConfirmDeleteId(null)}
-                className={`px-4 py-2 ${themeTokens.btnSecondary} text-xs`}
+                className={`px-4 py-2 bg-canvas hover:bg-surface-2 text-fg border border-line rounded-xl font-semibold text-xs`}
               >
                 Cancel
               </button>

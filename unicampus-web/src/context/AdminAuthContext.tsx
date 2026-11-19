@@ -33,18 +33,60 @@ const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefin
 
 const AUTH_STORAGE_KEY = 'unicampus_auth_current_user';
 const SCOPE_STORAGE_KEY = 'unicampus_admin_scope_dept';
+const AUTH_SCHEMA_VERSION_KEY = 'unicampus_auth_schema_version';
+const AUTH_SCHEMA_VERSION = 'v2';
+
+function findStudentProfile(): Profile {
+  return (
+    INITIAL_PROFILES.find((p) => p.id === 'user-stud-1') ||
+    INITIAL_PROFILES.find((p) => p.role === 'student') ||
+    INITIAL_PROFILES[0]
+  );
+}
+
+function findFacultyProfile(): Profile {
+  return (
+    INITIAL_PROFILES.find((p) => p.id === 'user-teach-1') ||
+    INITIAL_PROFILES.find((p) => p.role === 'teacher') ||
+    INITIAL_PROFILES[0]
+  );
+}
+
+function findSuperAdminProfile(): Profile {
+  return (
+    INITIAL_PROFILES.find((p) => p.id === 'user-admin-1') ||
+    INITIAL_PROFILES.find((p) => p.role === 'admin' && p.admin_role === 'super_admin') ||
+    INITIAL_PROFILES[0]
+  );
+}
+
+function findDeptAdminTemplate(): Profile {
+  return (
+    INITIAL_PROFILES.find((p) => p.role === 'admin' && p.admin_role === 'dept_admin') ||
+    findSuperAdminProfile()
+  );
+}
 
 export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [activeScopeDeptId, setActiveScopeDeptIdState] = useState<string>('all');
   
   // Default to Student profile (Sakib Ahmed) for security & student panel privacy
-  const [currentUser, setCurrentUser] = useState<Profile | null>(() => {
-    return INITIAL_PROFILES.find(p => p.role === 'student') || INITIAL_PROFILES[0];
-  });
+  const [currentUser, setCurrentUser] = useState<Profile | null>(() => findStudentProfile());
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      const storedVersion = localStorage.getItem(AUTH_SCHEMA_VERSION_KEY);
+      if (storedVersion !== AUTH_SCHEMA_VERSION) {
+        localStorage.removeItem(AUTH_STORAGE_KEY);
+        localStorage.removeItem(SCOPE_STORAGE_KEY);
+        localStorage.setItem(AUTH_SCHEMA_VERSION_KEY, AUTH_SCHEMA_VERSION);
+        setCurrentUser(findStudentProfile());
+        setActiveScopeDeptIdState('all');
+        setIsLoaded(true);
+        return;
+      }
+
       const stored = localStorage.getItem(AUTH_STORAGE_KEY);
       if (stored) {
         try {
@@ -92,7 +134,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
         const deptAdmin = INITIAL_PROFILES.find(
           (p) => p.role === 'admin' && p.admin_role === 'dept_admin' && p.department_id === deptId
         ) || {
-          ...INITIAL_PROFILES[1], // fallback template
+          ...findDeptAdminTemplate(),
           id: `user-admin-${deptId}`,
           full_name: `${deptId.toUpperCase().replace('DEPT-', '')} Dept Admin`,
           email: `${deptId.replace('dept-', '')}.admin@unicampus.edu`,
@@ -106,30 +148,28 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
         setActiveScopeDeptId(deptId);
       } else {
         // Super Admin
-        const superAdmin = { ...INITIAL_PROFILES[0], is_approved: approved };
+        const superAdmin = { ...findSuperAdminProfile(), is_approved: approved };
         saveUser(superAdmin);
       }
     } else if (role === 'teacher') {
-      const teacher = { ...INITIAL_PROFILES[4], is_approved: approved }; // Dr. Asif Rahman
+      const teacher = { ...findFacultyProfile(), is_approved: approved };
       saveUser(teacher);
     } else {
-      const student = { ...INITIAL_PROFILES.find(p => p.role === 'student') || INITIAL_PROFILES[INITIAL_PROFILES.length - 1], is_approved: approved };
+      const student = { ...findStudentProfile(), is_approved: approved };
       saveUser(student);
     }
   };
 
   const loginAsStudent = () => {
-    const student = INITIAL_PROFILES.find(p => p.role === 'student') || INITIAL_PROFILES[7];
-    saveUser(student);
+    saveUser(findStudentProfile());
   };
 
   const loginAsFaculty = () => {
-    const teacher = INITIAL_PROFILES.find(p => p.role === 'teacher') || INITIAL_PROFILES[4];
-    saveUser(teacher);
+    saveUser(findFacultyProfile());
   };
 
   const loginAsAdmin = () => {
-    saveUser(INITIAL_PROFILES[0]);
+    saveUser(findSuperAdminProfile());
     setActiveScopeDeptId('all');
   };
 

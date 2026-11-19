@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AppShell } from "@/components/layout/AppShell";
 import { Providers } from "@/components/providers";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
@@ -15,8 +15,19 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "UniCampus",
-  description: "UniCampus Premium Portal",
+  title: {
+    default: "UniCampus",
+    template: "%s · UniCampus",
+  },
+  description:
+    "Unified academic workspace for students, faculty, and university administrators — routine, attendance, grades, notices, and campus communication.",
+  openGraph: {
+    title: "UniCampus",
+    description:
+      "Unified academic workspace for students, faculty, and university administrators.",
+    type: "website",
+    siteName: "UniCampus",
+  },
   icons: {
     icon: "/icon.svg",
     shortcut: "/icon.svg",
@@ -33,7 +44,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
         <script
@@ -55,7 +66,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-screen bg-background antialiased selection:bg-[#1D5BD8] selection:text-white">
+      <body className="min-h-screen bg-canvas text-fg antialiased selection:bg-brand selection:text-on-brand">
         <Providers>
           <AppShell>{children}</AppShell>
         </Providers>

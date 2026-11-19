@@ -1,7 +1,8 @@
 "use client";
 
-import { motion } from "framer-motion";
 import React from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import { cn } from "@/components/ui";
 
 export interface SwitchProps {
   checked: boolean;
@@ -21,6 +22,7 @@ export function Switch({
   className = "",
 }: SwitchProps) {
   const isSm = size === "sm";
+  const shouldReduceMotion = useReducedMotion();
 
   return (
     <button
@@ -30,30 +32,34 @@ export function Switch({
       aria-label={ariaLabel}
       disabled={disabled}
       onClick={() => !disabled && onChange(!checked)}
-      className={`relative inline-flex shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 ${
-        isSm ? "h-5 w-9 p-[2px]" : "h-6 w-11 p-[2px]"
-      } ${
+      className={cn(
+        "relative inline-flex shrink-0 cursor-pointer rounded-full transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 before:content-[''] before:absolute before:-inset-x-1.5",
+        isSm
+          ? "h-5 w-9 p-[2px] before:-inset-y-3"
+          : "h-6 w-11 p-[2px] before:-inset-y-2.5",
         checked
-          ? "bg-brand dark:bg-[#2563EB]"
-          : "bg-slate-200 dark:bg-[#21262D] border border-slate-300 dark:border-[#30363D]"
-      } ${disabled ? "opacity-50 cursor-not-allowed" : "active:scale-95"} ${className}`}
+          ? "bg-brand"
+          : "bg-surface-2 ring-1 ring-inset ring-line",
+        disabled ? "opacity-50 cursor-not-allowed" : "active:scale-95",
+        className
+      )}
     >
       <motion.span
         animate={{
           x: checked ? (isSm ? 16 : 20) : 0,
         }}
-        transition={{
-          type: "spring",
-          stiffness: 500,
-          damping: 32,
-        }}
-        className={`pointer-events-none inline-block rounded-full bg-white shadow-[0_2px_4px_rgba(0,0,0,0.18),0_1px_1px_rgba(0,0,0,0.1)] ${
+        transition={
+          shouldReduceMotion
+            ? { duration: 0 }
+            : { type: "spring", stiffness: 500, damping: 32 }
+        }
+        className={cn(
+          "pointer-events-none inline-block rounded-full bg-on-brand shadow-xs",
           isSm ? "h-4 w-4" : "h-5 w-5"
-        }`}
+        )}
       />
     </button>
   );
 }
 
 export default Switch;
-

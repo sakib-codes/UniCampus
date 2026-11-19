@@ -3,20 +3,26 @@
 import { useState } from "react";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import ProfileAvatar from "@/components/common/ProfileAvatar";
+import { Switch } from "@/components/common/Switch";
+import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
+import { Tabs, TabOption } from "@/components/ui/Tabs";
+import { CANONICAL_FACULTY, CANONICAL_STUDENT } from "@/lib/canonicalCampus";
 import { 
   Bell, 
   ShieldCheck, 
   User, 
   Save, 
   Check, 
+  KeyRound
 } from "lucide-react";
-import { themeTokens } from "@/lib/theme";
-import ClickSpark from "@/components/bits/ClickSpark";
+
+type SettingsTab = "general" | "notifications" | "security";
 
 export default function SettingsPage() {
   const { currentUser } = useAdminAuth();
   const [saved, setSaved] = useState(false);
-  const [activeTab, setActiveTab] = useState<"general" | "notifications" | "security">("general");
+  const [activeTab, setActiveTab] = useState<SettingsTab>("general");
 
   // State toggles
   const [emailAlerts, setEmailAlerts] = useState(true);
@@ -24,288 +30,253 @@ export default function SettingsPage() {
   const [routineUpdates, setRoutineUpdates] = useState(true);
   const [twoFactor, setTwoFactor] = useState(true);
 
+  const isTeacher = currentUser?.role === "teacher";
+  const isAdmin = currentUser?.role === "admin";
+  const displayName =
+    currentUser?.full_name ||
+    (isTeacher ? CANONICAL_FACULTY.name : CANONICAL_STUDENT.name);
+  const displayEmail =
+    currentUser?.email ||
+    (isTeacher ? CANONICAL_FACULTY.email : CANONICAL_STUDENT.email);
+  const displayDepartment =
+    currentUser?.department_name ||
+    (isTeacher ? CANONICAL_FACULTY.departmentName : CANONICAL_STUDENT.departmentName);
+
   const handleSave = () => {
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   };
 
+  const tabs: TabOption<SettingsTab>[] = [
+    { id: "general", label: "General", icon: <User className="w-3.5 h-3.5" /> },
+    { id: "notifications", label: "Notifications", icon: <Bell className="w-3.5 h-3.5" /> },
+    { id: "security", label: "Security", icon: <ShieldCheck className="w-3.5 h-3.5" /> },
+  ];
+
   return (
-    <div className="w-full space-y-8 pb-16">
+    <div className="w-full space-y-6 pb-16">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-[#F0F6FC] tracking-tight">
+          <h1 className="text-2xl md:text-3xl font-bold text-fg tracking-tight">
             Portal Settings
           </h1>
-          <p className="text-sm font-medium text-slate-500 dark:text-[#8D96A0] mt-1">
-            Manage your account security, notification rules, and preferences
+          <p className="text-xs md:text-sm text-fg-muted mt-1">
+            Manage your account security, notification rules, and preferences.
           </p>
         </div>
 
-        <ClickSpark sparkColor="#10b981" sparkCount={8} sparkRadius={22}>
-          <button
-            onClick={handleSave}
-            className="bg-brand hover:bg-brand-hover text-white px-6 py-2.5 rounded-2xl font-bold text-sm flex items-center gap-2 shadow-sm transition-all self-start md:self-auto cursor-pointer"
-          >
-            {saved ? (
-              <>
-                <Check className="w-4 h-4" /> Changes Saved
-              </>
-            ) : (
-              <>
-                <Save className="w-4 h-4" /> Save Preferences
-              </>
-            )}
-          </button>
-        </ClickSpark>
+        <Button
+          variant="primary"
+          onClick={handleSave}
+          className="self-start md:self-auto"
+        >
+          {saved ? (
+            <>
+              <Check className="w-4 h-4" />
+              <span>Changes Saved</span>
+            </>
+          ) : (
+            <>
+              <Save className="w-4 h-4" />
+              <span>Save Preferences</span>
+            </>
+          )}
+        </Button>
       </div>
 
       {/* Tabs */}
-      <div className={`flex items-center gap-2 border-b ${themeTokens.border} pb-3 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden`}>
-        <ClickSpark sparkColor="#1D5BD8" sparkCount={5} sparkRadius={16}>
-          <button
-            onClick={() => setActiveTab("general")}
-            className={`px-5 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap shrink-0 ${
-              activeTab === "general"
-                ? "bg-brand text-white shadow-sm"
-                : `text-slate-600 dark:text-[#8D96A0] hover:bg-white dark:hover:bg-[#161B22]`
-            }`}
-          >
-            <User className="w-3.5 h-3.5" /> General &amp; Profile
-          </button>
-        </ClickSpark>
-        <ClickSpark sparkColor="#1D5BD8" sparkCount={5} sparkRadius={16}>
-          <button
-            onClick={() => setActiveTab("notifications")}
-            className={`px-5 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap shrink-0 ${
-              activeTab === "notifications"
-                ? "bg-brand text-white shadow-sm"
-                : `text-slate-600 dark:text-[#8D96A0] hover:bg-white dark:hover:bg-[#161B22]`
-            }`}
-          >
-            <Bell className="w-3.5 h-3.5" /> Notifications
-          </button>
-        </ClickSpark>
-        <button
-          onClick={() => setActiveTab("security")}
-          className={`px-5 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap shrink-0 ${
-            activeTab === "security"
-              ? "bg-brand text-white shadow-sm"
-              : `text-slate-600 dark:text-[#8D96A0] hover:bg-white dark:hover:bg-[#161B22]`
-          }`}
-        >
-          <ShieldCheck className="w-3.5 h-3.5" /> Security &amp; Sync
-        </button>
+      <div className="w-full max-w-full overflow-x-auto">
+        <Tabs
+          tabs={tabs}
+          value={activeTab}
+          onChange={(tab) => setActiveTab(tab)}
+          variant="segmented"
+          size="sm"
+        />
       </div>
 
+      {/* Tab 1: General */}
       {activeTab === "general" && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Profile Card */}
-          <div className={`lg:col-span-4 ${themeTokens.card3xl} p-7 flex flex-col items-center text-center transition-colors`}>
-            <div className="w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-indigo-100 to-purple-100 dark:from-indigo-950 dark:to-purple-950 mb-4">
-              <ProfileAvatar
-                className="w-full h-full border-4 border-white dark:border-[#0D1117] shadow-sm bg-white dark:bg-[#161B22]"
-                iconClassName="w-10 h-10"
-              />
-            </div>
-            <h3 className="font-extrabold text-slate-900 dark:text-[#F0F6FC] text-lg">Sakib Ahmed</h3>
-            <p className="text-xs text-slate-400 dark:text-[#6E747D] font-medium">Student ID • {currentUser?.student_id ?? '—'}</p>
-            <div className="mt-3 inline-block px-3 py-1 bg-indigo-50 dark:bg-indigo-950/60 text-brand dark:text-indigo-300 font-bold text-xs rounded-full border border-brand/20">
-              6th Semester • CSE
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Left: Avatar Card */}
+          <div className="lg:col-span-4 rounded-[20px] bg-surface border border-line p-6 flex flex-col items-center text-center">
+            <ProfileAvatar
+              alt={displayName}
+              size="lg"
+              className="w-24 h-24 rounded-2xl ring-4 ring-line"
+            />
+            <h3 className="font-semibold text-base text-fg mt-3">
+              {displayName}
+            </h3>
+            <p className="text-xs text-fg-muted">{displayDepartment}</p>
+            <span className="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-brand/10 text-brand">
+              {isTeacher
+                ? `Faculty Code: ${currentUser?.teacher_code || CANONICAL_FACULTY.facultyCode}`
+                : isAdmin
+                ? "Admin Account"
+                : `Student ID: ${currentUser?.student_id || CANONICAL_STUDENT.studentId}`}
+            </span>
 
-            <div className={`w-full mt-6 pt-6 border-t ${themeTokens.border} text-left space-y-3 text-xs`}>
-              <div className="flex justify-between">
-                <span className="text-slate-400 dark:text-[#6E747D] font-medium">Department</span>
-                <span className="font-bold text-slate-700 dark:text-[#F0F6FC]">Computer Science</span>
+            <div className="w-full mt-6 pt-5 border-t border-line text-left space-y-2.5 text-xs">
+              <div className="flex justify-between gap-2">
+                <span className="text-fg-muted">Role:</span>
+                <span className="font-semibold text-fg">
+                  {isAdmin
+                    ? "System Administrator"
+                    : isTeacher
+                    ? "Faculty Member"
+                    : "Undergraduate Student"}
+                </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400 dark:text-[#6E747D] font-medium">Portal Role</span>
-                <span className="font-bold text-emerald-600 dark:text-emerald-400">Student (Verified)</span>
+              <div className="flex justify-between gap-2">
+                <span className="text-fg-muted">{isTeacher ? "Designation:" : isAdmin ? "Access Level:" : "Intake:"}</span>
+                <span className="font-semibold text-fg">
+                  {isTeacher ? CANONICAL_FACULTY.designation : isAdmin ? "Super Admin" : CANONICAL_STUDENT.batch}
+                </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400 dark:text-[#6E747D] font-medium">Sync Status</span>
-                <span className="font-bold text-brand">Supabase Live</span>
+              <div className="flex justify-between gap-2">
+                <span className="text-fg-muted">Status:</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Active Enrollment</span>
               </div>
             </div>
           </div>
 
-          {/* Account Details Form */}
-          <div className={`lg:col-span-8 ${themeTokens.card3xl} p-8 space-y-6 transition-colors`}>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-[#F0F6FC]">Personal &amp; Contact Details</h2>
+          {/* Right: Form Inputs */}
+          <div className="lg:col-span-8 rounded-[20px] bg-surface border border-line p-6 space-y-5">
+            <h2 className="text-base font-semibold text-fg">Profile Information</h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div>
-                <label htmlFor="settings-name" className="block text-xs font-bold text-slate-700 dark:text-[#F0F6FC] mb-2">
-                  Full Display Name
-                </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div className="space-y-1.5">
+                <label className="text-fg font-medium">Display Name</label>
                 <input
-                  id="settings-name"
+                  key={`name-${currentUser?.id ?? "default"}`}
                   type="text"
-                  defaultValue="Sakib Ahmed"
-                  className={`w-full px-4 py-2.5 ${themeTokens.input}`}
+                  defaultValue={displayName}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-canvas border border-line text-fg placeholder:text-fg-muted outline-hidden focus:border-brand text-xs"
                 />
               </div>
 
-              <div>
-                <label htmlFor="settings-email" className="block text-xs font-bold text-slate-700 dark:text-[#F0F6FC] mb-2">
-                  Primary Email
-                </label>
+              <div className="space-y-1.5">
+                <label className="text-fg font-medium">University Email</label>
                 <input
-                  id="settings-email"
+                  key={`email-${currentUser?.id ?? "default"}`}
                   type="email"
-                  defaultValue="sakib.cse@unicampus.edu"
-                  className={`w-full px-4 py-2.5 ${themeTokens.input}`}
+                  defaultValue={displayEmail}
+                  disabled
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-surface-2 border border-line text-fg-muted outline-hidden cursor-not-allowed text-xs"
                 />
               </div>
 
-              <div>
-                <label htmlFor="settings-phone" className="block text-xs font-bold text-slate-700 dark:text-[#F0F6FC] mb-2">
-                  Phone Number
-                </label>
+              <div className="space-y-1.5">
+                <label className="text-fg font-medium">Phone Number</label>
                 <input
-                  id="settings-phone"
-                  type="text"
-                  defaultValue="+880 1712-345678"
-                  className={`w-full px-4 py-2.5 ${themeTokens.input}`}
+                  key={`phone-${currentUser?.id ?? "default"}`}
+                  type="tel"
+                  defaultValue={isTeacher ? CANONICAL_FACULTY.phone : CANONICAL_STUDENT.phone}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-canvas border border-line text-fg placeholder:text-fg-muted outline-hidden focus:border-brand text-xs"
                 />
               </div>
 
-              <div>
-                <label htmlFor="settings-language" className="block text-xs font-bold text-slate-700 dark:text-[#F0F6FC] mb-2">
-                  Language Preference
-                </label>
+              <div className="space-y-1.5">
+                <label className="text-fg font-medium">Primary Campus</label>
                 <select
-                  id="settings-language"
-                  defaultValue="en"
-                  className={`w-full px-4 py-2.5 ${themeTokens.select}`}
+                  defaultValue="permanent"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-canvas border border-line text-fg outline-hidden focus:border-brand text-xs cursor-pointer"
                 >
-                  <option value="en">English (US)</option>
-                  <option value="bn">Bengali</option>
+                  <option value="permanent">Main Campus (Birulia)</option>
+                  <option value="city">City Campus (Dhanmondi)</option>
                 </select>
               </div>
             </div>
 
-            <div className={`pt-4 border-t ${themeTokens.border}`}>
-              <label htmlFor="settings-address" className="block text-xs font-bold text-slate-700 dark:text-[#F0F6FC] mb-2">
-                Present Campus Address
-              </label>
+            <div className="pt-4 border-t border-line space-y-1.5 text-xs">
+              <label className="text-fg font-medium">Emergency Contact</label>
               <input
-                id="settings-address"
+                key={`emergency-${currentUser?.id ?? "default"}`}
                 type="text"
-                defaultValue="Bashundhara R/A, Dhaka, Bangladesh"
-                className={`w-full px-4 py-2.5 ${themeTokens.input}`}
+                defaultValue={`Father: ${CANONICAL_STUDENT.emergencyPhone}`}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-canvas border border-line text-fg placeholder:text-fg-muted outline-hidden focus:border-brand text-xs"
               />
             </div>
           </div>
         </div>
       )}
 
+      {/* Tab 2: Notifications */}
       {activeTab === "notifications" && (
-        <div className={`${themeTokens.card3xl} p-8 space-y-6 max-w-4xl transition-colors`}>
-          <h2 className="text-lg font-bold text-slate-900 dark:text-[#F0F6FC]">Notification Channels &amp; Triggers</h2>
+        <div className="rounded-[20px] bg-surface border border-line p-6 space-y-5 max-w-3xl">
+          <h2 className="text-base font-semibold text-fg">Notification Channels &amp; Triggers</h2>
 
-          <div className="space-y-4">
-            <div className={`flex items-center justify-between p-4 ${themeTokens.cardRecessed2xl}`}>
-              <label htmlFor="notify-email" className="space-y-0.5 cursor-pointer flex-1 mr-4">
-                <h4 className="text-sm font-bold text-slate-800 dark:text-[#F0F6FC]">Email Announcements</h4>
-                <p className="text-xs text-slate-500 dark:text-[#6E747D]">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-4 rounded-xl bg-canvas border border-line">
+              <div className="space-y-0.5 pr-4">
+                <h4 className="text-xs sm:text-sm font-semibold text-fg">Email Announcements</h4>
+                <p className="text-xs text-fg-muted">
                   Receive official university notices and emergency alerts via university email.
                 </p>
-              </label>
-              <input
-                id="notify-email"
-                type="checkbox"
-                checked={emailAlerts}
-                onChange={(e) => setEmailAlerts(e.target.checked)}
-                className="w-5 h-5 accent-brand cursor-pointer rounded"
-              />
+              </div>
+              <Switch checked={emailAlerts} onChange={setEmailAlerts} ariaLabel="Toggle email announcements" />
             </div>
 
-            <div className={`flex items-center justify-between p-4 ${themeTokens.cardRecessed2xl}`}>
-              <label htmlFor="notify-sms" className="space-y-0.5 cursor-pointer flex-1 mr-4">
-                <h4 className="text-sm font-bold text-slate-800 dark:text-[#F0F6FC]">SMS Urgent Notifications</h4>
-                <p className="text-xs text-slate-500 dark:text-[#6E747D]">
+            <div className="flex items-center justify-between p-4 rounded-xl bg-canvas border border-line">
+              <div className="space-y-0.5 pr-4">
+                <h4 className="text-xs sm:text-sm font-semibold text-fg">SMS Urgent Notifications</h4>
+                <p className="text-xs text-fg-muted">
                   Get instant SMS messages for class cancellations, exams, and payment deadlines.
                 </p>
-              </label>
-              <input
-                id="notify-sms"
-                type="checkbox"
-                checked={smsAlerts}
-                onChange={(e) => setSmsAlerts(e.target.checked)}
-                className="w-5 h-5 accent-brand cursor-pointer rounded"
-              />
+              </div>
+              <Switch checked={smsAlerts} onChange={setSmsAlerts} ariaLabel="Toggle SMS urgent alerts" />
             </div>
 
-            <div className={`flex items-center justify-between p-4 ${themeTokens.cardRecessed2xl}`}>
-              <label htmlFor="notify-routine" className="space-y-0.5 cursor-pointer flex-1 mr-4">
-                <h4 className="text-sm font-bold text-slate-800 dark:text-[#F0F6FC]">Routine &amp; Timetable Alerts</h4>
-                <p className="text-xs text-slate-500 dark:text-[#6E747D]">
+            <div className="flex items-center justify-between p-4 rounded-xl bg-canvas border border-line">
+              <div className="space-y-0.5 pr-4">
+                <h4 className="text-xs sm:text-sm font-semibold text-fg">Routine &amp; Timetable Alerts</h4>
+                <p className="text-xs text-fg-muted">
                   Notify 15 minutes before active lectures start.
                 </p>
-              </label>
-              <input
-                id="notify-routine"
-                type="checkbox"
-                checked={routineUpdates}
-                onChange={(e) => setRoutineUpdates(e.target.checked)}
-                className="w-5 h-5 accent-brand cursor-pointer rounded"
-              />
+              </div>
+              <Switch checked={routineUpdates} onChange={setRoutineUpdates} ariaLabel="Toggle routine alerts" />
             </div>
           </div>
         </div>
       )}
 
+      {/* Tab 3: Security */}
       {activeTab === "security" && (
-        <div className={`${themeTokens.card3xl} p-8 space-y-6 max-w-4xl transition-colors`}>
-          <h2 className="text-lg font-bold text-slate-900 dark:text-[#F0F6FC]">Security &amp; Backend Sync</h2>
+        <div className="rounded-[20px] bg-surface border border-line p-6 space-y-5 max-w-3xl">
+          <h2 className="text-base font-semibold text-fg">Security &amp; Account Access</h2>
 
-          <div className="space-y-4">
-            <div className={`flex items-center justify-between p-4 ${themeTokens.cardRecessed2xl}`}>
-              <div className="space-y-0.5">
-                <h4 className="text-sm font-bold text-slate-800 dark:text-[#F0F6FC]">Two-Factor Authentication (2FA)</h4>
-                <p className="text-xs text-slate-500 dark:text-[#6E747D]">
-                  Secure your student portal with authenticator OTP verification.
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-3 p-4 rounded-xl bg-canvas border border-line">
+              <div className="space-y-0.5 pr-4">
+                <h4 className="text-xs sm:text-sm font-semibold text-fg">Two-Factor Authentication (2FA)</h4>
+                <p className="text-xs text-fg-muted">
+                  Secure your university portal with authenticator OTP verification.
                 </p>
               </div>
-              <button
-                type="button"
-                aria-pressed={twoFactor}
-                onClick={() => setTwoFactor(!twoFactor)}
-                className={`px-4 py-1.5 rounded-xl font-bold text-xs transition-colors cursor-pointer border ${
-                  twoFactor
-                    ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800"
-                    : "bg-slate-100 dark:bg-[#161B22] text-slate-700 dark:text-[#8D96A0] border-slate-300 dark:border-[#30363D] hover:border-slate-400"
-                }`}
-              >
-                {twoFactor ? "Enabled" : "Disabled"}
-              </button>
+              <Switch checked={twoFactor} onChange={setTwoFactor} ariaLabel="Toggle two-factor authentication" />
             </div>
 
-            <div className={`flex items-center justify-between p-4 ${themeTokens.cardRecessed2xl}`}>
-              <div className="space-y-0.5">
-                <h4 className="text-sm font-bold text-slate-800 dark:text-[#F0F6FC]">Supabase Cloud Sync</h4>
-                <p className="text-xs text-slate-500 dark:text-[#6E747D]">
-                  Data synchronizes in real-time with the unified campus database.
+            <div className="flex items-center justify-between gap-3 flex-wrap p-4 rounded-xl bg-canvas border border-line">
+              <div className="space-y-0.5 pr-4 min-w-0">
+                <h4 className="text-xs sm:text-sm font-semibold text-fg">Institutional Session</h4>
+                <p className="text-xs text-fg-muted">
+                  Signed in with your verified UniCampus institutional credentials.
                 </p>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                <span className="text-xs font-bold text-slate-700 dark:text-[#F0F6FC]">Online</span>
-              </div>
+              <Badge variant="success">Verified</Badge>
             </div>
 
-            <div className={`pt-4 border-t ${themeTokens.border} flex items-center justify-between`}>
+            <div className="pt-4 border-t border-line flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h4 className="text-sm font-bold text-slate-800 dark:text-[#F0F6FC]">Account Password</h4>
-                <p className="text-xs text-slate-500 dark:text-[#6E747D]">
-                  Last updated 3 weeks ago
-                </p>
+                <h4 className="text-xs sm:text-sm font-semibold text-fg">Account Password</h4>
+                <p className="text-xs text-fg-muted">Last updated 3 weeks ago</p>
               </div>
-              <button className={`${themeTokens.btnSecondary} px-4 py-2 text-xs`}>
-                Change Password
-              </button>
+              <Button variant="secondary" size="sm">
+                <KeyRound className="w-3.5 h-3.5" />
+                <span>Change Password</span>
+              </Button>
             </div>
           </div>
         </div>

@@ -1,0 +1,67 @@
+# UniCampus — Issue, Bug & Technical Debt Registry
+
+> **Purpose:** Centralized registry for all active bugs, regressions, and technical debt across the UniCampus monorepo.  
+> **Protocol:** Every agent encountering a bug must check here first. When you discover or resolve a bug, update this file immediately.
+
+---
+
+## 1. Active Issues & Technical Debt
+
+### Issue #1: Mock Data Layer Transition to Live Supabase Client
+- **Platform:** `unicampus-web` & `unicampus-mobile`
+- **Severity:** Medium (Architectural)
+- **Status:** `[ ] Backlog`
+- **Description:** The Web and Mobile applications currently read from in-memory mock datasets (`src/lib/mockData.ts`, `src/lib/facultyData.ts`, `src/lib/services/adminService.ts`). The database schema is fully drafted in `unicampus-supabase/migrations/20261017_admin_portal_schema.sql`, but client services have not been fully wired to live Supabase queries.
+- **Remediation Plan:** Wire services through `src/lib/supabase/client.ts` with error fallbacks to mock data when offline or in test environments.
+
+---
+
+### Issue #2: Mobile Student & Faculty Screens Porting Backlog
+- **Platform:** `unicampus-mobile`
+- **Severity:** High (Feature Gap)
+- **Status:** `[~] In Progress`
+- **Description:** Mobile app has completed Splash, Onboarding, and Auth (Login, Register Wizard, Forgot/Reset Password), but the remaining screens (Student Dashboard, Academic Audit, Routine Matrix, Notices, Directory) need to be ported from Web UI to Flutter.
+- **Remediation Plan:** Follow the porting blueprint in [`unicampus-mobile/MOBILE_CONTEXT.md`](file:///home/sakib360/sakib-codes/UniCampus/unicampus-mobile/MOBILE_CONTEXT.md).
+
+---
+
+### Issue #3: Profile Edit & Avatar Upload Modal
+- **Platform:** `unicampus-web`
+- **Severity:** Low (Feature Enhancement)
+- **Status:** `[ ] Backlog`
+- **Description:** The Student Profile view (`/profile`) shows avatar and info, but the edit modal (`/profile/edit`) with drag-and-drop file upload is not yet implemented.
+- **Remediation Plan:** Build the profile editor modal and connect to Supabase Storage avatars bucket.
+
+---
+
+## 2. Resolved Issues Archive
+
+| Issue ID | Platform | Summary | Resolution | Date Resolved |
+|---|---|---|---|---|
+| **RES-001** | `unicampus-web` | Desktop-first static pixel containers (`w-80`, `w-96`) causing horizontal scroll on mobile viewports. | Replaced with responsive boundaries (`w-[calc(100vw-2rem)] sm:w-... max-w-[...]`) and dual mobile/desktop view rendering. | 2026-10-18 |
+| **RES-002** | `unicampus-web` | `CountUp` animation exhibiting asymptotic crawl near completion. | Added cubic-bezier `[0.16, 1, 0.3, 1]` easing with instant hard-snap completion at 99%. | 2026-10-18 |
+| **RES-003** | `unicampus-web` | `select-none` utility preventing students and faculty from copying IDs, emails, and transaction numbers. | Removed `select-none` from all tabular and data-dense views while retaining it on interactive buttons. | 2026-10-18 |
+| **RES-004** | `unicampus-mobile` | Package dependency incompatibilities during fresh flutter pub get. | Ran dependency alignment and verified 0 warnings/errors with `flutter analyze`. | 2026-11-18 |
+| **RES-005** | `unicampus-web` | Dead Tailwind v4 animation classes (`animate-in`, `fade-in`, `zoom-in-95`, etc.) across 22 files producing zero motion. | Purged all 46 dead classes, replacing with subtle `framer-motion` and native CSS transitions. Verified 0 occurrences remain in `src/`. | 2026-11-18 |
+| **RES-006** | `unicampus-web` | Mobile top header 390px viewport overlap and 3 disjointed duplicate sidebar/header implementations. | Unified Student, Teacher, and Admin layouts into single responsive `PortalShell` with clean hairline desktop `SideNav` and mobile `BottomTabs`. | 2026-11-18 |
+| **RES-007** | `unicampus-web` | Admin users popover default open bug (`FAC-1042`) and teacher attendance fixed positioning container break. | Reset initial popover state to `null` and transformed attendance action bar into container-safe sticky bottom bar. | 2026-11-18 |
+| **RES-008** | `unicampus-web` | AI-generated design clichés (floating dot badges, repetitive quick-actions duplicating sidebar, light mode chat bubble illegibility, fake AI prompt chips, DevOps cluster jargon). | Executed De-AI refinement across 13 files: calibrated WCAG AA contrast tokens, removed prompt chips, centered login card, purged duplicate actions, and verified clean independent build. | 2026-11-18 |
+| **RES-009** | `unicampus-web` | System-wide UI congestion, text redundancy, identity mismatch, and tech jargon (SHA-256/blockchain notices, IoT sensor tags in routine, API gateway telemetry in admin analytics, 48 icon buttons in materials, 60+ buttons in faculty directory). | Complete systemic audit across 26 routes; consolidated card buttons to primary actions + menus; purged pseudo-blockchain & fake IoT data; harmonized user identity bindings to active student session; verified 0 errors across 34 routes. | 2026-11-18 |
+| **RES-010** | `unicampus-web` | Comprehensive Browser Audit & UI Remediation across 34 routes: mobile bottom nav clipping, teacher attendance QR obscured by sticky footer, teacher grades policy 110% error, dead pagination, non-overlapping weekly routine periods, canonical entity alignment (Sakib Ahmed, Dr. Asif Rahman, Spring 2026, 5,072 total users), removed duplicate badges and AI clichés. | Re-architected mobile nav with overflow drawer; responsive QR layout; normalized grading policy to 100% with working pagination; unified canonical dataset in `src/lib/canonicalCampus.ts`; fixed routine timetable; verified clean production build across all 34 routes. | 2026-11-19 |
+| **RES-011** | `unicampus-web` | E2E Audit Suite (406 checks) and Sentinel Victory Remediation: ThemeToggle SSR hydration mismatch (`tabindex="0"` on motion.span), landing header mobile 390px button overflow, admin analytics dual-metric sub-label separation (<8px gap), teacher attendance unscanned pre-finalization absent count, teacher grades canonical grade scale legend, routine weekly matrix single Midday Recess row, student directory mock name collisions, and sanitized admin settings developer jargon. | Replaced ThemeToggle motion.span with clean spans and hydration suppressors; wrapped mobile landing CTA in `hidden sm:inline-flex`; added clean grid separation on dual metrics; aligned teacher attendance pre-finalization status and enabled pagination (`pageSize: 4`); expanded grades scale legend to full canonical buckets; consolidated routine matrix break row; resolved student name collisions; verified 406/406 checks passed across all 4 E2E tiers and clean production build. | 2026-11-19 |
+
+---
+
+## 3. Bug Reporting Template for Agents
+
+When logging a new bug, append it to Section 1 using this standard format:
+
+```markdown
+### Issue #<NUMBER>: <TITLE>
+- **Platform:** `unicampus-web` | `unicampus-mobile` | `unicampus-supabase`
+- **Severity:** High | Medium | Low
+- **Status:** `[ ] Backlog` | `[~] In Progress` | `[!] Blocked`
+- **Description:** <Clear, concise description of the bug and behavior>
+- **Affected Files:** <List of file paths>
+- **Remediation Plan:** <Concrete technical proposal to fix it>
+```

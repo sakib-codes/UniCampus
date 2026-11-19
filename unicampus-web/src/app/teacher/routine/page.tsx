@@ -2,22 +2,10 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Calendar, 
-  Clock, 
-  MapPin, 
-  Users, 
-  BookOpen, 
-  Download, 
-  Printer, 
-  Sparkles,
-  CheckCircle2
-} from "lucide-react";
+import { Calendar, Clock, MapPin, Printer } from "lucide-react";
+import { ACTIVE_TERM, CANONICAL_FACULTY } from "@/lib/canonicalCampus";
 import { teacherService, TeacherTimetableSlot } from "@/lib/services/teacherService";
-import { themeTokens } from "@/lib/theme";
-import SpotlightCard from "@/components/bits/SpotlightCard";
-import ClickSpark from "@/components/bits/ClickSpark";
-import DecryptedText from "@/components/bits/DecryptedText";
+import { Tabs, EmptyState } from "@/components/ui";
 
 const daysList = ["All Days", "Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"];
 
@@ -35,59 +23,35 @@ export default function TeacherRoutinePage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="px-2 py-0.5 rounded-md font-mono text-[10px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
-              FACULTY SCHEDULE
-            </span>
-            <span className="text-xs text-slate-400 dark:text-[#6E747D] font-mono">• Fall 2026</span>
-          </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-[#F0F6FC] tracking-tight">
+          <h1 className="text-2xl md:text-3xl font-extrabold text-fg tracking-tight">
             Teaching Timetable &amp; Office Hours
           </h1>
-          <p className="text-xs font-medium text-slate-500 dark:text-[#8D96A0] mt-0.5">
-            Personal academic lecture roster, laboratory allocations, and advising sessions
+          <p className="text-xs font-medium text-fg-muted mt-1">
+            {CANONICAL_FACULTY.name} • {CANONICAL_FACULTY.office} • {ACTIVE_TERM} lecture, lab, and advising schedule
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <ClickSpark sparkColor="#2563EB" sparkCount={6} sparkRadius={18}>
-            <button
-              onClick={() => window.print()}
-              className={`${themeTokens.btnSecondary} px-3.5 py-2 text-xs flex items-center gap-1.5 cursor-pointer`}
-            >
-              <Printer className="w-3.5 h-3.5" />
-              <span>Print Schedule</span>
-            </button>
-          </ClickSpark>
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="min-h-[44px] bg-surface hover:bg-surface-2 text-fg border border-line px-3.5 py-2 text-xs inline-flex items-center gap-1.5 cursor-pointer rounded-xl font-semibold transition-colors"
+          >
+            <Printer className="w-3.5 h-3.5" />
+            <span>Print Schedule</span>
+          </button>
         </div>
       </div>
 
       {/* Day Filter Tabs */}
-      <div className={`flex items-center gap-1.5 p-1.5 ${themeTokens.tabTrack} overflow-x-auto relative`}>
-        {daysList.map((day) => {
-          const isActive = activeDay === day;
-          return (
-            <button
-              key={day}
-              onClick={() => setActiveDay(day)}
-              className={`relative px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors duration-200 z-10 ${
-                isActive
-                  ? "text-slate-900 dark:text-white"
-                  : "text-slate-500 hover:text-slate-800 dark:text-[#8D96A0] dark:hover:text-white"
-              }`}
-            >
-              {isActive && (
-                <motion.div
-                  layoutId="teacher-routine-day-pill"
-                  className="absolute inset-0 bg-white dark:bg-[#1A2234] shadow-[0_2px_8px_rgba(0,0,0,0.08),inset_0_1px_1px_rgba(255,255,255,1)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.15)] border border-white dark:border-white/20 rounded-xl -z-10"
-                  transition={{ type: "spring", stiffness: 450, damping: 32 }}
-                />
-              )}
-              {day}
-            </button>
-          );
-        })}
-      </div>
+      <Tabs
+        tabs={daysList.map((day) => ({ id: day, label: day }))}
+        value={activeDay}
+        onChange={setActiveDay}
+        layoutId="teacher-routine-day-pill"
+        ariaLabel="Filter routine by day"
+        className="w-full sm:w-auto"
+      />
 
       {/* Routine Grid */}
       <AnimatePresence mode="wait">
@@ -97,82 +61,86 @@ export default function TeacherRoutinePage() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -8 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
         >
-          {filteredSlots.map((slot) => {
-            const isLab = slot.type === 'Lab';
-            const isConsultation = slot.type === 'Consultation';
+          {filteredSlots.length === 0 ? (
+            <div className="rounded-[20px] bg-surface border border-line">
+              <EmptyState
+                icon={<Calendar className="w-5 h-5" />}
+                title={`No sessions scheduled for ${activeDay}`}
+                description={`Select another day or switch to All Days to view ${CANONICAL_FACULTY.name}'s ${ACTIVE_TERM} timetable.`}
+              />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredSlots.map((slot) => {
+                const isLab = slot.type === "Lab";
+                const isConsultation = slot.type === "Consultation";
 
-            return (
-              <SpotlightCard
-                key={slot.id}
-                className={`${themeTokens.card} p-5 flex flex-col justify-between border-t-4 ${
-                  isLab
-                    ? "border-t-emerald-500"
-                    : isConsultation
-                    ? "border-t-amber-500"
-                    : "border-t-brand"
-                }`}
-                spotlightColor="rgba(99, 102, 241, 0.12)"
-              >
-                <div>
-                  {/* Day & Type Badge */}
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="font-mono text-xs font-bold text-slate-500 dark:text-[#8D96A0]">
-                      {slot.day}
-                    </span>
-                    <span className={`px-2 py-0.5 rounded font-mono font-bold text-[10px] ${
+                return (
+                  <div
+                    key={slot.id}
+                    className={`rounded-[20px] bg-surface border border-line p-5 flex flex-col justify-between border-t-4 ${
                       isLab
-                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                        ? "border-t-success"
                         : isConsultation
-                        ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
-                        : "bg-brand/10 text-brand border border-brand/20"
-                    }`}>
-                      {slot.type}
-                    </span>
-                  </div>
+                        ? "border-t-warning"
+                        : "border-t-brand"
+                    }`}
+                  >
+                    <div>
+                      {/* Day & Type Badge */}
+                      <div className="flex items-center justify-between gap-2 mb-3">
+                        <span className="font-mono text-xs font-bold text-fg-muted">
+                          {slot.day}
+                        </span>
+                        <span
+                          className={`px-2 py-0.5 rounded font-mono font-bold text-xs ${
+                            isLab
+                              ? "bg-success-light text-success border border-success/20"
+                              : isConsultation
+                              ? "bg-warning-light text-warning border border-warning/20"
+                              : "bg-brand-soft text-brand border border-brand/20"
+                          }`}
+                        >
+                          {slot.type}
+                        </span>
+                      </div>
 
-                  {/* Course Code & Title */}
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <span className="font-mono text-xs font-black text-brand">
-                      <DecryptedText text={slot.courseCode} speed={30} maxIterations={8} animateOn="hover" />
-                    </span>
-                    {slot.section && (
-                      <span className="font-mono text-[10px] font-bold text-slate-400 dark:text-[#6E747D]">
-                        ({slot.section})
-                      </span>
-                    )}
-                  </div>
+                      {/* Course Code & Title */}
+                      <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                        <span className="font-mono text-xs font-bold text-brand">
+                          {slot.courseCode}
+                        </span>
+                        {slot.section && (
+                          <span className="font-mono text-xs font-medium text-fg-muted">
+                            ({slot.section})
+                          </span>
+                        )}
+                      </div>
 
-                  <h3 className="font-bold text-sm text-slate-900 dark:text-[#F0F6FC] leading-snug mb-4">
-                    {slot.courseTitle}
-                  </h3>
+                      <h3 className="font-semibold text-sm text-fg leading-snug mb-4">
+                        {slot.courseTitle}
+                      </h3>
 
-                  {/* Time & Room metadata */}
-                  <div className="space-y-2 text-xs text-slate-600 dark:text-[#8D96A0]">
-                    <div className="flex items-center gap-2 font-mono">
-                      <Clock className="w-3.5 h-3.5 text-slate-400 dark:text-[#6E747D]" />
-                      <span>{slot.startTime} - {slot.endTime}</span>
+                      {/* Time & Room metadata */}
+                      <div className="space-y-2 text-xs text-fg-muted">
+                        <div className="flex items-center gap-2 font-mono">
+                          <Clock className="w-3.5 h-3.5 text-fg-muted shrink-0" />
+                          <span>
+                            {slot.startTime} - {slot.endTime}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 font-mono">
+                          <MapPin className="w-3.5 h-3.5 text-fg-muted shrink-0" />
+                          <span className="font-semibold text-fg">{slot.room}</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 font-mono">
-                      <MapPin className="w-3.5 h-3.5 text-slate-400 dark:text-[#6E747D]" />
-                      <span className="font-bold text-slate-800 dark:text-[#F0F6FC]">
-                        <DecryptedText text={slot.room} speed={30} maxIterations={8} animateOn="view" />
-                      </span>
-                    </div>
                   </div>
-                </div>
-
-                <div className={`mt-4 pt-3 border-t ${themeTokens.border} flex items-center justify-between text-[11px]`}>
-                  <span className="text-slate-400 dark:text-[#6E747D]">Status</span>
-                  <span className="text-emerald-500 font-bold flex items-center gap-1 font-mono">
-                    <CheckCircle2 className="w-3 h-3" />
-                    Room Allocated
-                  </span>
-                </div>
-              </SpotlightCard>
-            );
-          })}
+                );
+              })}
+            </div>
+          )}
         </motion.div>
       </AnimatePresence>
     </div>

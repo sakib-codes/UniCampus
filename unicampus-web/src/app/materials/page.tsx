@@ -3,38 +3,22 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  FolderGit2, 
-  FileText, 
   Download, 
   Search, 
-  Filter, 
   Check, 
   BookOpen, 
-  FileCode, 
   Sparkles,
-  ArrowDownToLine,
-  Calendar,
-  UserCheck,
-  FolderDown,
-  ExternalLink,
-  Eye,
-  Copy,
-  Folder,
-  CloudDownload,
-  Share2,
-  RefreshCw,
-  Bookmark,
-  BookmarkCheck,
-  X,
-  FileSpreadsheet,
-  FileArchive,
-  Presentation,
-  CheckCircle2,
-  ChevronDown
+  FolderDown, 
+  Eye, 
+  Copy, 
+  Folder, 
+  CloudDownload, 
+  RefreshCw, 
+  Bookmark, 
+  X, 
+  ChevronDown,
+  MoreVertical
 } from "lucide-react";
-import { SPOTLIGHT } from "@/lib/theme";
-import SpotlightCard from "@/components/bits/SpotlightCard";
-import FadeIn from "@/components/bits/FadeIn";
 import ProfileAvatar from "@/components/common/ProfileAvatar";
 
 type MaterialItem = {
@@ -235,6 +219,7 @@ export default function StudentMaterialsPage() {
   const [syncSuccess, setSyncSuccess] = useState(false);
   const [savedItemsOnly, setSavedItemsOnly] = useState(false);
   const [savedItemIds, setSavedItemIds] = useState<string[]>(["mat-alg-1", "mat-se-2"]);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -343,25 +328,25 @@ export default function StudentMaterialsPage() {
   };
 
   return (
-    <div className="w-full space-y-6 pb-16 select-none">
+    <div className="w-full space-y-6 pb-16">
       {/* ========================================================================= */}
       {/* 1. PAGE HEADER ROW                                                        */}
       {/* ========================================================================= */}
-      <FadeIn delay={0.05} direction="down">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-2 border-b border-slate-200 dark:border-[#30363D]/40">
+      <div className="w-full">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-2 border-b border-slate-200 dark:border-line/40">
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-md bg-brand/10 text-brand border border-brand/25 dark:bg-[#2563EB]/15 dark:text-[#2563EB] dark:border-[#2563EB]/30 text-[11px] font-mono font-medium">
+              <span className="px-2.5 py-0.5 rounded-md bg-brand/10 text-brand border border-brand/25 dark:bg-brand/15 dark:text-brand dark:border-brand/30 text-xs font-mono font-medium">
                 ACADEMIC REPOSITORY
               </span>
-              <span className="text-[12px] text-slate-500 dark:text-[#8D96A0]">
+              <span className="text-[12px] text-slate-500 dark:text-fg-muted">
                 • Spring 2026 Enrolled Cohort
               </span>
             </div>
-            <h1 className="text-[28px] font-manrope font-extrabold tracking-[-0.02em] text-slate-900 dark:text-[#F0F6FC] leading-tight">
+            <h1 className="text-[28px] font-extrabold tracking-[-0.02em] text-slate-900 dark:text-fg leading-tight">
               Course Materials &amp; Study Repository
             </h1>
-            <p className="text-[14px] text-slate-500 dark:text-[#8D96A0] font-normal">
+            <p className="text-[14px] text-slate-500 dark:text-fg-muted font-normal">
               Verified lecture slides, lab manuals, code repositories, and past exam archives.
             </p>
           </div>
@@ -374,10 +359,10 @@ export default function StudentMaterialsPage() {
               className={`h-9 px-4 rounded-xl border text-[13px] font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-xs active:scale-[0.98] ${
                 syncSuccess
                   ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
-                  : "bg-slate-100 hover:bg-slate-200 dark:bg-[#161B22] dark:hover:bg-[#1C2128] border-slate-200 dark:border-[#30363D] text-slate-800 dark:text-[#F0F6FC]"
+                  : "bg-slate-100 hover:bg-slate-200 dark:bg-surface-2 dark:hover:bg-surface-2 border-slate-200 dark:border-line text-slate-800 dark:text-fg"
               }`}
             >
-              <RefreshCw className={`w-4 h-4 ${isSyncing ? "animate-spin text-brand dark:text-[#2563EB]" : syncSuccess ? "text-emerald-500" : "text-slate-500 dark:text-[#8D96A0]"}`} />
+              <RefreshCw className={`w-4 h-4 ${isSyncing ? "animate-spin text-brand dark:text-brand" : syncSuccess ? "text-emerald-500" : "text-slate-500 dark:text-fg-muted"}`} />
               <span>{isSyncing ? "Syncing..." : syncSuccess ? "Hub Synchronized" : "Sync Cloud Hub"}</span>
             </button>
 
@@ -386,8 +371,8 @@ export default function StudentMaterialsPage() {
               onClick={() => setSavedItemsOnly(!savedItemsOnly)}
               className={`h-9 px-4 rounded-xl border text-[13px] font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-xs active:scale-[0.98] ${
                 savedItemsOnly
-                  ? "bg-brand text-white dark:bg-[#2563EB] border-brand dark:border-[#2563EB]"
-                  : "bg-slate-100 hover:bg-slate-200 dark:bg-[#161B22] dark:hover:bg-[#1C2128] border-slate-200 dark:border-[#30363D] text-slate-800 dark:text-[#F0F6FC]"
+                  ? "bg-brand text-white dark:bg-brand border-brand dark:border-brand"
+                  : "bg-slate-100 hover:bg-slate-200 dark:bg-surface-2 dark:hover:bg-surface-2 border-slate-200 dark:border-line text-slate-800 dark:text-fg"
               }`}
             >
               <Bookmark className="w-4 h-4" />
@@ -395,23 +380,23 @@ export default function StudentMaterialsPage() {
             </button>
           </div>
         </div>
-      </FadeIn>
+      </div>
 
       {/* ========================================================================= */}
       {/* 2. FILTER & SEARCH TOOLBAR                                                */}
       {/* ========================================================================= */}
-      <FadeIn delay={0.1}>
-        <section className="p-4 rounded-2xl bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 shadow-xs">
+      <div className="w-full">
+        <section className="p-4 rounded-2xl bg-white dark:bg-surface border border-slate-200 dark:border-line flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 shadow-xs">
           {/* Left: Search input field */}
           <div className="relative w-full lg:w-[380px]">
-            <Search className="w-4 h-4 text-slate-400 dark:text-[#8D96A0] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <Search className="w-4 h-4 text-slate-400 dark:text-fg-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               ref={searchInputRef}
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Filter by topic, filename, or instructor..."
-              className="w-full h-10 pl-10 pr-10 rounded-xl bg-slate-100 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] text-[13px] text-slate-900 dark:text-[#F0F6FC] placeholder-slate-400 dark:placeholder-[#8D96A0] focus:outline-none focus:border-brand dark:focus:border-[#2563EB] transition-colors"
+              className="w-full h-10 pl-10 pr-10 rounded-xl bg-slate-100 dark:bg-surface-2 border border-slate-200 dark:border-line text-[13px] text-slate-900 dark:text-fg placeholder-slate-400 dark:placeholder-fg-muted focus:outline-none focus:border-brand dark:focus:border-brand transition-colors"
             />
             {searchQuery ? (
               <button
@@ -422,7 +407,7 @@ export default function StudentMaterialsPage() {
                 <X className="w-3.5 h-3.5" />
               </button>
             ) : (
-              <kbd className="absolute right-3 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded bg-slate-200 dark:bg-[#1C2128] border border-slate-300 dark:border-[#30363D] text-[10px] font-mono text-slate-500 dark:text-[#8D96A0]">
+              <kbd className="absolute right-3 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded bg-slate-200 dark:bg-surface-2 border border-slate-300 dark:border-line text-xs font-mono text-slate-500 dark:text-fg-muted">
                 /
               </kbd>
             )}
@@ -431,7 +416,7 @@ export default function StudentMaterialsPage() {
           {/* Right: Course Filter Pills & Type Dropdown */}
           <div className="flex flex-wrap items-center gap-2.5">
             {/* Course Selector Pills */}
-            <div className="flex items-center overflow-x-auto p-1 rounded-xl bg-slate-100 dark:bg-[#1C2128] border border-slate-200 dark:border-[#30363D]/60 gap-1 custom-scrollbar">
+            <div className="flex items-center overflow-x-auto p-1 rounded-xl bg-slate-100 dark:bg-surface-2 border border-slate-200 dark:border-line/60 gap-1 custom-scrollbar">
               {courseFilterOptions.map((opt) => {
                 const isActive = selectedCourse === opt.id;
                 return (
@@ -441,8 +426,8 @@ export default function StudentMaterialsPage() {
                     onClick={() => setSelectedCourse(opt.id)}
                     className={`px-3 py-1.5 rounded-lg text-[12px] font-semibold tracking-tight transition-all shrink-0 cursor-pointer ${
                       isActive
-                        ? "bg-brand text-white dark:bg-[#2563EB] dark:text-[#F0F6FC] shadow-xs"
-                        : "text-slate-600 dark:text-[#8D96A0] hover:text-slate-900 dark:hover:text-[#F0F6FC] hover:bg-slate-200/60 dark:hover:bg-[#161B22]"
+                        ? "bg-brand text-white dark:bg-brand dark:text-fg shadow-xs"
+                        : "text-slate-600 dark:text-fg-muted hover:text-slate-900 dark:hover:text-fg hover:bg-slate-200/60 dark:hover:bg-surface-2"
                     }`}
                   >
                     {opt.label}
@@ -457,10 +442,10 @@ export default function StudentMaterialsPage() {
                 aria-label="Filter by material type"
                 value={selectedType}
                 onChange={(e) => setSelectedType(e.target.value)}
-                className="h-10 pl-3.5 pr-8 rounded-xl bg-slate-100 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] text-[12px] font-semibold text-slate-800 dark:text-[#F0F6FC] focus:outline-none focus:border-brand dark:focus:border-[#2563EB] cursor-pointer appearance-none"
+                className="h-10 pl-3.5 pr-8 rounded-xl bg-slate-100 dark:bg-surface-2 border border-slate-200 dark:border-line text-[12px] font-semibold text-slate-800 dark:text-fg focus:outline-none focus:border-brand dark:focus:border-brand cursor-pointer appearance-none"
               >
                 {typeFilterOptions.map((t) => (
-                  <option key={t.id} value={t.id} className="bg-white dark:bg-[#161B22]">
+                  <option key={t.id} value={t.id} className="bg-white dark:bg-surface-2">
                     {t.label}
                   </option>
                 ))}
@@ -469,107 +454,95 @@ export default function StudentMaterialsPage() {
             </div>
           </div>
         </section>
-      </FadeIn>
+      </div>
 
       {/* ========================================================================= */}
       {/* 3. STORAGE & QUICK STATS BENTO STRIP (3 equal cards across 12 columns)    */}
       {/* ========================================================================= */}
-      <FadeIn delay={0.15}>
+      <div className="w-full">
         <section className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {/* Card 1: Total Repository Files */}
-          <SpotlightCard
-            className="p-5 rounded-[20px] bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] flex items-center justify-between relative overflow-hidden transition-all duration-300 shadow-xs hover:border-brand/40 dark:hover:border-[#2563EB]/40"
-            spotlightColor={SPOTLIGHT.wash}
-            borderGlowColor={SPOTLIGHT.glow}
-          >
+          <div className="p-5 rounded-[20px] bg-white dark:bg-surface border border-slate-200 dark:border-line flex items-center justify-between relative overflow-hidden transition-all duration-300 shadow-2xs hover:border-brand/40 dark:hover:border-brand/40">
             <div className="flex flex-col gap-1 z-10">
-              <span className="text-[12px] font-medium text-slate-500 dark:text-[#8D96A0] tracking-wide uppercase font-mono">
+              <span className="text-[12px] font-medium text-slate-500 dark:text-fg-muted font-mono">
                 Total Repository Files
               </span>
               <div className="flex items-baseline gap-2">
-                <span className="text-[32px] font-manrope font-extrabold text-slate-900 dark:text-[#F0F6FC] leading-none">
+                <span className="text-[32px] font-extrabold text-slate-900 dark:text-fg leading-none">
                   48
                 </span>
-                <span className="text-[11px] font-mono text-brand dark:text-[#8A86FF] font-medium">
+                <span className="text-xs font-mono text-brand dark:text-brand font-medium">
                   Verified assets
                 </span>
               </div>
-              <span className="text-[12px] text-slate-500 dark:text-[#8D96A0]">
+              <span className="text-[12px] text-slate-500 dark:text-fg-muted">
                 Across 5 enrolled Spring 2026 courses
               </span>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-brand/10 dark:bg-[#2563EB]/15 border border-brand/20 dark:border-[#2563EB]/30 flex items-center justify-center text-brand dark:text-[#2563EB] shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-brand/10 dark:bg-brand/15 border border-brand/20 dark:border-brand/30 flex items-center justify-center text-brand dark:text-brand shrink-0">
               <Folder className="w-6 h-6" />
             </div>
-          </SpotlightCard>
+          </div>
 
           {/* Card 2: Offline Sync & Downloads */}
-          <SpotlightCard
-            className="p-5 rounded-[20px] bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] flex items-center justify-between relative overflow-hidden transition-all duration-300 shadow-xs hover:border-sky-500/40 dark:hover:border-[#38BDF8]/40"
-            spotlightColor={SPOTLIGHT.wash}
-            borderGlowColor={SPOTLIGHT.glow}
-          >
+          <div className="p-5 rounded-[20px] bg-white dark:bg-surface border border-slate-200 dark:border-line flex items-center justify-between relative overflow-hidden transition-all duration-300 shadow-2xs hover:border-sky-500/40 dark:hover:border-sky-400/40">
             <div className="flex flex-col gap-1 z-10">
-              <span className="text-[12px] font-medium text-slate-500 dark:text-[#8D96A0] tracking-wide uppercase font-mono">
+              <span className="text-[12px] font-medium text-slate-500 dark:text-fg-muted font-mono">
                 Downloads this week
               </span>
               <div className="flex items-baseline gap-2">
-                <span className="text-[32px] font-manrope font-extrabold text-sky-600 dark:text-[#38BDF8] leading-none">
+                <span className="text-[32px] font-extrabold text-sky-600 dark:text-sky-400 leading-none">
                   12
                 </span>
-                <span className="text-[11px] font-mono text-slate-500 dark:text-[#8D96A0]">
+                <span className="text-xs font-mono text-slate-500 dark:text-fg-muted">
                   files cached
                 </span>
               </div>
-              <span className="text-[12px] text-slate-500 dark:text-[#8D96A0]">
+              <span className="text-[12px] text-slate-500 dark:text-fg-muted">
                 142.8 MB offline bundle synced
               </span>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-sky-500/10 dark:bg-[#38BDF8]/15 border border-sky-500/20 dark:border-[#38BDF8]/30 flex items-center justify-center text-sky-600 dark:text-[#38BDF8] shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-sky-500/10 dark:bg-sky-400/15 border border-sky-500/20 dark:border-sky-400/30 flex items-center justify-center text-sky-600 dark:text-sky-400 shrink-0">
               <CloudDownload className="w-6 h-6" />
             </div>
-          </SpotlightCard>
+          </div>
 
           {/* Card 3: Recent Dispatches */}
-          <SpotlightCard
-            className="p-5 rounded-[20px] bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] flex items-center justify-between relative overflow-hidden transition-all duration-300 shadow-xs hover:border-emerald-500/40 dark:hover:border-[#3FB950]/40"
-            spotlightColor={SPOTLIGHT.wash}
-            borderGlowColor={SPOTLIGHT.glow}
-          >
+          <div className="p-5 rounded-[20px] bg-white dark:bg-surface border border-slate-200 dark:border-line flex items-center justify-between relative overflow-hidden transition-all duration-300 shadow-2xs hover:border-emerald-500/40 dark:hover:border-success/40">
             <div className="flex flex-col gap-1 z-10">
-              <span className="text-[12px] font-medium text-slate-500 dark:text-[#8D96A0] tracking-wide uppercase font-mono">
+              <span className="text-[12px] font-medium text-slate-500 dark:text-fg-muted font-mono">
                 Recent Uploads
               </span>
               <div className="flex items-baseline gap-2">
-                <span className="text-[32px] font-manrope font-extrabold text-emerald-600 dark:text-[#3FB950] leading-none">
+                <span className="text-[32px] font-extrabold text-emerald-600 dark:text-success leading-none">
                   3 new
                 </span>
-                <span className="text-[11px] font-mono text-emerald-600 dark:text-[#3FB950] font-medium">
+                <span className="text-xs font-mono text-emerald-600 dark:text-success font-medium">
                   today
                 </span>
               </div>
-              <span className="text-[12px] text-slate-500 dark:text-[#8D96A0]">
+              <span className="text-[12px] text-slate-500 dark:text-fg-muted">
                 Latest by Dr. Asif Rahman • 2h ago
               </span>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-emerald-500/10 dark:bg-[#3FB950]/15 border border-emerald-500/20 dark:border-[#3FB950]/30 flex items-center justify-center text-emerald-600 dark:text-[#3FB950] shrink-0">
-              <Sparkles className="w-6 h-6" />
+            <div className="w-12 h-12 rounded-xl bg-emerald-500/10 dark:bg-success/15 border border-emerald-500/20 dark:border-success/30 flex items-center justify-center text-emerald-600 dark:text-success shrink-0">
+              <BookOpen className="w-6 h-6" />
             </div>
-          </SpotlightCard>
+          </div>
         </section>
-      </FadeIn>
+      </div>
 
       {/* ========================================================================= */}
       {/* 4. GROUPED RESOURCE REPOSITORY PANELS (Course Group Containers)           */}
       {/* ========================================================================= */}
       {filteredGroups.length === 0 ? (
-        <FadeIn delay={0.2}>
-          <div className="p-12 rounded-3xl bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] text-center space-y-3">
-            <BookOpen className="w-12 h-12 text-slate-300 dark:text-[#30363D] mx-auto" />
-            <h3 className="text-base font-bold text-slate-800 dark:text-[#F0F6FC]">
+        <div className="w-full">
+          <div className="p-12 rounded-3xl bg-white dark:bg-surface border border-slate-200 dark:border-line text-center space-y-3">
+            <BookOpen className="w-12 h-12 text-slate-300 dark:text-line mx-auto" />
+            <h3 className="text-base font-bold text-slate-800 dark:text-fg">
               No course resources match your filter criteria
             </h3>
-            <p className="text-xs text-slate-500 dark:text-[#8D96A0] max-w-sm mx-auto">
+            <p className="text-xs text-slate-500 dark:text-fg-muted max-w-sm mx-auto">
               Try searching with different keywords or reset your course filter pills.
             </p>
             <button
@@ -585,27 +558,22 @@ export default function StudentMaterialsPage() {
               Reset Filters
             </button>
           </div>
-        </FadeIn>
+        </div>
       ) : (
-        <FadeIn delay={0.2}>
+        <div className="w-full">
           <div className="space-y-6">
             {filteredGroups.map((group) => (
-              <SpotlightCard
-                key={group.courseCode}
-                className="p-6 rounded-[24px] bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] space-y-4 shadow-xs"
-                spotlightColor={SPOTLIGHT.wash}
-                borderGlowColor={SPOTLIGHT.glow}
-              >
+              <div key={group.courseCode} className="p-6 rounded-[24px] bg-white dark:bg-surface border border-slate-200 dark:border-line space-y-4 shadow-2xs">
                 {/* Course Group Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 border-b border-slate-200 dark:border-[#30363D]/60 gap-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 border-b border-slate-200 dark:border-line/60 gap-3">
                   <div className="flex items-center gap-3 flex-wrap">
-                    <span className="font-mono text-xs font-bold px-2.5 py-1 rounded-md bg-brand/10 text-brand border border-brand/20 dark:bg-[#2563EB]/15 dark:text-[#2563EB] dark:border-[#2563EB]/30">
+                    <span className="font-mono text-xs font-bold px-2.5 py-1 rounded-md bg-brand/10 text-brand border border-brand/20 dark:bg-brand/15 dark:text-brand dark:border-brand/30">
                       {group.courseCode}
                     </span>
-                    <h2 className="text-lg font-manrope font-bold text-slate-900 dark:text-[#F0F6FC]">
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-fg">
                       {group.courseName}
                     </h2>
-                    <span className="text-xs font-mono text-slate-500 dark:text-[#8D96A0]">
+                    <span className="text-xs font-mono text-slate-500 dark:text-fg-muted">
                       • {group.totalFiles} Files • {group.modulesCount} Modules
                     </span>
                   </div>
@@ -614,9 +582,9 @@ export default function StudentMaterialsPage() {
                   <button
                     type="button"
                     onClick={() => handleDownloadAll(group.courseCode)}
-                    className="h-8.5 px-3.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#161B22] dark:hover:bg-[#1C2128] border border-slate-200 dark:border-[#30363D] text-xs font-semibold text-slate-800 dark:text-[#F0F6FC] transition-colors flex items-center gap-1.5 self-start sm:self-center cursor-pointer shadow-xs active:scale-[0.98]"
+                    className="h-8.5 px-3.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-surface-2 dark:hover:bg-surface-2 border border-slate-200 dark:border-line text-xs font-semibold text-slate-800 dark:text-fg transition-colors flex items-center gap-1.5 self-start sm:self-center cursor-pointer shadow-xs active:scale-[0.98]"
                   >
-                    <FolderDown className="w-3.5 h-3.5 text-brand dark:text-[#2563EB]" />
+                    <FolderDown className="w-3.5 h-3.5 text-brand dark:text-brand" />
                     <span>Download All (.ZIP)</span>
                   </button>
                 </div>
@@ -631,7 +599,7 @@ export default function StudentMaterialsPage() {
                     return (
                       <div
                         key={item.id}
-                        className="p-4 rounded-xl bg-slate-50/70 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D]/60 hover:border-brand/40 dark:hover:border-[#2563EB]/40 transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-3 group"
+                        className="p-4 rounded-xl bg-slate-50/70 dark:bg-surface-2 border border-slate-200 dark:border-line/60 hover:border-brand/40 dark:hover:border-brand/40 transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-3 group"
                       >
                         {/* Left: Icon Badge + Title + Metadata */}
                         <div className="flex items-start gap-3.5 min-w-0">
@@ -645,87 +613,95 @@ export default function StudentMaterialsPage() {
                           {/* Title and Metadata */}
                           <div className="space-y-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <h3 className="font-manrope font-semibold text-sm text-slate-900 dark:text-[#F0F6FC] group-hover:text-brand dark:group-hover:text-[#2563EB] transition-colors">
+                              <h3 className="font-semibold text-sm text-slate-900 dark:text-fg group-hover:text-brand dark:group-hover:text-brand transition-colors">
                                 {item.title}
                               </h3>
-                              <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-slate-200 dark:bg-[#0D1117] text-slate-600 dark:text-[#8D96A0] border border-slate-300 dark:border-[#30363D]">
-                                {item.moduleTag}
+                              <span className="text-xs text-slate-500 dark:text-fg-muted">
+                                · {item.moduleTag}
                               </span>
                             </div>
 
-                            <div className="flex items-center gap-2 text-[11.5px] text-slate-500 dark:text-[#8D96A0] flex-wrap">
+                            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-fg-muted flex-wrap">
                               <div className="flex items-center gap-1.5">
-                                <ProfileAvatar alt={item.instructor} size="xs" className="w-4 h-4 border border-slate-300 dark:border-[#30363D]" />
-                                <span>Uploaded by {item.instructor}</span>
+                                <ProfileAvatar alt={item.instructor} size="xs" className="w-4 h-4 border border-slate-300 dark:border-line" />
+                                <span>{item.instructor}</span>
                               </div>
                               <span>•</span>
+                              <span className="font-mono">{item.fileSize}</span>
+                              <span>•</span>
                               <span className="font-mono">{item.uploadedAt}</span>
-                              <span>•</span>
-                              <span className="font-mono font-semibold text-slate-700 dark:text-[#C9D1D9]">
-                                {item.fileSize}
-                              </span>
-                              <span>•</span>
-                              <span className="font-mono text-slate-400 dark:text-[#6E747D]">
-                                {item.downloads} downloads
-                              </span>
                             </div>
                           </div>
                         </div>
 
-                        {/* Right: Action Buttons Cluster */}
+                        {/* Right: Consolidated Action Buttons */}
                         <div className="flex items-center gap-2 shrink-0 self-end lg:self-center">
-                          {/* Bookmark Save Button */}
+                          {/* Quick Preview Icon Button */}
                           <button
                             type="button"
-                            title={isSaved ? "Remove from Saved" : "Save for Later"}
-                            onClick={() => toggleSaveItem(item.id)}
-                            className={`w-8 h-8 rounded-lg border flex items-center justify-center transition-colors cursor-pointer ${
-                              isSaved
-                                ? "bg-brand/10 border-brand/30 text-brand dark:bg-[#2563EB]/20 dark:border-[#2563EB]/40 dark:text-[#2563EB]"
-                                : "bg-white dark:bg-[#0D1117] border-slate-200 dark:border-[#30363D] text-slate-400 hover:text-slate-700 dark:hover:text-[#F0F6FC]"
-                            }`}
-                          >
-                            <Bookmark className={`w-3.5 h-3.5 ${isSaved ? "fill-current" : ""}`} />
-                          </button>
-
-                          {/* Copy Link Button */}
-                          <button
-                            type="button"
-                            title="Copy Direct Link"
-                            onClick={() => handleCopyLink(item)}
-                            className="w-8 h-8 rounded-lg bg-white hover:bg-slate-100 dark:bg-[#0D1117] dark:hover:bg-[#1C2128] border border-slate-200 dark:border-[#30363D] text-slate-500 hover:text-slate-900 dark:text-[#8D96A0] dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
-                          >
-                            {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-                          </button>
-
-                          {/* Preview In-Browser Button */}
-                          <button
-                            type="button"
+                            title="Preview In-Browser"
                             onClick={() => setPreviewItem(item)}
-                            className="h-8 px-3 rounded-lg bg-white hover:bg-slate-100 dark:bg-[#0D1117] dark:hover:bg-[#1C2128] border border-slate-200 dark:border-[#30363D] text-slate-700 dark:text-[#C9D1D9] hover:text-slate-900 dark:hover:text-white text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                            className="w-8 h-8 rounded-lg bg-white hover:bg-slate-100 dark:bg-surface dark:hover:bg-surface-2 border border-slate-200 dark:border-line text-slate-600 hover:text-slate-900 dark:text-fg-muted dark:hover:text-fg flex items-center justify-center transition-colors cursor-pointer"
                           >
-                            <Eye className="w-3.5 h-3.5 text-slate-400 dark:text-[#8D96A0]" />
-                            <span>Preview In-Browser</span>
+                            <Eye className="w-3.5 h-3.5" />
                           </button>
 
                           {/* Primary Download Button */}
                           <button
                             type="button"
                             onClick={() => handleDownload(item)}
-                            className="h-8 px-3.5 rounded-lg bg-brand hover:bg-brand-hover dark:bg-[#2563EB] dark:hover:bg-[#5852ff] text-white text-xs font-semibold transition-all flex items-center gap-1.5 shadow-sm shadow-brand/20 dark:shadow-[#2563EB]/30 active:scale-[0.98] cursor-pointer"
+                            className="h-8 px-3.5 rounded-lg bg-brand hover:bg-brand-hover text-white text-xs font-semibold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
                           >
                             <Download className="w-3.5 h-3.5" />
-                            <span>{isDownloading ? "Downloading..." : "Download File"}</span>
+                            <span>{isDownloading ? "Downloading..." : "Download"}</span>
                           </button>
+
+                          {/* Secondary Menu (...) */}
+                          <div className="relative">
+                            <button
+                              type="button"
+                              title="More options"
+                              onClick={() => setOpenMenuId(openMenuId === item.id ? null : item.id)}
+                              className="w-8 h-8 rounded-lg bg-white hover:bg-slate-100 dark:bg-surface dark:hover:bg-surface-2 border border-slate-200 dark:border-line text-slate-500 hover:text-slate-900 dark:text-fg-muted dark:hover:text-fg flex items-center justify-center transition-colors cursor-pointer"
+                            >
+                              <MoreVertical className="w-3.5 h-3.5" />
+                            </button>
+                            {openMenuId === item.id && (
+                              <div className="absolute right-0 top-9 w-36 py-1 bg-surface border border-line rounded-xl shadow-lg z-20 text-xs">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    toggleSaveItem(item.id);
+                                    setOpenMenuId(null);
+                                  }}
+                                  className="w-full px-3 py-1.5 text-left text-fg hover:bg-canvas flex items-center gap-2 cursor-pointer"
+                                >
+                                  <Bookmark className={`w-3.5 h-3.5 ${isSaved ? "fill-current text-brand" : "text-fg-muted"}`} />
+                                  <span>{isSaved ? "Saved" : "Save for Later"}</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    handleCopyLink(item);
+                                    setTimeout(() => setOpenMenuId(null), 800);
+                                  }}
+                                  className="w-full px-3 py-1.5 text-left text-fg hover:bg-canvas flex items-center gap-2 cursor-pointer"
+                                >
+                                  {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5 text-fg-muted" />}
+                                  <span>{isCopied ? "Copied!" : "Copy Link"}</span>
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     );
                   })}
                 </div>
-              </SpotlightCard>
+              </div>
             ))}
           </div>
-        </FadeIn>
+        </div>
       )}
 
       {/* ========================================================================= */}
@@ -745,10 +721,10 @@ export default function StudentMaterialsPage() {
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="relative z-10 w-full max-w-4xl max-h-[85vh] bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] rounded-3xl p-6 shadow-2xl flex flex-col gap-4 overflow-hidden"
+              className="relative z-10 w-full max-w-4xl max-h-[85vh] bg-white dark:bg-surface border border-slate-200 dark:border-line rounded-3xl p-6 shadow-2xl flex flex-col gap-4 overflow-hidden"
             >
               {/* Modal Header */}
-              <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-[#30363D]">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-line">
                 <div className="flex items-center gap-3 min-w-0">
                   <span
                     className={`font-mono text-xs font-bold px-2 py-0.5 rounded border ${previewItem.badgeBg} ${previewItem.badgeText} ${previewItem.badgeBorder}`}
@@ -756,10 +732,10 @@ export default function StudentMaterialsPage() {
                     {previewItem.format}
                   </span>
                   <div className="min-w-0">
-                    <h3 className="font-manrope font-bold text-base text-slate-900 dark:text-[#F0F6FC] truncate">
+                    <h3 className="font-bold text-base text-slate-900 dark:text-fg truncate">
                       {previewItem.title}
                     </h3>
-                    <p className="text-xs text-slate-500 dark:text-[#8D96A0] font-mono">
+                    <p className="text-xs text-slate-500 dark:text-fg-muted font-mono">
                       {previewItem.courseCode} • {previewItem.instructor} • {previewItem.fileSize}
                     </p>
                   </div>
@@ -769,7 +745,7 @@ export default function StudentMaterialsPage() {
                   <button
                     type="button"
                     onClick={() => handleDownload(previewItem)}
-                    className="h-8 px-3 rounded-lg bg-brand hover:bg-brand-hover dark:bg-[#2563EB] dark:hover:bg-[#5852ff] text-white text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
+                    className="h-8 px-3 rounded-lg bg-brand hover:bg-brand-hover dark:bg-brand dark:hover:bg-brand-hover text-white text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
                   >
                     <Download className="w-3.5 h-3.5" />
                     <span>Download</span>
@@ -785,33 +761,33 @@ export default function StudentMaterialsPage() {
               </div>
 
               {/* Document Canvas Preview Simulation */}
-              <div className="flex-1 min-h-[380px] bg-slate-100 dark:bg-[#010409] border border-slate-200 dark:border-[#30363D] rounded-2xl p-6 flex flex-col items-center justify-center text-center space-y-4 overflow-y-auto">
-                <div className="w-16 h-16 rounded-2xl bg-white dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] flex items-center justify-center text-brand dark:text-[#2563EB] shadow-xs">
+              <div className="flex-1 min-h-[380px] bg-slate-100 dark:bg-canvas border border-slate-200 dark:border-line rounded-2xl p-6 flex flex-col items-center justify-center text-center space-y-4 overflow-y-auto">
+                <div className="w-16 h-16 rounded-2xl bg-white dark:bg-surface-2 border border-slate-200 dark:border-line flex items-center justify-center text-brand dark:text-brand shadow-xs">
                   <BookOpen className="w-8 h-8" />
                 </div>
                 <div className="space-y-1.5 max-w-md">
-                  <h4 className="font-manrope font-bold text-base text-slate-900 dark:text-[#F0F6FC]">
+                  <h4 className="font-bold text-base text-slate-900 dark:text-fg">
                     Interactive Document Viewer
                   </h4>
-                  <p className="text-xs text-slate-500 dark:text-[#8D96A0]">
-                    Rendering authenticated secure stream for <span className="font-mono text-slate-700 dark:text-[#C9D1D9]">{previewItem.title}</span>.
+                  <p className="text-xs text-slate-500 dark:text-fg-muted">
+                    Rendering authenticated secure stream for <span className="font-mono text-slate-700 dark:text-fg">{previewItem.title}</span>.
                   </p>
                 </div>
-                <div className="p-4 rounded-xl bg-white dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] w-full max-w-lg text-left text-xs font-mono space-y-1.5 text-slate-600 dark:text-[#C9D1D9]">
-                  <div className="flex justify-between border-b border-slate-200 dark:border-[#30363D]/60 pb-1">
-                    <span className="text-slate-400 dark:text-[#8D96A0]">Course:</span>
+                <div className="p-4 rounded-xl bg-white dark:bg-surface-2 border border-slate-200 dark:border-line w-full max-w-lg text-left text-xs font-mono space-y-1.5 text-slate-600 dark:text-fg">
+                  <div className="flex justify-between border-b border-slate-200 dark:border-line/60 pb-1">
+                    <span className="text-slate-400 dark:text-fg-muted">Course:</span>
                     <span className="font-bold">{previewItem.courseCode} - {previewItem.courseName}</span>
                   </div>
-                  <div className="flex justify-between border-b border-slate-200 dark:border-[#30363D]/60 pb-1">
-                    <span className="text-slate-400 dark:text-[#8D96A0]">Syllabus Topic:</span>
+                  <div className="flex justify-between border-b border-slate-200 dark:border-line/60 pb-1">
+                    <span className="text-slate-400 dark:text-fg-muted">Syllabus Topic:</span>
                     <span>{previewItem.moduleTag}</span>
                   </div>
-                  <div className="flex justify-between border-b border-slate-200 dark:border-[#30363D]/60 pb-1">
-                    <span className="text-slate-400 dark:text-[#8D96A0]">File Type:</span>
+                  <div className="flex justify-between border-b border-slate-200 dark:border-line/60 pb-1">
+                    <span className="text-slate-400 dark:text-fg-muted">File Type:</span>
                     <span>{previewItem.format} Document</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400 dark:text-[#8D96A0]">Published By:</span>
+                    <span className="text-slate-400 dark:text-fg-muted">Published By:</span>
                     <span>{previewItem.instructor} ({previewItem.uploadedAt})</span>
                   </div>
                 </div>

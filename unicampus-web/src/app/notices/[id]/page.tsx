@@ -11,7 +11,7 @@ export default function NoticeDetailPage() {
   return (
     <Suspense
       fallback={
-        <div className="w-full py-16 text-center text-slate-400 dark:text-[#8D96A0] font-mono text-sm">
+        <div className="w-full py-16 text-center text-slate-400 dark:text-fg-muted font-mono text-sm">
           Loading UniCampus Noticeboard...
         </div>
       }

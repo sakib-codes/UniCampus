@@ -1,25 +1,16 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import ProfileAvatar from "@/components/common/ProfileAvatar";
 import Link from "next/link";
-import { 
-  X, 
-  Send, 
-  Search, 
-  CheckCheck, 
-  Clock, 
-  Sparkles, 
-  UserCheck, 
-  GraduationCap, 
-  Circle,
-  Paperclip,
-  MoreVertical,
+import {
+  X,
+  Send,
+  Search,
   MessageSquare,
   Maximize2,
-  ArrowLeft
+  ArrowLeft,
 } from "lucide-react";
-import { themeTokens } from "@/lib/theme";
+import ProfileAvatar from "@/components/common/ProfileAvatar";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 
 export interface MessageItem {
@@ -49,13 +40,29 @@ const STUDENT_CONVERSATIONS: Conversation[] = [
     avatar: "",
     isOnline: true,
     unreadCount: 1,
-    lastMessage: "Please review the 3NF decomposition slides before the next session.",
+    lastMessage:
+      "Please review the CSE-3101 complexity analysis slides before the next session.",
     lastTime: "10:14 AM",
     messages: [
-      { id: "m1", sender: "them", text: "Good morning Sakib. Did you check the feedback on your relational algebra problem set?", time: "10:05 AM" },
-      { id: "m2", sender: "me", text: "Yes sir! I updated the query tree and pushed it to the repository.", time: "10:10 AM" },
-      { id: "m3", sender: "them", text: "Please review the 3NF decomposition slides before the next session.", time: "10:14 AM" }
-    ]
+      {
+        id: "m1",
+        sender: "them",
+        text: "Good morning Sakib. Did you check the feedback on your dynamic programming problem set?",
+        time: "10:05 AM",
+      },
+      {
+        id: "m2",
+        sender: "me",
+        text: "Yes sir! I updated the recurrence tree and pushed it to the repository.",
+        time: "10:10 AM",
+      },
+      {
+        id: "m3",
+        sender: "them",
+        text: "Please review the CSE-3101 complexity analysis slides before the next session.",
+        time: "10:14 AM",
+      },
+    ],
   },
   {
     id: "conv-2",
@@ -67,10 +74,25 @@ const STUDENT_CONVERSATIONS: Conversation[] = [
     lastMessage: "Has anyone verified the AI lab dataset format?",
     lastTime: "09:45 AM",
     messages: [
-      { id: "c1", sender: "them", text: "Hey everyone, don't forget mid-term exam registration deadline this Thursday!", time: "09:30 AM" },
-      { id: "c2", sender: "me", text: "Already submitted and cleared from accounts.", time: "09:38 AM" },
-      { id: "c3", sender: "them", text: "Has anyone verified the AI lab dataset format?", time: "09:45 AM" }
-    ]
+      {
+        id: "c1",
+        sender: "them",
+        text: "Hey everyone, don't forget mid-term exam registration deadline this Thursday!",
+        time: "09:30 AM",
+      },
+      {
+        id: "c2",
+        sender: "me",
+        text: "Already submitted and cleared from accounts.",
+        time: "09:38 AM",
+      },
+      {
+        id: "c3",
+        sender: "them",
+        text: "Has anyone verified the AI lab dataset format?",
+        time: "09:45 AM",
+      },
+    ],
   },
   {
     id: "conv-3",
@@ -82,9 +104,14 @@ const STUDENT_CONVERSATIONS: Conversation[] = [
     lastMessage: "Your clearance for 6th Semester courses is active.",
     lastTime: "Yesterday",
     messages: [
-      { id: "r1", sender: "them", text: "Your clearance for 6th Semester courses is active. Hall ticket will generate automatically.", time: "Yesterday" }
-    ]
-  }
+      {
+        id: "r1",
+        sender: "them",
+        text: "Your clearance for 6th Semester courses is active. Hall ticket will generate automatically.",
+        time: "Yesterday",
+      },
+    ],
+  },
 ];
 
 const TEACHER_CONVERSATIONS: Conversation[] = [
@@ -95,11 +122,17 @@ const TEACHER_CONVERSATIONS: Conversation[] = [
     avatar: "",
     isOnline: true,
     unreadCount: 1,
-    lastMessage: "Sir, can I visit your cabin during today's 2 PM consultation hour?",
+    lastMessage:
+      "Sir, can I visit Room 508 during today's 04:15 PM - 05:30 PM consultation hour?",
     lastTime: "11:20 AM",
     messages: [
-      { id: "tm1", sender: "them", text: "Sir, can I visit your cabin during today's 2 PM consultation hour?", time: "11:20 AM" }
-    ]
+      {
+        id: "tm1",
+        sender: "them",
+        text: "Sir, can I visit Room 508 during today's 04:15 PM - 05:30 PM consultation hour?",
+        time: "11:20 AM",
+      },
+    ],
   },
   {
     id: "t-conv-2",
@@ -111,24 +144,44 @@ const TEACHER_CONVERSATIONS: Conversation[] = [
     lastMessage: "Thank you for the guidance on capstone proposal sir!",
     lastTime: "09:15 AM",
     messages: [
-      { id: "ta1", sender: "them", text: "Submitted the capstone project proposal draft to your email.", time: "09:00 AM" },
-      { id: "ta2", sender: "me", text: "Approved the methodology section. Proceed with dataset collection.", time: "09:12 AM" },
-      { id: "ta3", sender: "them", text: "Thank you for the guidance on capstone proposal sir!", time: "09:15 AM" }
-    ]
+      {
+        id: "ta1",
+        sender: "them",
+        text: "Submitted the capstone project proposal draft to your email.",
+        time: "09:00 AM",
+      },
+      {
+        id: "ta2",
+        sender: "me",
+        text: "Approved the methodology section. Proceed with dataset collection.",
+        time: "09:12 AM",
+      },
+      {
+        id: "ta3",
+        sender: "them",
+        text: "Thank you for the guidance on capstone proposal sir!",
+        time: "09:15 AM",
+      },
+    ],
   },
   {
     id: "t-conv-3",
-    name: "Dr. Shahriar Hossain",
-    role: "Dean • Faculty of Engineering",
+    name: "Prof. Dr. M. Lutfar Rahman",
+    role: "Head of Department • CSE",
     avatar: "",
     isOnline: false,
     unreadCount: 0,
-    lastMessage: "Please verify CSE-311 midterm grade submission by Friday.",
+    lastMessage: "Please verify CSE-3101 midterm grade submission by Friday.",
     lastTime: "Yesterday",
     messages: [
-      { id: "td1", sender: "them", text: "Please verify CSE-311 midterm grade submission by Friday.", time: "Yesterday" }
-    ]
-  }
+      {
+        id: "td1",
+        sender: "them",
+        text: "Please verify CSE-3101 midterm grade submission by Friday.",
+        time: "Yesterday",
+      },
+    ],
+  },
 ];
 
 interface MessagingDrawerProps {
@@ -137,10 +190,16 @@ interface MessagingDrawerProps {
   initialPeerName?: string | null;
 }
 
-export function MessagingDrawer({ isOpen, onClose, initialPeerName }: MessagingDrawerProps) {
+export function MessagingDrawer({
+  isOpen,
+  onClose,
+  initialPeerName,
+}: MessagingDrawerProps) {
   const { currentUser } = useAdminAuth();
   const isTeacher = currentUser?.role === "teacher";
-  const baseConversations = isTeacher ? TEACHER_CONVERSATIONS : STUDENT_CONVERSATIONS;
+  const baseConversations = isTeacher
+    ? TEACHER_CONVERSATIONS
+    : STUDENT_CONVERSATIONS;
 
   const resolveInitialId = (peerName?: string | null) => {
     if (peerName) {
@@ -152,20 +211,18 @@ export function MessagingDrawer({ isOpen, onClose, initialPeerName }: MessagingD
     return baseConversations[0]?.id ?? "";
   };
 
-  const [conversations, setConversations] = useState<Conversation[]>(baseConversations);
-  const [activeConvId, setActiveConvId] = useState<string>(resolveInitialId(initialPeerName));
+  const [conversations, setConversations] =
+    useState<Conversation[]>(baseConversations);
+  const [activeConvId, setActiveConvId] = useState<string>(
+    resolveInitialId(initialPeerName)
+  );
   const [inputText, setInputText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobileThreadOpen, setIsMobileThreadOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    setConversations(isTeacher ? TEACHER_CONVERSATIONS : STUDENT_CONVERSATIONS);
-    setActiveConvId(resolveInitialId(initialPeerName));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isTeacher, initialPeerName]);
-
-  const activeConv = conversations.find(c => c.id === activeConvId) || conversations[0];
+  const activeConv =
+    conversations.find((c) => c.id === activeConvId) || conversations[0];
 
   useEffect(() => {
     if (isOpen) {
@@ -187,42 +244,52 @@ export function MessagingDrawer({ isOpen, onClose, initialPeerName }: MessagingD
       id: `msg-${Date.now()}`,
       sender: "me",
       text: inputText.trim(),
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
     };
 
-    setConversations(prev => prev.map(conv => {
-      if (conv.id !== activeConv.id) return conv;
-      return {
-        ...conv,
-        lastMessage: newMsg.text,
-        lastTime: newMsg.time,
-        unreadCount: 0,
-        messages: [...conv.messages, newMsg]
-      };
-    }));
+    setConversations((prev) =>
+      prev.map((conv) => {
+        if (conv.id !== activeConv.id) return conv;
+        return {
+          ...conv,
+          lastMessage: newMsg.text,
+          lastTime: newMsg.time,
+          unreadCount: 0,
+          messages: [...conv.messages, newMsg],
+        };
+      })
+    );
 
     setInputText("");
 
-    // Simulate smart auto-reply after 1.5s
+    // Simulate auto-reply after 1.5s
     setTimeout(() => {
       const replyMsg: MessageItem = {
         id: `reply-${Date.now()}`,
         sender: "them",
-        text: isTeacher 
-          ? "Acknowledged sir, thank you!" 
-          : "Noted Sakib. We will discuss this during today's scheduled hour.",
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        text: isTeacher
+          ? "Acknowledged sir, thank you!"
+          : "Noted Sakib. We will discuss this during today's 04:15 PM - 05:30 PM consultation hour in Room 508.",
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
       };
 
-      setConversations(prev => prev.map(conv => {
-        if (conv.id !== activeConv.id) return conv;
-        return {
-          ...conv,
-          lastMessage: replyMsg.text,
-          lastTime: replyMsg.time,
-          messages: [...conv.messages, replyMsg]
-        };
-      }));
+      setConversations((prev) =>
+        prev.map((conv) => {
+          if (conv.id !== activeConv.id) return conv;
+          return {
+            ...conv,
+            lastMessage: replyMsg.text,
+            lastTime: replyMsg.time,
+            messages: [...conv.messages, replyMsg],
+          };
+        })
+      );
     }, 1500);
   };
 
@@ -238,34 +305,47 @@ export function MessagingDrawer({ isOpen, onClose, initialPeerName }: MessagingD
 
   if (!isOpen) return null;
 
-  const filteredConversations = conversations.filter(c => 
-    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.role.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredConversations = conversations.filter(
+    (c) =>
+      c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.role.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden bg-black/60 backdrop-blur-sm flex justify-end">
-      <div 
-        className={`w-full max-w-2xl h-full ${themeTokens.surface} border-l ${themeTokens.border} shadow-2xl flex flex-col md:flex-row min-h-0`}
+    <div
+      className="fixed inset-0 z-50 overflow-hidden bg-black/45 dark:bg-black/70 flex justify-end"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Campus Messenger"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-2xl h-full bg-surface border-l border-line shadow-lg flex flex-col md:flex-row min-h-0"
       >
         {/* Left Side: Conversation Contacts List */}
-        <div className={`w-full md:w-72 border-r ${themeTokens.border} flex-col h-full min-h-0 bg-slate-50/50 dark:bg-[#010409]/60 shrink-0 ${isMobileThreadOpen ? 'hidden md:flex' : 'flex'}`}>
+        <div
+          className={`w-full md:w-72 border-r border-line flex-col h-full min-h-0 bg-canvas shrink-0 ${
+            isMobileThreadOpen ? "hidden md:flex" : "flex"
+          }`}
+        >
           {/* Header */}
-          <div className={`p-4 border-b ${themeTokens.border} flex items-center justify-between`}>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-brand/10 text-brand flex items-center justify-center font-bold">
+          <div className="p-4 border-b border-line flex items-center justify-between bg-surface">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-brand-soft text-brand flex items-center justify-center">
                 <MessageSquare className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="font-extrabold text-sm text-slate-900 dark:text-[#F0F6FC]">Campus Messenger</h3>
-                <p className={`text-[10px] ${themeTokens.textMuted}`}>Direct Academic Comms</p>
+                <h3 className="font-semibold text-[15px] text-fg">Messages</h3>
+                <p className="text-xs text-fg-muted">Direct academic chat</p>
               </div>
             </div>
-            <button 
-              onClick={onClose} 
-              className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg cursor-pointer"
-              title="Close campus messenger"
-              aria-label="Close campus messenger"
+            <button
+              type="button"
+              onClick={onClose}
+              className="min-w-[44px] min-h-[44px] text-fg-muted hover:text-fg rounded-xl hover:bg-surface-2 flex items-center justify-center transition-colors cursor-pointer"
+              title="Close messenger"
+              aria-label="Close messenger"
             >
               <X className="w-4 h-4" />
             </button>
@@ -274,61 +354,71 @@ export function MessagingDrawer({ isOpen, onClose, initialPeerName }: MessagingD
           {/* Search Contacts */}
           <div className="p-3">
             <div className="relative">
-              <Search className={`w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 ${themeTokens.textMuted}`} />
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search chats, professors..."
-                aria-label="Search chats, professors"
-                className={`w-full pl-8 pr-3 py-1.5 text-xs font-medium ${themeTokens.input}`}
+                placeholder="Search chats, faculty..."
+                aria-label="Search chats, faculty"
+                className="w-full pl-9 pr-3 py-2 text-sm bg-surface border border-line rounded-xl text-fg placeholder:text-fg-muted focus:outline-none focus:ring-2 focus:ring-brand/30"
               />
             </div>
           </div>
 
           {/* Conversations List */}
-          <div className="flex-1 overflow-y-auto px-2 space-y-1">
-            {filteredConversations.map(conv => {
+          <div className="flex-1 overflow-y-auto px-2 pb-3 space-y-1">
+            {filteredConversations.map((conv) => {
               const isSelected = conv.id === activeConv?.id;
               return (
                 <button
                   key={conv.id}
+                  type="button"
                   onClick={() => {
                     setActiveConvId(conv.id);
                     setIsMobileThreadOpen(true);
-                    setConversations(prev => prev.map(c => c.id === conv.id ? { ...c, unreadCount: 0 } : c));
+                    setConversations((prev) =>
+                      prev.map((c) =>
+                        c.id === conv.id ? { ...c, unreadCount: 0 } : c
+                      )
+                    );
                   }}
-                  className={`w-full p-2.5 rounded-xl text-left transition-all flex items-start gap-3 cursor-pointer ${
-                    isSelected 
-                      ? `${themeTokens.surface} border border-brand/30 shadow-sm` 
-                      : `hover:bg-slate-100 dark:hover:bg-[#161B22]`
+                  className={`w-full p-3 rounded-xl text-left transition-colors flex items-start gap-3 cursor-pointer ${
+                    isSelected
+                      ? "bg-surface border border-line"
+                      : "hover:bg-surface-2"
                   }`}
                 >
                   <div className="relative shrink-0">
-                    <ProfileAvatar
-                      size="md"
-                      className="border border-slate-200 dark:border-[#30363D]"
-                    />
+                    <ProfileAvatar size="md" alt={conv.name} />
                     {conv.isOnline && (
-                      <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white dark:border-[#0D1117]"></span>
+                      <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-success rounded-full ring-2 ring-surface" />
                     )}
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-0.5">
-                      <p className={`font-bold text-xs truncate ${isSelected ? 'text-brand' : 'text-slate-900 dark:text-[#F0F6FC]'}`}>
+                    <div className="flex items-center justify-between gap-2 mb-0.5">
+                      <p
+                        className={`font-semibold text-sm truncate ${
+                          isSelected ? "text-brand" : "text-fg"
+                        }`}
+                      >
                         {conv.name}
                       </p>
-                      <span className={`text-[10px] font-mono ${themeTokens.textMuted}`}>{conv.lastTime}</span>
+                      <span className="text-xs text-fg-muted shrink-0">
+                        {conv.lastTime}
+                      </span>
                     </div>
-                    <p className={`text-[10px] ${themeTokens.textMuted} truncate mb-1`}>{conv.role}</p>
-                    <p className="text-[11px] text-slate-500 dark:text-[#8D96A0] truncate font-medium">
+                    <p className="text-xs text-fg-muted truncate mb-0.5">
+                      {conv.role}
+                    </p>
+                    <p className="text-xs text-fg-muted truncate">
                       {conv.lastMessage}
                     </p>
                   </div>
 
                   {conv.unreadCount > 0 && (
-                    <span className="w-4 h-4 rounded-full bg-brand text-white font-mono text-[9px] font-bold flex items-center justify-center shrink-0 mt-1">
+                    <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-brand text-on-brand text-[12px] font-semibold flex items-center justify-center shrink-0 mt-0.5 tabular-nums">
                       {conv.unreadCount}
                     </span>
                   )}
@@ -338,57 +428,66 @@ export function MessagingDrawer({ isOpen, onClose, initialPeerName }: MessagingD
           </div>
         </div>
 
-        {/* Right Side: Chat Active Thread */}
-        <div className={`flex-1 flex-col h-full min-h-0 bg-white dark:bg-[#0D1117] ${isMobileThreadOpen ? 'flex' : 'hidden md:flex'}`}>
+        {/* Right Side: Active Chat Thread */}
+        <div
+          className={`flex-1 flex-col h-full min-h-0 bg-surface ${
+            isMobileThreadOpen ? "flex" : "hidden md:flex"
+          }`}
+        >
           {/* Thread Header */}
           {activeConv ? (
-            <div className={`p-4 border-b ${themeTokens.border} flex items-center justify-between bg-slate-50/40 dark:bg-[#010409]/40`}>
+            <div className="p-4 border-b border-line flex items-center justify-between bg-surface">
               <div className="flex items-center gap-3 min-w-0">
                 <button
+                  type="button"
                   onClick={() => setIsMobileThreadOpen(false)}
-                  className="md:hidden p-1.5 -ml-1 text-slate-500 hover:text-slate-800 dark:text-[#8D96A0] dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-[#161B22] cursor-pointer"
-                  title="Back to Conversations"
-                  aria-label="Back to Conversations"
+                  className="md:hidden min-w-[44px] min-h-[44px] -ml-2 text-fg-muted hover:text-fg rounded-xl hover:bg-surface-2 flex items-center justify-center cursor-pointer"
+                  title="Back to conversations"
+                  aria-label="Back to conversations"
                 >
                   <ArrowLeft className="w-4 h-4" />
                 </button>
 
                 <div className="relative shrink-0">
-                  <ProfileAvatar
-                    className="w-9 h-9 border border-slate-200 dark:border-[#30363D]"
-                    iconClassName="w-4 h-4"
-                  />
+                  <ProfileAvatar size="sm" alt={activeConv.name} />
                   {activeConv.isOnline && (
-                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white dark:border-[#0D1117]"></span>
+                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-success rounded-full ring-2 ring-surface" />
                   )}
                 </div>
                 <div className="min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <h4 className="font-bold text-xs text-slate-900 dark:text-[#F0F6FC] truncate">
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-semibold text-sm text-fg truncate">
                       {activeConv.name}
                     </h4>
                     {activeConv.isOnline && (
-                      <span className="text-[9px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">• Active</span>
+                      <span className="text-xs font-medium text-success shrink-0">
+                        Active
+                      </span>
                     )}
                   </div>
-                  <p className={`text-[10px] ${themeTokens.textMuted} truncate`}>{activeConv.role}</p>
+                  <p className="text-xs text-fg-muted truncate">
+                    {activeConv.role}
+                  </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1">
                 <Link
                   href="/messages"
                   onClick={onClose}
-                  title="Expand to Full Page Messenger"
-                  className="p-1.5 text-slate-400 hover:text-brand dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-[#161B22] cursor-pointer"
+                  title="Open full-page messenger"
+                  aria-label="Open full-page messenger"
+                  className="min-w-[44px] min-h-[44px] text-fg-muted hover:text-brand rounded-xl hover:bg-surface-2 flex items-center justify-center transition-colors"
                 >
                   <Maximize2 className="w-4 h-4" />
                 </Link>
 
-                <button 
+                <button
+                  type="button"
                   onClick={onClose}
-                  title="Close Messenger"
-                  className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-[#161B22] cursor-pointer"
+                  title="Close messenger"
+                  aria-label="Close messenger"
+                  className="min-w-[44px] min-h-[44px] text-fg-muted hover:text-fg rounded-xl hover:bg-surface-2 flex items-center justify-center transition-colors cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -397,22 +496,28 @@ export function MessagingDrawer({ isOpen, onClose, initialPeerName }: MessagingD
           ) : null}
 
           {/* Message Bubbles Area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3.5">
-            {activeConv?.messages.map(msg => {
+          <div className="flex-1 overflow-y-auto p-4 space-y-3.5 bg-canvas/40">
+            {activeConv?.messages.map((msg) => {
               const isMe = msg.sender === "me";
               return (
-                <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                  <div 
-                    className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-xs font-medium leading-relaxed shadow-xs ${
-                      isMe 
-                        ? 'bg-brand text-white rounded-br-xs' 
-                        : `${themeTokens.cardRecessed} text-slate-800 dark:text-[#F0F6FC] rounded-bl-xs`
+                <div
+                  key={msg.id}
+                  className={`flex flex-col ${
+                    isMe ? "items-end" : "items-start"
+                  }`}
+                >
+                  <div
+                    className={`max-w-[82%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+                      isMe
+                        ? "bg-brand text-on-brand rounded-br-xs"
+                        : "bg-surface-2 border border-line text-fg rounded-bl-xs"
                     }`}
                   >
                     {msg.text}
                   </div>
-                  <span className={`text-[9px] font-mono ${themeTokens.textMuted} mt-1 px-1`}>
-                    {msg.time} {isMe && "• Delivered"}
+                  <span className="text-xs text-fg-muted mt-1 px-1">
+                    {msg.time}
+                    {isMe ? " • Delivered" : ""}
                   </span>
                 </div>
               );
@@ -421,20 +526,23 @@ export function MessagingDrawer({ isOpen, onClose, initialPeerName }: MessagingD
           </div>
 
           {/* Composer Input Area */}
-          <form onSubmit={handleSendMessage} className={`p-3 border-t ${themeTokens.border} flex items-center gap-2 bg-slate-50/50 dark:bg-[#010409]/60`}>
+          <form
+            onSubmit={handleSendMessage}
+            className="p-3 border-t border-line flex items-center gap-2 bg-surface"
+          >
             <input
               type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder={`Reply to ${activeConv?.name}...`}
-              className={`flex-1 px-3.5 py-2 text-xs font-medium ${themeTokens.input}`}
+              placeholder={`Message ${activeConv?.name ?? ""}...`}
+              className="flex-1 min-h-[44px] px-3.5 py-2 text-sm bg-surface-2 border border-line rounded-xl text-fg placeholder:text-fg-muted focus:outline-none focus:ring-2 focus:ring-brand/30"
             />
             <button
               type="submit"
               disabled={!inputText.trim()}
-              className={`${themeTokens.btnPrimary} px-4 py-2 text-xs flex items-center gap-1.5 disabled:opacity-40 cursor-pointer`}
+              className="min-h-[44px] px-4 py-2 rounded-xl bg-brand hover:bg-brand-hover text-on-brand text-sm font-medium flex items-center gap-1.5 disabled:opacity-40 transition-colors cursor-pointer"
             >
-              <Send className="w-3.5 h-3.5" />
+              <Send className="w-4 h-4" />
               <span>Send</span>
             </button>
           </form>
@@ -443,4 +551,3 @@ export function MessagingDrawer({ isOpen, onClose, initialPeerName }: MessagingD
     </div>
   );
 }
-

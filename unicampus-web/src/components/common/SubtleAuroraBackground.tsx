@@ -36,7 +36,7 @@ export function SubtleAuroraBackground() {
         <div className="absolute -top-28 -left-24 w-[740px] h-[740px] rounded-full bg-gradient-to-tr from-[#1D5BD8]/22 via-[#3B82F6]/14 to-transparent dark:from-[#1D5BD8]/32 dark:via-[#2563EB]/22 blur-[130px] opacity-90 dark:opacity-85 transition-all duration-700" />
 
         {/* Orb 2: Radiant Sky Blue / Cyan - Top Right */}
-        <div className="absolute -top-24 -right-28 w-[700px] h-[700px] rounded-full bg-gradient-to-bl from-[#0EA5E9]/18 via-[#38BDF8]/12 to-transparent dark:from-[#06B6D4]/24 dark:via-[#0284C7]/18 blur-[125px] opacity-85 dark:opacity-80 transition-all duration-700" />
+        <div className="absolute -top-24 -right-28 w-[700px] h-[700px] rounded-full bg-gradient-to-bl from-[#0EA5E9]/18 via-sky-400/12 to-transparent dark:from-[#06B6D4]/24 dark:via-sky-600/18 blur-[125px] opacity-85 dark:opacity-80 transition-all duration-700" />
 
         {/* Orb 3: Soft Peach / Coral / Magenta - Center Right */}
         <div className="absolute top-1/3 -right-20 w-[600px] h-[600px] rounded-full bg-gradient-to-r from-[#F43F5E]/13 via-[#FB923C]/10 to-transparent dark:from-[#EC4899]/20 dark:via-[#D946EF]/14 blur-[135px] opacity-80 dark:opacity-75 transition-all duration-700" />

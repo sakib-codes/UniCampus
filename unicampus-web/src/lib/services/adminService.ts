@@ -22,6 +22,9 @@ import {
 } from '@/lib/mockData';
 import { getSupabaseClient } from '@/lib/supabase/client';
 
+const ADMIN_SCHEMA_VERSION = 'v2';
+const SCHEMA_VERSION_KEY = 'unicampus_admin_schema_version';
+
 const STORAGE_KEYS = {
   PROFILES: 'unicampus_admin_profiles',
   DEPARTMENTS: 'unicampus_admin_departments',
@@ -33,8 +36,24 @@ const STORAGE_KEYS = {
   WAGES: 'unicampus_admin_wages',
 };
 
+let schemaChecked = false;
+
+function ensureSchemaVersion(): void {
+  if (typeof window === 'undefined' || schemaChecked) return;
+  try {
+    if (localStorage.getItem(SCHEMA_VERSION_KEY) !== ADMIN_SCHEMA_VERSION) {
+      Object.values(STORAGE_KEYS).forEach((k) => localStorage.removeItem(k));
+      localStorage.setItem(SCHEMA_VERSION_KEY, ADMIN_SCHEMA_VERSION);
+    }
+    schemaChecked = true;
+  } catch (e) {
+    console.error('Error verifying admin schema version:', e);
+  }
+}
+
 function getStoredItem<T>(key: string, fallback: T): T {
   if (typeof window === 'undefined') return fallback;
+  ensureSchemaVersion();
   try {
     const raw = localStorage.getItem(key);
     if (!raw) return fallback;
@@ -47,6 +66,7 @@ function getStoredItem<T>(key: string, fallback: T): T {
 
 function setStoredItem<T>(key: string, data: T): void {
   if (typeof window === 'undefined') return;
+  ensureSchemaVersion();
   try {
     localStorage.setItem(key, JSON.stringify(data));
   } catch (e) {
@@ -538,6 +558,8 @@ class AdminService {
   resetStore(): void {
     if (typeof window === 'undefined') return;
     Object.values(STORAGE_KEYS).forEach((k) => localStorage.removeItem(k));
+    localStorage.setItem(SCHEMA_VERSION_KEY, ADMIN_SCHEMA_VERSION);
+    schemaChecked = true;
   }
 }
 

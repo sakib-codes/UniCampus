@@ -16,14 +16,10 @@ import {
   X, 
   Copy, 
   Check, 
-  Sparkles,
   ChevronLeft,
   ChevronRight,
   MoreVertical
 } from "lucide-react";
-import { SPOTLIGHT } from "@/lib/theme";
-import SpotlightCard from "@/components/bits/SpotlightCard";
-import FadeIn from "@/components/bits/FadeIn";
 
 type Student = {
   id: string;
@@ -46,31 +42,31 @@ const studentsData: Student[] = [
     semester: "6th Sem",
     section: "Sec A",
     department: "CSE",
-    skills: ["React", "Machine Learning", "Python"],
+    skills: ["Section A", "Robotics Club", "Study Group 1"],
     isActive: true,
     activeStatusText: "Active 2m ago",
-    avatarColor: "from-[#2563EB]/30 to-[#818CF8]/20 text-[#2563EB] border-[#2563EB]/40",
+    avatarColor: "from-brand/30 to-indigo-400/20 text-brand border-brand/40",
   },
   {
     id: "2",
-    name: "Tanvir Hasan",
+    name: "Tanvir Mahmud",
     studentId: "211-15-4412",
     semester: "6th Sem",
     section: "Sec A",
     department: "CSE",
-    skills: ["TypeScript", "System Design", "Docker"],
+    skills: ["Section A", "Study Group 3", "ACM Chapter"],
     isActive: true,
     activeStatusText: "Active now",
-    avatarColor: "from-[#38BDF8]/30 to-[#0284C7]/20 text-[#38BDF8] border-[#38BDF8]/40",
+    avatarColor: "from-sky-400/30 to-sky-600/20 text-sky-400 border-sky-400/40",
   },
   {
     id: "3",
-    name: "Rafiqul Islam",
+    name: "Rifat Chowdhury",
     studentId: "211-15-4438",
     semester: "6th Sem",
     section: "Sec B",
     department: "CSE",
-    skills: ["Competitive Programming", "C++", "Graph Theory"],
+    skills: ["Section B", "Competitive Programming", "Math Club"],
     isActive: true,
     activeStatusText: "Active 15m ago",
     avatarColor: "from-[#A855F7]/30 to-[#7E22CE]/20 text-[#A855F7] border-[#A855F7]/40",
@@ -82,7 +78,7 @@ const studentsData: Student[] = [
     semester: "6th Sem",
     section: "Sec A",
     department: "CSE",
-    skills: ["UI/UX", "Figma", "Next.js"],
+    skills: ["Section A", "Design Guild", "Study Group 2"],
     isActive: true,
     activeStatusText: "Active now",
     avatarColor: "from-[#EC4899]/30 to-[#BE185D]/20 text-[#EC4899] border-[#EC4899]/40",
@@ -94,10 +90,10 @@ const studentsData: Student[] = [
     semester: "5th Sem",
     section: "Sec B",
     department: "EEE",
-    skills: ["Cybersecurity", "Linux", "Go"],
+    skills: ["Section B", "Circuits Lab", "Robotics Club"],
     isActive: false,
     activeStatusText: "Seen 2h ago",
-    avatarColor: "from-[#64748B]/30 to-[#334155]/20 text-[#94A3B8] border-[#64748B]/40",
+    avatarColor: "from-fg-muted/30 to-fg-muted/20 text-fg-muted border-fg-muted/40",
   },
   {
     id: "6",
@@ -106,10 +102,10 @@ const studentsData: Student[] = [
     semester: "6th Sem",
     section: "Sec A",
     department: "BBA",
-    skills: ["Data Science", "PyTorch", "SQL"],
+    skills: ["Section A", "Debating Club", "Study Group 4"],
     isActive: true,
     activeStatusText: "Active now",
-    avatarColor: "from-[#10B981]/30 to-[#047857]/20 text-[#10B981] border-[#10B981]/40",
+    avatarColor: "from-success/30 to-[#047857]/20 text-success border-success/40",
   },
   {
     id: "7",
@@ -118,10 +114,10 @@ const studentsData: Student[] = [
     semester: "6th Sem",
     section: "Sec A",
     department: "CSE",
-    skills: ["Cloud Computing", "AWS", "Node.js"],
+    skills: ["Section A", "Study Group 3", "Open Source Club"],
     isActive: true,
     activeStatusText: "Active now",
-    avatarColor: "from-[#F59E0B]/30 to-[#D97706]/20 text-[#F59E0B] border-[#F59E0B]/40",
+    avatarColor: "from-warning/30 to-warning/20 text-warning border-warning/40",
   },
   {
     id: "8",
@@ -130,7 +126,7 @@ const studentsData: Student[] = [
     semester: "4th Sem",
     section: "Sec A",
     department: "CSE",
-    skills: ["Algorithms", "Java", "Spring Boot"],
+    skills: ["Section A", "Algorithms Lab", "Study Group 1"],
     isActive: true,
     activeStatusText: "Active 5m ago",
     avatarColor: "from-[#06B6D4]/30 to-[#0891B2]/20 text-[#06B6D4] border-[#06B6D4]/40",
@@ -142,10 +138,10 @@ const studentsData: Student[] = [
     semester: "6th Sem",
     section: "Sec A",
     department: "CSE",
-    skills: ["Database Systems", "PostgreSQL", "Prisma"],
+    skills: ["Section A", "Database R&D", "IEEE Student Branch"],
     isActive: false,
     activeStatusText: "Seen 4h ago",
-    avatarColor: "from-[#F43F5E]/30 to-[#E11D48]/20 text-[#F43F5E] border-[#F43F5E]/40",
+    avatarColor: "from-danger/30 to-[#E11D48]/20 text-danger border-danger/40",
   },
   {
     id: "10",
@@ -154,7 +150,7 @@ const studentsData: Student[] = [
     semester: "6th Sem",
     section: "Sec B",
     department: "EEE",
-    skills: ["Embedded Systems", "IoT", "Robotics"],
+    skills: ["Section B", "Robotics Club", "IoT Research Group"],
     isActive: true,
     activeStatusText: "Active now",
     avatarColor: "from-[#8B5CF6]/30 to-[#6D28D9]/20 text-[#8B5CF6] border-[#8B5CF6]/40",
@@ -166,10 +162,10 @@ const studentsData: Student[] = [
     semester: "4th Sem",
     section: "Sec B",
     department: "CSE",
-    skills: ["Mobile Dev", "Flutter", "Firebase"],
+    skills: ["Section B", "Study Group 2", "Mobile Dev Wing"],
     isActive: false,
     activeStatusText: "Seen yesterday",
-    avatarColor: "from-[#64748B]/30 to-[#475569]/20 text-[#94A3B8] border-[#64748B]/40",
+    avatarColor: "from-fg-muted/30 to-fg-muted/20 text-fg-muted border-fg-muted/40",
   },
 ];
 
@@ -299,25 +295,25 @@ export default function StudentsPage() {
   };
 
   return (
-    <div className="w-full space-y-6 pb-12 select-none">
+    <div className="w-full space-y-6 pb-12">
       {/* ========================================================================= */}
       {/* 1. PAGE HEADER ROW                                                        */}
       {/* ========================================================================= */}
-      <FadeIn delay={0.05} direction="down">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-2 border-b border-slate-200 dark:border-[#30363D]/40">
+      <div className="w-full">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-2 border-b border-slate-200 dark:border-line/40">
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-md bg-brand/10 text-brand border border-brand/25 dark:bg-[#2563EB]/15 dark:text-[#2563EB] dark:border-[#2563EB]/30 text-[11px] font-mono font-medium">
+              <span className="px-2.5 py-0.5 rounded-md bg-brand/10 text-brand border border-brand/25 dark:bg-brand/15 dark:text-brand dark:border-brand/30 text-xs font-mono font-medium">
                 BATCH 2021-2025
               </span>
-              <span className="text-[12px] text-slate-500 dark:text-[#8D96A0]">
+              <span className="text-[12px] text-slate-500 dark:text-fg-muted">
                 • Dept. of Computer Science &amp; Engineering
               </span>
             </div>
-            <h1 className="text-[28px] font-manrope font-extrabold tracking-[-0.02em] text-slate-900 dark:text-[#F0F6FC] leading-tight">
+            <h1 className="text-[28px] font-extrabold tracking-[-0.02em] text-slate-900 dark:text-fg leading-tight">
               Student Peers &amp; Directory
             </h1>
-            <p className="text-[14px] text-slate-500 dark:text-[#8D96A0] font-normal">
+            <p className="text-[14px] text-slate-500 dark:text-fg-muted font-normal">
               Connect, exchange project insights, and collaborate with enrolled peers across departments.
             </p>
           </div>
@@ -327,152 +323,136 @@ export default function StudentsPage() {
             <button
               type="button"
               onClick={() => setIsInviteModalOpen(true)}
-              className="h-9 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#161B22] dark:hover:bg-[#1C2128] border border-slate-200 dark:border-[#30363D] text-[13px] font-semibold text-slate-800 dark:text-[#F0F6FC] flex items-center gap-2 transition-colors cursor-pointer shadow-xs active:scale-[0.98]"
+              className="h-9 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-surface-2 dark:hover:bg-surface-2 border border-slate-200 dark:border-line text-[13px] font-semibold text-slate-800 dark:text-fg flex items-center gap-2 transition-colors cursor-pointer shadow-xs active:scale-[0.98]"
             >
-              <UserPlus className="w-4 h-4 text-slate-500 dark:text-[#8D96A0]" />
+              <UserPlus className="w-4 h-4 text-slate-500 dark:text-fg-muted" />
               <span>Invite Peer</span>
             </button>
             <button
               type="button"
               onClick={handleExportCSV}
-              className="h-9 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#161B22] dark:hover:bg-[#1C2128] border border-slate-200 dark:border-[#30363D] text-[13px] font-semibold text-slate-800 dark:text-[#F0F6FC] flex items-center gap-2 transition-colors cursor-pointer shadow-xs active:scale-[0.98]"
+              className="h-9 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-surface-2 dark:hover:bg-surface-2 border border-slate-200 dark:border-line text-[13px] font-semibold text-slate-800 dark:text-fg flex items-center gap-2 transition-colors cursor-pointer shadow-xs active:scale-[0.98]"
             >
-              <Download className="w-4 h-4 text-slate-500 dark:text-[#8D96A0]" />
+              <Download className="w-4 h-4 text-slate-500 dark:text-fg-muted" />
               <span>Export CSV</span>
             </button>
           </div>
         </div>
-      </FadeIn>
+      </div>
 
       {/* ========================================================================= */}
       {/* 2. STATS STRIP (4 compact bento stat cards in a row, 20px gap)           */}
       {/* ========================================================================= */}
-      <FadeIn delay={0.1}>
+      <div className="w-full">
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {/* Card A: Enrolled Peers */}
-          <SpotlightCard
-            className="p-[18px] rounded-[16px] bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] flex items-center justify-between relative overflow-hidden transition-all duration-300 shadow-xs hover:border-brand/40 dark:hover:border-[#2563EB]/40"
-            spotlightColor={SPOTLIGHT.wash}
-            borderGlowColor={SPOTLIGHT.glow}
-          >
+          <div className="p-[18px] rounded-[16px] bg-white dark:bg-surface border border-slate-200 dark:border-line flex items-center justify-between relative overflow-hidden transition-all duration-300 shadow-2xs hover:border-brand/40 dark:hover:border-brand/40">
             <div className="flex flex-col gap-1 z-10">
-              <span className="text-[12px] font-medium text-slate-500 dark:text-[#8D96A0] tracking-wide uppercase font-mono">
+              <span className="text-[12px] font-medium text-slate-500 dark:text-fg-muted font-mono">
                 Enrolled Peers
               </span>
               <div className="flex items-baseline gap-2">
-                <span className="text-[28px] font-manrope font-extrabold text-slate-900 dark:text-[#F0F6FC] leading-none">
+                <span className="text-[28px] font-extrabold text-slate-900 dark:text-fg leading-none">
                   {stats.total}
                 </span>
-                <span className="text-[11px] font-mono text-emerald-600 dark:text-[#3FB950] font-medium">
+                <span className="text-xs font-mono text-emerald-600 dark:text-success font-medium">
                   +2 this term
                 </span>
               </div>
-              <span className="text-[12px] text-slate-500 dark:text-[#8D96A0]">
+              <span className="text-[12px] text-slate-500 dark:text-fg-muted">
                 Active directory
               </span>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] flex items-center justify-center text-brand dark:text-[#2563EB] shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-surface-2 border border-slate-200 dark:border-line flex items-center justify-center text-brand dark:text-brand shrink-0">
               <Users className="w-6 h-6" />
             </div>
-          </SpotlightCard>
+          </div>
 
           {/* Card B: Active Now */}
-          <SpotlightCard
-            className="p-[18px] rounded-[16px] bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] flex items-center justify-between relative overflow-hidden transition-all duration-300 shadow-xs hover:border-emerald-500/40 dark:hover:border-[#3FB950]/40"
-            spotlightColor={SPOTLIGHT.wash}
-            borderGlowColor={SPOTLIGHT.glow}
-          >
+          <div className="p-[18px] rounded-[16px] bg-white dark:bg-surface border border-slate-200 dark:border-line flex items-center justify-between relative overflow-hidden transition-all duration-300 shadow-2xs hover:border-emerald-500/40 dark:hover:border-success/40">
             <div className="flex flex-col gap-1 z-10">
               <div className="flex items-center gap-2">
-                <span className="text-[12px] font-medium text-slate-500 dark:text-[#8D96A0] tracking-wide uppercase font-mono">
+                <span className="text-[12px] font-medium text-slate-500 dark:text-fg-muted font-mono">
                   Active Now
                 </span>
                 <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 dark:bg-[#3FB950]" />
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 dark:bg-success" />
                 </span>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-[28px] font-manrope font-extrabold text-emerald-600 dark:text-[#3FB950] leading-none">
+                <span className="text-[28px] font-extrabold text-emerald-600 dark:text-success leading-none">
                   {stats.active}
                 </span>
-                <span className="text-[11px] font-mono text-slate-500 dark:text-[#8D96A0]">
+                <span className="text-xs font-mono text-slate-500 dark:text-fg-muted">
                   of {stats.total} online
                 </span>
               </div>
-              <span className="text-[12px] text-emerald-600 dark:text-[#3FB950] font-medium">
+              <span className="text-[12px] text-emerald-600 dark:text-success font-medium">
                 Currently Online
               </span>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] flex items-center justify-center text-emerald-600 dark:text-[#3FB950] shrink-0">
-              <Radio className="w-6 h-6 animate-pulse" />
+            <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-surface-2 border border-slate-200 dark:border-line flex items-center justify-center text-emerald-600 dark:text-success shrink-0">
+              <Radio className="w-6 h-6" />
             </div>
-          </SpotlightCard>
+          </div>
 
           {/* Card C: 6th Semester */}
-          <SpotlightCard
-            className="p-[18px] rounded-[16px] bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] flex items-center justify-between relative overflow-hidden transition-all duration-300 shadow-xs hover:border-brand/40 dark:hover:border-[#2563EB]/40"
-            spotlightColor={SPOTLIGHT.wash}
-            borderGlowColor={SPOTLIGHT.glow}
-          >
+          <div className="p-[18px] rounded-[16px] bg-white dark:bg-surface border border-slate-200 dark:border-line flex items-center justify-between relative overflow-hidden transition-all duration-300 shadow-2xs hover:border-brand/40 dark:hover:border-brand/40">
             <div className="flex flex-col gap-1 z-10">
-              <span className="text-[12px] font-medium text-slate-500 dark:text-[#8D96A0] tracking-wide uppercase font-mono">
+              <span className="text-[12px] font-medium text-slate-500 dark:text-fg-muted font-mono">
                 6th Semester
               </span>
               <div className="flex items-baseline gap-2">
-                <span className="text-[28px] font-manrope font-extrabold text-brand dark:text-[#2563EB] leading-none">
+                <span className="text-[28px] font-extrabold text-brand dark:text-brand leading-none">
                   {stats.sixthSem}
                 </span>
-                <span className="text-[11px] font-mono text-slate-500 dark:text-[#8D96A0]">
+                <span className="text-xs font-mono text-slate-500 dark:text-fg-muted">
                   Sec A &amp; B
                 </span>
               </div>
-              <span className="text-[12px] text-slate-500 dark:text-[#8D96A0]">
+              <span className="text-[12px] text-slate-500 dark:text-fg-muted">
                 Your batch peers
               </span>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] flex items-center justify-center text-brand dark:text-[#2563EB] shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-surface-2 border border-slate-200 dark:border-line flex items-center justify-center text-brand dark:text-brand shrink-0">
               <GraduationCap className="w-6 h-6" />
             </div>
-          </SpotlightCard>
+          </div>
 
           {/* Card D: Departments */}
-          <SpotlightCard
-            className="p-[18px] rounded-[16px] bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] flex items-center justify-between relative overflow-hidden transition-all duration-300 shadow-xs hover:border-brand/40 dark:hover:border-[#2563EB]/40"
-            spotlightColor={SPOTLIGHT.wash}
-            borderGlowColor={SPOTLIGHT.glow}
-          >
+          <div className="p-[18px] rounded-[16px] bg-white dark:bg-surface border border-slate-200 dark:border-line flex items-center justify-between relative overflow-hidden transition-all duration-300 shadow-2xs hover:border-brand/40 dark:hover:border-brand/40">
             <div className="flex flex-col gap-1 z-10">
-              <span className="text-[12px] font-medium text-slate-500 dark:text-[#8D96A0] tracking-wide uppercase font-mono">
+              <span className="text-[12px] font-medium text-slate-500 dark:text-fg-muted font-mono">
                 Departments
               </span>
               <div className="flex items-baseline gap-2">
-                <span className="text-[28px] font-manrope font-extrabold text-slate-900 dark:text-[#F0F6FC] leading-none">
+                <span className="text-[28px] font-extrabold text-slate-900 dark:text-fg leading-none">
                   {stats.depts}
                 </span>
-                <span className="text-[11px] font-mono text-slate-500 dark:text-[#8D96A0]">
+                <span className="text-xs font-mono text-slate-500 dark:text-fg-muted">
                   Programs
                 </span>
               </div>
-              <span className="text-[12px] text-slate-500 dark:text-[#8D96A0] font-medium">
+              <span className="text-[12px] text-slate-500 dark:text-fg-muted font-medium">
                 CSE, EEE, BBA
               </span>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] flex items-center justify-center text-slate-800 dark:text-[#F0F6FC] shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-surface-2 border border-slate-200 dark:border-line flex items-center justify-center text-slate-800 dark:text-fg shrink-0">
               <Building2 className="w-6 h-6" />
             </div>
-          </SpotlightCard>
+          </div>
         </section>
-      </FadeIn>
+      </div>
 
       {/* ========================================================================= */}
       {/* 3. FILTER & SEARCH TOOLBAR (#0D1117 rounded-2xl bar, 16px padding)        */}
       {/* ========================================================================= */}
-      <FadeIn delay={0.15}>
-        <section className="p-4 rounded-2xl bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] flex flex-col md:flex-row items-center justify-between gap-4 shadow-xs">
+      <div className="w-full">
+        <section className="p-4 rounded-2xl bg-white dark:bg-surface border border-slate-200 dark:border-line flex flex-col md:flex-row items-center justify-between gap-4 shadow-xs">
           {/* Left: Search Input (420px wide) */}
           <div className="relative w-full md:w-[420px]">
-            <Search className="w-4 h-4 text-slate-400 dark:text-[#8D96A0] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <Search className="w-4 h-4 text-slate-400 dark:text-fg-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               ref={searchInputRef}
               type="text"
@@ -482,7 +462,7 @@ export default function StudentsPage() {
                 setCurrentPage(1);
               }}
               placeholder="Search by name, ID, or department..."
-              className="w-full h-10 pl-10 pr-10 rounded-xl bg-slate-100 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] text-[13px] text-slate-900 dark:text-[#F0F6FC] placeholder-slate-400 dark:placeholder-[#8D96A0] focus:outline-none focus:border-brand dark:focus:border-[#2563EB] transition-colors"
+              className="w-full h-10 pl-10 pr-10 rounded-xl bg-slate-100 dark:bg-surface-2 border border-slate-200 dark:border-line text-[13px] text-slate-900 dark:text-fg placeholder-slate-400 dark:placeholder-fg-muted focus:outline-none focus:border-brand dark:focus:border-brand transition-colors"
             />
             {searchQuery ? (
               <button
@@ -493,14 +473,14 @@ export default function StudentsPage() {
                 <X className="w-3.5 h-3.5" />
               </button>
             ) : (
-              <kbd className="absolute right-3 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded bg-slate-200 dark:bg-[#1C2128] border border-slate-300 dark:border-[#30363D] text-[10px] font-mono text-slate-500 dark:text-[#8D96A0]">
+              <kbd className="absolute right-3 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded bg-slate-200 dark:bg-surface-2 border border-slate-300 dark:border-line text-xs font-mono text-slate-500 dark:text-fg-muted">
                 /
               </kbd>
             )}
           </div>
 
           {/* Right: Segmented Filter Tabs (#1C2128 track) */}
-          <div className="w-full md:w-auto flex items-center overflow-x-auto p-1 rounded-xl bg-slate-100 dark:bg-[#1C2128] border border-slate-200 dark:border-[#30363D]/60 gap-1 custom-scrollbar">
+          <div className="w-full md:w-auto flex items-center overflow-x-auto p-1 rounded-xl bg-slate-100 dark:bg-surface-2 border border-slate-200 dark:border-line/60 gap-1 custom-scrollbar">
             {filterTabs.map((tab) => {
               const isActive = activeFilter === tab.id;
               return (
@@ -513,12 +493,12 @@ export default function StudentsPage() {
                   }}
                   className={`px-3.5 py-1.5 rounded-lg text-[12px] font-semibold tracking-tight transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
                     isActive
-                      ? "bg-brand text-white dark:bg-[#2563EB] dark:text-[#F0F6FC] shadow-xs"
-                      : "text-slate-600 dark:text-[#8D96A0] hover:text-slate-900 dark:hover:text-[#F0F6FC] hover:bg-slate-200/60 dark:hover:bg-[#161B22]"
+                      ? "bg-brand text-white dark:bg-brand dark:text-fg shadow-xs"
+                      : "text-slate-600 dark:text-fg-muted hover:text-slate-900 dark:hover:text-fg hover:bg-slate-200/60 dark:hover:bg-surface-2"
                   }`}
                 >
                   {tab.id === "active" && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-[#3FB950]" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-success" />
                   )}
                   <span>{tab.label}</span>
                 </button>
@@ -526,19 +506,19 @@ export default function StudentsPage() {
             })}
           </div>
         </section>
-      </FadeIn>
+      </div>
 
       {/* ========================================================================= */}
       {/* 4. RESPONSIVE 3-COLUMN PEER CARD GRID (3 cols x 2 rows, 20px gap)         */}
       {/* ========================================================================= */}
       {paginatedStudents.length === 0 ? (
-        <FadeIn delay={0.2}>
-          <div className="p-12 rounded-3xl bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] text-center space-y-3">
-            <GraduationCap className="w-12 h-12 text-slate-300 dark:text-[#30363D] mx-auto" />
-            <h3 className="text-base font-bold text-slate-800 dark:text-[#F0F6FC]">
+        <div className="w-full">
+          <div className="p-12 rounded-3xl bg-white dark:bg-surface border border-slate-200 dark:border-line text-center space-y-3">
+            <GraduationCap className="w-12 h-12 text-slate-300 dark:text-line mx-auto" />
+            <h3 className="text-base font-bold text-slate-800 dark:text-fg">
               No peers match your search criteria
             </h3>
-            <p className="text-xs text-slate-500 dark:text-[#8D96A0] max-w-sm mx-auto">
+            <p className="text-xs text-slate-500 dark:text-fg-muted max-w-sm mx-auto">
               Try searching for a different student name, ID, or switching your filter tabs.
             </p>
             <button
@@ -552,9 +532,9 @@ export default function StudentsPage() {
               Reset Filters
             </button>
           </div>
-        </FadeIn>
+        </div>
       ) : (
-        <FadeIn delay={0.2}>
+        <div className="w-full">
           <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {paginatedStudents.map((student) => {
               const initials = student.name
@@ -565,11 +545,10 @@ export default function StudentsPage() {
                 .toUpperCase();
 
               return (
-                <SpotlightCard
+                <div
                   key={student.id}
-                  className="p-[22px] rounded-[24px] bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] flex flex-col justify-between gap-5 relative group transition-all duration-300 hover:-translate-y-0.5 hover:border-brand/40 dark:hover:border-[#2563EB]/40 shadow-xs hover:shadow-[0_12px_30px_-10px_rgba(37, 99, 235,0.15)] h-full"
-                  spotlightColor={SPOTLIGHT.wash}
-                  borderGlowColor={SPOTLIGHT.glow}
+                  onClick={() => handleMessagePeer(student.name)}
+                  className="p-[22px] rounded-[24px] bg-white dark:bg-surface border border-slate-200 dark:border-line flex flex-col justify-between gap-5 relative group transition-all duration-300 hover:-translate-y-0.5 hover:border-brand/40 dark:hover:border-brand/40 shadow-2xs h-full cursor-pointer"
                 >
                   <div className="flex flex-col gap-3.5">
                     {/* Top Row: Avatar + Name + Monospace ID */}
@@ -578,13 +557,13 @@ export default function StudentsPage() {
                         {/* 48px Circular Avatar with Online/Offline Status Dot */}
                         <div className="relative w-12 h-12 shrink-0">
                           <div
-                            className={`w-12 h-12 rounded-full bg-gradient-to-br ${student.avatarColor} border flex items-center justify-center font-manrope font-bold text-[15px] shadow-inner`}
+                            className={`w-12 h-12 rounded-full bg-gradient-to-br ${student.avatarColor} border flex items-center justify-center font-bold text-[15px] shadow-inner`}
                           >
                             {initials}
                           </div>
                           <span
-                            className={`w-3.5 h-3.5 rounded-full border-2 border-white dark:border-[#0D1117] absolute bottom-0 right-0 z-10 shadow-sm ${
-                              student.isActive ? "bg-emerald-500 dark:bg-[#3FB950]" : "bg-slate-400 dark:bg-[#6E747D]"
+                            className={`w-3.5 h-3.5 rounded-full border-2 border-white dark:border-surface absolute bottom-0 right-0 z-10 shadow-sm ${
+                              student.isActive ? "bg-emerald-500 dark:bg-success" : "bg-slate-400 dark:bg-fg-muted"
                             }`}
                             title={student.isActive ? "Online now" : "Offline"}
                           />
@@ -593,97 +572,105 @@ export default function StudentsPage() {
                         {/* Student Full Name & Monospace ID */}
                         <div className="flex flex-col min-w-0">
                           <div className="flex items-center gap-1.5">
-                            <h3 className="text-[16px] font-manrope font-bold text-slate-900 dark:text-[#F0F6FC] leading-snug truncate">
+                            <h3 className="text-[16px] font-bold text-slate-900 dark:text-fg leading-snug truncate">
                               {student.name}
                             </h3>
                             <span title="Verified Student" className="shrink-0 flex items-center">
-                              <CheckCircle2 className="w-4 h-4 text-brand dark:text-[#2563EB]" />
+                              <CheckCircle2 className="w-4 h-4 text-brand dark:text-brand" />
                             </span>
                           </div>
-                          <span className="text-[11px] font-mono text-slate-500 dark:text-[#8D96A0] mt-0.5">
+                          <span className="text-xs font-mono text-slate-500 dark:text-fg-muted mt-0.5">
                             ID: {student.studentId}
                           </span>
                         </div>
                       </div>
 
-                      {/* Bookmark / More Options */}
-                      <button
-                        type="button"
-                        onClick={() => alert(`Student: ${student.name} (${student.studentId})\nDept: ${student.department} • ${student.semester} ${student.section}`)}
-                        className="w-7 h-7 rounded-lg text-slate-400 hover:text-slate-700 dark:text-[#8D96A0] dark:hover:text-[#F0F6FC] hover:bg-slate-100 dark:hover:bg-[#161B22] flex items-center justify-center transition-colors shrink-0 cursor-pointer"
-                        title="Student Details"
-                      >
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
+                      {/* Action buttons: Subtle Chat icon button + Details button */}
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMessagePeer(student.name);
+                          }}
+                          className="w-8 h-8 rounded-lg text-brand hover:bg-brand/10 flex items-center justify-center transition-colors shrink-0 cursor-pointer"
+                          title={`Message ${student.name}`}
+                        >
+                          <MessageSquare className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            alert(`Student: ${student.name} (${student.studentId})\nDept: ${student.department} • ${student.semester} ${student.section}`);
+                          }}
+                          className="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-700 dark:text-fg-muted dark:hover:text-fg hover:bg-slate-100 dark:hover:bg-surface-2 flex items-center justify-center transition-colors shrink-0 cursor-pointer"
+                          title="Student Details"
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
 
                     {/* Department, Semester, Section Tag Row */}
                     <div className="flex items-center gap-2 text-[12px] flex-wrap">
-                      <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] text-slate-700 dark:text-[#C9D1D9]">
+                      <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-surface-2 border border-slate-200 dark:border-line text-slate-700 dark:text-fg">
                         {student.department}
                       </span>
-                      <span className="text-slate-400 dark:text-[#30363D]">•</span>
-                      <span className="font-medium text-slate-600 dark:text-[#8D96A0]">
+                      <span className="text-slate-400 dark:text-line">•</span>
+                      <span className="font-medium text-slate-600 dark:text-fg-muted">
                         {student.semester}
                       </span>
-                      <span className="text-slate-400 dark:text-[#30363D]">•</span>
-                      <span className="font-mono text-slate-600 dark:text-[#8D96A0]">
+                      <span className="text-slate-400 dark:text-line">•</span>
+                      <span className="font-mono text-slate-600 dark:text-fg-muted">
                         {student.section}
                       </span>
-                      <span className="text-slate-400 dark:text-[#30363D]">•</span>
+                      <span className="text-slate-400 dark:text-line">•</span>
                       <span
-                        className={`text-[11px] font-medium ${
+                        className={`text-xs font-medium ${
                           student.isActive
-                            ? "text-emerald-600 dark:text-[#3FB950]"
-                            : "text-slate-400 dark:text-[#8D96A0]"
+                            ? "text-emerald-600 dark:text-success"
+                            : "text-slate-400 dark:text-fg-muted"
                         }`}
                       >
                         {student.activeStatusText}
                       </span>
                     </div>
 
-                    {/* Skills & Interests Chip Row (3 compact #161B22 pills) */}
+                    {/* Skills & Interests Chip Row */}
                     <div className="flex items-center gap-1.5 flex-wrap pt-1">
-                      {student.skills.map((skill) => (
+                      {student.skills
+                        .filter((skill) => !skill.toLowerCase().includes("section"))
+                        .map((skill) => (
                         <span
                           key={skill}
-                          className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] text-[11px] font-medium text-slate-700 dark:text-[#C9D1D9] hover:border-brand/40 dark:hover:border-[#2563EB]/40 transition-colors"
+                          className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-surface-2 border border-slate-200 dark:border-line text-xs font-medium text-slate-700 dark:text-fg hover:border-brand/40 dark:hover:border-brand/40 transition-colors"
                         >
                           {skill}
                         </span>
                       ))}
                     </div>
                   </div>
-
-                  {/* Bottom Primary Action: Full-width Electric Indigo Button */}
-                  <button
-                    type="button"
-                    onClick={() => handleMessagePeer(student.name)}
-                    className="w-full h-[38px] rounded-[10px] bg-brand hover:bg-brand-hover dark:bg-[#2563EB] dark:hover:bg-[#5852ff] text-white font-semibold text-xs transition-all flex items-center justify-center gap-2 shadow-sm dark:shadow-[0_0_16px_rgba(37, 99, 235,0.3)] hover:shadow-brand/30 active:scale-[0.98] cursor-pointer"
-                  >
-                    <MessageSquare className="w-3.5 h-3.5" />
-                    <span>Message Peer</span>
-                  </button>
-                </SpotlightCard>
+                </div>
               );
             })}
           </section>
-        </FadeIn>
+        </div>
       )}
 
       {/* ========================================================================= */}
       {/* 5. PAGINATION FOOTER ROW                                                  */}
       {/* ========================================================================= */}
-      <FadeIn delay={0.25}>
-        <div className="p-4 rounded-2xl bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-[#8D96A0]">
+      <div className="w-full">
+        <div className="p-4 rounded-2xl bg-white dark:bg-surface border border-slate-200 dark:border-line flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-fg-muted">
           <div>
             Showing{" "}
-            <span className="font-mono font-bold text-slate-900 dark:text-[#F0F6FC]">
+            <span className="font-mono font-bold text-slate-900 dark:text-fg">
               {filteredStudents.length === 0 ? 0 : (currentPage - 1) * pageSize + 1}–
               {Math.min(currentPage * pageSize, filteredStudents.length)}
             </span>{" "}
             of{" "}
-            <span className="font-mono font-bold text-slate-900 dark:text-[#F0F6FC]">
+            <span className="font-mono font-bold text-slate-900 dark:text-fg">
               {filteredStudents.length}
             </span>{" "}
             enrolled peers • Semester 6 Spring 2026 Batch Directory
@@ -694,7 +681,7 @@ export default function StudentsPage() {
               type="button"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              className="h-8 px-3 rounded-lg bg-slate-100 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] text-slate-700 dark:text-[#C9D1D9] hover:bg-slate-200 dark:hover:bg-[#1C2128] disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1 cursor-pointer"
+              className="h-8 px-3 rounded-lg bg-slate-100 dark:bg-surface-2 border border-slate-200 dark:border-line text-slate-700 dark:text-fg hover:bg-slate-200 dark:hover:bg-surface-2 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1 cursor-pointer"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
               <span>Previous</span>
@@ -707,8 +694,8 @@ export default function StudentsPage() {
                 onClick={() => setCurrentPage(page)}
                 className={`w-8 h-8 rounded-lg font-mono font-semibold transition-all cursor-pointer ${
                   currentPage === page
-                    ? "bg-brand text-white dark:bg-[#2563EB] dark:text-[#F0F6FC] shadow-xs"
-                    : "bg-slate-100 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] text-slate-700 dark:text-[#8D96A0] hover:text-slate-900 dark:hover:text-[#F0F6FC]"
+                    ? "bg-brand text-white dark:bg-brand dark:text-fg shadow-xs"
+                    : "bg-slate-100 dark:bg-surface-2 border border-slate-200 dark:border-line text-slate-700 dark:text-fg-muted hover:text-slate-900 dark:hover:text-fg"
                 }`}
               >
                 {page}
@@ -719,14 +706,14 @@ export default function StudentsPage() {
               type="button"
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              className="h-8 px-3 rounded-lg bg-slate-100 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] text-slate-700 dark:text-[#C9D1D9] hover:bg-slate-200 dark:hover:bg-[#1C2128] disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1 cursor-pointer"
+              className="h-8 px-3 rounded-lg bg-slate-100 dark:bg-surface-2 border border-slate-200 dark:border-line text-slate-700 dark:text-fg hover:bg-slate-200 dark:hover:bg-surface-2 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1 cursor-pointer"
             >
               <span>Next</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
-      </FadeIn>
+      </div>
 
       {/* ========================================================================= */}
       {/* 6. MODAL: INVITE PEER                                                     */}
@@ -745,18 +732,18 @@ export default function StudentsPage() {
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="relative z-10 w-full max-w-md bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] rounded-3xl p-6 shadow-2xl space-y-5"
+              className="relative z-10 w-full max-w-md bg-white dark:bg-surface border border-slate-200 dark:border-line rounded-3xl p-6 shadow-2xl space-y-5"
             >
-              <div className="flex items-center justify-between border-b border-slate-200 dark:border-[#30363D] pb-3">
+              <div className="flex items-center justify-between border-b border-slate-200 dark:border-line pb-3">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-brand/10 text-brand dark:bg-[#2563EB]/15 dark:text-[#2563EB] flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-xl bg-brand/10 text-brand dark:bg-brand/15 dark:text-brand flex items-center justify-center">
                     <UserPlus className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="font-manrope font-extrabold text-base text-slate-900 dark:text-[#F0F6FC]">
+                    <h3 className="font-extrabold text-base text-slate-900 dark:text-fg">
                       Invite Cohort Peer
                     </h3>
-                    <p className="text-[11px] font-mono text-slate-500 dark:text-[#8D96A0]">
+                    <p className="text-xs font-mono text-slate-500 dark:text-fg-muted">
                       Semester Spring 2026 Directory
                     </p>
                   </div>
@@ -776,14 +763,14 @@ export default function StudentsPage() {
                   <h4 className="font-bold text-sm text-emerald-600 dark:text-emerald-400">
                     Invitation Dispatched!
                   </h4>
-                  <p className="text-xs text-slate-600 dark:text-[#8D96A0]">
+                  <p className="text-xs text-slate-600 dark:text-fg-muted">
                     We sent an official campus cohort invite to <span className="font-mono font-semibold">{inviteEmail}</span>.
                   </p>
                 </div>
               ) : (
                 <form onSubmit={handleSendInvite} className="space-y-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-700 dark:text-[#C9D1D9]">
+                    <label className="text-xs font-semibold text-slate-700 dark:text-fg">
                       Peer Institutional Email
                     </label>
                     <input
@@ -792,12 +779,12 @@ export default function StudentsPage() {
                       value={inviteEmail}
                       onChange={(e) => setInviteEmail(e.target.value)}
                       placeholder="e.g. classmate@unicampus.edu"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] text-xs text-slate-900 dark:text-[#F0F6FC] placeholder-slate-400 dark:placeholder-[#8D96A0] focus:outline-none focus:border-brand dark:focus:border-[#2563EB]"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-surface-2 border border-slate-200 dark:border-line text-xs text-slate-900 dark:text-fg placeholder-slate-400 dark:placeholder-fg-muted focus:outline-none focus:border-brand dark:focus:border-brand"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-700 dark:text-[#C9D1D9]">
+                    <label className="text-xs font-semibold text-slate-700 dark:text-fg">
                       Direct Cohort Link
                     </label>
                     <div className="flex items-center gap-2">
@@ -805,12 +792,12 @@ export default function StudentsPage() {
                         type="text"
                         readOnly
                         value="https://unicampus.edu/join?cohort=cse-spring-2026"
-                        className="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] text-xs font-mono text-slate-500 dark:text-[#8D96A0] focus:outline-none"
+                        className="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-surface-2 border border-slate-200 dark:border-line text-xs font-mono text-slate-500 dark:text-fg-muted focus:outline-none"
                       />
                       <button
                         type="button"
                         onClick={handleCopyInviteLink}
-                        className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#1C2128] dark:hover:bg-[#21262D] border border-slate-200 dark:border-[#30363D] text-xs font-semibold text-slate-800 dark:text-[#F0F6FC] flex items-center gap-1.5 shrink-0 transition-colors cursor-pointer"
+                        className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-surface-2 dark:hover:bg-surface-2 border border-slate-200 dark:border-line text-xs font-semibold text-slate-800 dark:text-fg flex items-center gap-1.5 shrink-0 transition-colors cursor-pointer"
                       >
                         {inviteCopied ? (
                           <>
@@ -831,13 +818,13 @@ export default function StudentsPage() {
                     <button
                       type="button"
                       onClick={() => setIsInviteModalOpen(false)}
-                      className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-[#8D96A0] dark:hover:text-white transition-colors cursor-pointer"
+                      className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-fg-muted dark:hover:text-white transition-colors cursor-pointer"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      className="px-5 py-2 rounded-xl bg-brand hover:bg-brand-hover dark:bg-[#2563EB] dark:hover:bg-[#5852ff] text-white text-xs font-bold transition-all shadow-md cursor-pointer"
+                      className="px-5 py-2 rounded-xl bg-brand hover:bg-brand-hover dark:bg-brand dark:hover:bg-brand-hover text-white text-xs font-bold transition-all shadow-md cursor-pointer"
                     >
                       Send Invite
                     </button>

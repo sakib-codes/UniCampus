@@ -2,37 +2,32 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { 
-  QrCode, 
-  TableProperties, 
-  Megaphone, 
-  UploadCloud, 
-  Users, 
-  TrendingUp, 
-  Clock, 
-  Calendar, 
-  MapPin, 
-  CheckCircle2, 
-  Play, 
-  ArrowRight, 
-  ExternalLink, 
-  Paperclip, 
-  FileText, 
-  MessageSquare, 
-  Check, 
-  X, 
-  Send, 
-  Sparkles, 
-  AlertCircle,
-  Building2,
+import {
+  QrCode,
+  Megaphone,
+  Users,
+  TrendingUp,
+  Clock,
+  Calendar,
+  MapPin,
+  CheckCircle2,
+  Play,
+  ArrowRight,
+  Paperclip,
+  MessageSquare,
+  Send,
   CalendarDays,
   Printer,
   ChevronRight,
-  ShieldCheck,
-  Eye
 } from "lucide-react";
-import { SPOTLIGHT } from "@/lib/theme";
-import SpotlightCard from "@/components/bits/SpotlightCard";
+import {
+  ACTIVE_TERM,
+  CANONICAL_COURSES,
+  CANONICAL_FACULTY,
+  CANONICAL_ROSTER,
+} from "@/lib/canonicalCampus";
+import { teacherService } from "@/lib/services/teacherService";
+import { Modal } from "@/components/ui";
 
 interface TeachingSession {
   id: string;
@@ -60,44 +55,73 @@ interface StudentInquiry {
   status?: "pending" | "approved";
 }
 
-const SCHEDULE_SESSIONS: TeachingSession[] = [
+function formatCompactRange(startTime: string, endTime: string): string {
+  const startMeridiem = startTime.slice(-2);
+  const endMeridiem = endTime.slice(-2);
+  const startClean = startTime.replace(/\s*(AM|PM)$/i, "");
+  if (startMeridiem === endMeridiem) {
+    return `${startClean} - ${endTime}`;
+  }
+  return `${startTime} - ${endTime}`;
+}
+
+const CANONICAL_SECTION_ENROLLMENT: Record<string, number> = {
+  "CSE-3101|Sec B": 48,
+  "CSE-3101|Sec A": 45,
+  "CSE-4109|Sec A": 36,
+  "CSE-3102|Lab 4A": 45,
+};
+
+const SCHEDULE_SESSIONS: TeachingSession[] = teacherService
+  .getRoutine()
+  .filter((slot) => slot.day === "Monday" && slot.type !== "Consultation")
+  .map((slot) => ({
+    id: slot.id,
+    timeSlot: formatCompactRange(slot.startTime, slot.endTime),
+    courseCode: slot.courseCode,
+    courseTitle:
+      CANONICAL_COURSES[slot.courseCode as keyof typeof CANONICAL_COURSES]
+        ?.title ?? slot.courseTitle,
+    section: slot.section,
+    room: slot.room,
+    enrolledCount:
+      CANONICAL_SECTION_ENROLLMENT[`${slot.courseCode}|${slot.section}`] ?? 45,
+    isNext: slot.courseCode === "CSE-3101" && slot.section === "Sec A",
+  }));
+
+const TOTAL_ASSIGNED_STUDENTS = SCHEDULE_SESSIONS.reduce(
+  (sum, s) => sum + s.enrolledCount,
+  0
+);
+
+const ANNOUNCEMENT_SECTION_OPTIONS = [
   {
-    id: "sess-1",
-    timeSlot: "10:00 - 11:30 AM",
-    courseCode: "CSE-3101",
-    courseTitle: "Design & Analysis of Algorithms",
-    section: "Sec A",
-    room: "Room 402",
-    enrolledCount: 45,
-    isNext: true,
+    value: "All Sections",
+    label: `All Sections (${TOTAL_ASSIGNED_STUDENTS} Assigned Students)`,
   },
   {
-    id: "sess-2",
-    timeSlot: "11:45 - 01:15 PM",
-    courseCode: "CSE-3101",
-    courseTitle: "Design & Analysis of Algorithms",
-    section: "Sec B",
-    room: "Room 405",
-    enrolledCount: 48,
-    isNext: false,
+    value: "CSE-3101 Sec A",
+    label: `CSE-3101 ${CANONICAL_COURSES["CSE-3101"].title} — Sec A (45 Students)`,
   },
   {
-    id: "sess-3",
-    timeSlot: "02:00 - 04:00 PM",
-    courseCode: "CSE-4109",
-    courseTitle: "Advanced Graph Theory & Network Flows",
-    section: "Sec A",
-    room: "Room 602",
-    enrolledCount: 36,
-    isNext: false,
+    value: "CSE-3101 Sec B",
+    label: `CSE-3101 ${CANONICAL_COURSES["CSE-3101"].title} — Sec B (48 Students)`,
+  },
+  {
+    value: "CSE-4109 Sec A",
+    label: `CSE-4109 ${CANONICAL_COURSES["CSE-4109"].title} — Sec A (36 Students)`,
+  },
+  {
+    value: "CSE-3102 Lab 4A",
+    label: `CSE-3102 ${CANONICAL_COURSES["CSE-3102"].title} — Lab 4A (45 Students)`,
   },
 ];
 
 const INITIAL_INQUIRIES: StudentInquiry[] = [
   {
     id: "inq-1",
-    name: "Sakib Ahmed",
-    studentId: "211-15-4424",
+    name: CANONICAL_ROSTER[0].name,
+    studentId: CANONICAL_ROSTER[0].studentId,
     courseCode: "CSE-3101",
     timeAgo: "12m ago",
     message: "Submitted Group 04 Heap Benchmark proposal PDF for approval.",
@@ -108,11 +132,11 @@ const INITIAL_INQUIRIES: StudentInquiry[] = [
   },
   {
     id: "inq-2",
-    name: "Nusrat Jahan",
-    studentId: "211-15-4425",
+    name: CANONICAL_ROSTER[1].name,
+    studentId: CANONICAL_ROSTER[1].studentId,
     courseCode: "CSE-3101",
     timeAgo: "45m ago",
-    message: "Requesting medical leave attendance excusal for Oct 18 lecture.",
+    message: "Requesting medical leave attendance excusal for last lecture.",
     attachment: {
       name: "Medical slip",
       type: "medical",
@@ -122,8 +146,8 @@ const INITIAL_INQUIRIES: StudentInquiry[] = [
   },
   {
     id: "inq-3",
-    name: "Rafiqul Islam",
-    studentId: "211-15-4430",
+    name: CANONICAL_ROSTER[6].name,
+    studentId: CANONICAL_ROSTER[6].studentId,
     courseCode: "CSE-4109",
     timeAgo: "2h ago",
     message: "Question regarding Assignment 2 NP-completeness proof reduction.",
@@ -175,274 +199,76 @@ export default function TeacherCommandCenterPage() {
   };
 
   return (
-    <div className="w-full space-y-7 pb-20 select-none">
+    <div className="w-full space-y-7 pb-20">
       {/* ========================================================================= */}
       {/* 1. FACULTY HERO HEADER CARD                                               */}
       {/* ========================================================================= */}
-      <SpotlightCard
-        className="relative rounded-3xl bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] p-6 sm:p-7 overflow-hidden shadow-xl"
-        spotlightColor="rgba(37, 99, 235, 0.16)"
-        borderGlowColor="rgba(37, 99, 235, 0.4)"
-      >
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-10">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#2563EB]/10 dark:bg-[#2563EB]/15 border border-[#2563EB]/25 text-xs font-mono text-[#2563EB] dark:text-[#60A5FA] font-semibold mb-2.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              Spring Semester 2026 • Live Sync Active
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-manrope font-extrabold text-slate-900 dark:text-[#F0F6FC] tracking-[-0.02em] leading-tight">
-              Welcome, Dr. Asif Rahman
+      <div className="relative rounded-[20px] bg-surface border border-line p-5 sm:p-7 overflow-hidden">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-fg tracking-tight leading-tight">
+              Welcome, {CANONICAL_FACULTY.name}
             </h1>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-[#8D96A0] mt-1 font-normal">
-              Associate Professor, Department of Computer Science &amp; Engineering • Spring 2026
+            <p className="text-xs sm:text-sm text-fg-muted mt-1 font-normal">
+              {CANONICAL_FACULTY.designation}, Department of {CANONICAL_FACULTY.departmentName} • {ACTIVE_TERM}
             </p>
           </div>
 
-          {/* Pulsing Amber/Indigo Countdown Pill Badge */}
-          <div className="shrink-0 flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-[#161B22] border border-amber-500/35 shadow-[0_0_20px_rgba(245,158,11,0.08)]">
-            <div className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
-            </div>
-            <div>
-              <div className="text-[10px] uppercase font-mono tracking-wider font-bold text-amber-500 dark:text-amber-400">
-                Immediate Session
-              </div>
-              <div className="text-xs font-manrope font-bold text-slate-900 dark:text-[#F0F6FC]">
-                Next Class in <span className="text-amber-500 dark:text-amber-400 font-mono">25 mins</span> •{" "}
-                <span className="font-mono text-[#2563EB] dark:text-[#60A5FA]">CSE-3101</span> (Room 402)
-              </div>
-            </div>
+          {/* Clean Next Lecture Pill */}
+          <div className="shrink-0 flex flex-wrap items-center gap-2 px-3.5 py-2 rounded-xl bg-surface-2 border border-line text-xs">
+            <Clock className="w-3.5 h-3.5 text-warning shrink-0" />
+            <span className="text-fg-muted">Next class:</span>
+            <span className="font-semibold text-fg">CSE-3101 (Room 402)</span>
+            <span className="font-mono text-warning font-bold">in 25m</span>
           </div>
         </div>
-      </SpotlightCard>
+      </div>
 
       {/* ========================================================================= */}
-      {/* 2. QUICK ACTION STRIP (4 prominent interactive action cards)               */}
-      {/* ========================================================================= */}
-      <section>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Action 1: Primary #2563EB Gradient Card */}
-          <Link
-            href="/teacher/attendance"
-            className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#2563EB] via-[#1D5BD8] to-[#4F4AE6] p-5 text-white shadow-lg shadow-[#2563EB]/20 hover:scale-[1.01] hover:shadow-[#2563EB]/30 transition-all cursor-pointer group flex flex-col justify-between min-h-[135px]"
-          >
-            <div className="absolute -right-4 -bottom-4 w-24 h-24 rounded-full bg-white/10 blur-xl"></div>
-            <div className="flex items-start justify-between">
-              <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center shadow-inner">
-                <QrCode className="w-5 h-5 text-white" />
-              </div>
-              <ArrowRight className="w-4 h-4 text-white/80 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-            </div>
-            <div className="mt-3">
-              <h3 className="font-manrope font-bold text-sm sm:text-base tracking-tight text-white">
-                Launch Live Attendance (QR)
-              </h3>
-              <p className="text-xs text-white/80 mt-0.5 font-normal">
-                Start dynamic 15s check-in
-              </p>
-            </div>
-          </Link>
-
-          {/* Action 2: Enter Grades */}
-          <Link
-            href="/teacher/grades"
-            className="rounded-2xl bg-white dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] p-5 hover:border-[#2563EB]/50 hover:bg-slate-50 dark:hover:bg-[#1C2128] hover:scale-[1.01] transition-all cursor-pointer group flex flex-col justify-between min-h-[135px] shadow-xs"
-          >
-            <div className="flex items-start justify-between">
-              <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] flex items-center justify-center text-[#2563EB] group-hover:bg-[#2563EB]/10 transition-colors">
-                <TableProperties className="w-5 h-5" />
-              </div>
-              <ArrowRight className="w-4 h-4 text-slate-400 dark:text-[#6E747D] group-hover:text-[#2563EB] group-hover:translate-x-1 transition-transform" />
-            </div>
-            <div className="mt-3">
-              <h3 className="font-manrope font-bold text-sm sm:text-base text-slate-900 dark:text-[#F0F6FC] tracking-tight group-hover:text-[#2563EB] transition-colors">
-                Enter Grades
-              </h3>
-              <p className="text-xs text-slate-500 dark:text-[#8D96A0] mt-0.5">
-                Midterm marks due in <span className="text-amber-500 dark:text-amber-400 font-mono font-bold">3 days</span>
-              </p>
-            </div>
-          </Link>
-
-          {/* Action 3: Post Class Announcement */}
-          <div
-            onClick={() => setIsAnnouncementOpen(true)}
-            className="rounded-2xl bg-white dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] p-5 hover:border-[#2563EB]/50 hover:bg-slate-50 dark:hover:bg-[#1C2128] hover:scale-[1.01] transition-all cursor-pointer group flex flex-col justify-between min-h-[135px] shadow-xs"
-          >
-            <div className="flex items-start justify-between">
-              <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] flex items-center justify-center text-[#2563EB] group-hover:bg-[#2563EB]/10 transition-colors">
-                <Megaphone className="w-5 h-5" />
-              </div>
-              <ArrowRight className="w-4 h-4 text-slate-400 dark:text-[#6E747D] group-hover:text-[#2563EB] group-hover:translate-x-1 transition-transform" />
-            </div>
-            <div className="mt-3">
-              <h3 className="font-manrope font-bold text-sm sm:text-base text-slate-900 dark:text-[#F0F6FC] tracking-tight group-hover:text-[#2563EB] transition-colors">
-                Post Class Announcement
-              </h3>
-              <p className="text-xs text-slate-500 dark:text-[#8D96A0] mt-0.5">
-                Notify enrolled sections
-              </p>
-            </div>
-          </div>
-
-          {/* Action 4: Upload Courseware */}
-          <Link
-            href="/teacher/materials"
-            className="rounded-2xl bg-white dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] p-5 hover:border-[#2563EB]/50 hover:bg-slate-50 dark:hover:bg-[#1C2128] hover:scale-[1.01] transition-all cursor-pointer group flex flex-col justify-between min-h-[135px] shadow-xs"
-          >
-            <div className="flex items-start justify-between">
-              <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] flex items-center justify-center text-[#2563EB] group-hover:bg-[#2563EB]/10 transition-colors">
-                <UploadCloud className="w-5 h-5" />
-              </div>
-              <ArrowRight className="w-4 h-4 text-slate-400 dark:text-[#6E747D] group-hover:text-[#2563EB] group-hover:translate-x-1 transition-transform" />
-            </div>
-            <div className="mt-3">
-              <h3 className="font-manrope font-bold text-sm sm:text-base text-slate-900 dark:text-[#F0F6FC] tracking-tight group-hover:text-[#2563EB] transition-colors">
-                Upload Courseware
-              </h3>
-              <p className="text-xs text-slate-500 dark:text-[#8D96A0] mt-0.5">
-                Slides, labs &amp; references
-              </p>
-            </div>
-          </Link>
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 3. 4-COLUMN FACULTY METRIC BENTO GRID                                     */}
-      {/* ========================================================================= */}
-      <section>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {/* Card 1: Total Assigned Students */}
-          <div className="rounded-3xl bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] p-5 hover:border-[#2563EB]/30 transition-colors shadow-xs relative">
-            <div className="flex items-center justify-between text-slate-500 dark:text-[#8D96A0] mb-3">
-              <span className="text-xs font-semibold uppercase tracking-wider">
-                Total Assigned Students
-              </span>
-              <div className="w-8 h-8 rounded-lg bg-[#2563EB]/10 border border-[#2563EB]/20 text-[#2563EB] flex items-center justify-center">
-                <Users className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-manrope font-extrabold text-slate-900 dark:text-[#F0F6FC] tracking-tight font-mono tabular-nums">
-                184
-              </span>
-              <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 font-bold">
-                Active
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 dark:text-[#8D96A0] mt-2 font-normal">
-              Across 3 active sections
-            </p>
-          </div>
-
-          {/* Card 2: Average Class Attendance */}
-          <div className="rounded-3xl bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] p-5 hover:border-[#2563EB]/30 transition-colors shadow-xs relative">
-            <div className="flex items-center justify-between text-slate-500 dark:text-[#8D96A0] mb-3">
-              <span className="text-xs font-semibold uppercase tracking-wider">
-                Average Class Attendance
-              </span>
-              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 flex items-center justify-center">
-                <TrendingUp className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-manrope font-extrabold text-slate-900 dark:text-[#F0F6FC] tracking-tight font-mono tabular-nums">
-                88.5%
-              </span>
-              <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 flex items-center gap-0.5 font-bold">
-                <TrendingUp className="w-3 h-3" />
-                +3.2% vs Dept Avg
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 dark:text-[#8D96A0] mt-2 font-normal">
-              Outperforming CSE Dept baseline (85%)
-            </p>
-          </div>
-
-          {/* Card 3: Pending Grading Tasks */}
-          <div className="rounded-3xl bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] p-5 hover:border-[#2563EB]/30 transition-colors shadow-xs relative">
-            <div className="flex items-center justify-between text-slate-500 dark:text-[#8D96A0] mb-3">
-              <span className="text-xs font-semibold uppercase tracking-wider">
-                Pending Grading Tasks
-              </span>
-              <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-500 flex items-center justify-center">
-                <Clock className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-manrope font-extrabold text-slate-900 dark:text-[#F0F6FC] tracking-tight font-mono tabular-nums">
-                2
-              </span>
-              <span className="text-xs font-semibold text-slate-500 dark:text-[#8D96A0]">
-                assignments
-              </span>
-            </div>
-            <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/25 text-[11px] font-mono text-amber-600 dark:text-amber-400 font-bold truncate max-w-full">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
-              <span className="truncate">CSE-3101 Quiz 2 &amp; Lab 4</span>
-            </div>
-          </div>
-
-          {/* Card 4: Office Hours */}
-          <div className="rounded-3xl bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] p-5 hover:border-[#2563EB]/30 transition-colors shadow-xs relative">
-            <div className="flex items-center justify-between text-slate-500 dark:text-[#8D96A0] mb-3">
-              <span className="text-xs font-semibold uppercase tracking-wider">
-                Office Consultation Hours
-              </span>
-              <div className="w-8 h-8 rounded-lg bg-[#2563EB]/10 border border-[#2563EB]/20 text-[#2563EB] flex items-center justify-center">
-                <Calendar className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="flex items-baseline">
-              <span className="text-base font-manrope font-bold text-slate-900 dark:text-[#F0F6FC] tracking-tight font-mono">
-                Today 02:00 PM - 04:00 PM
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 dark:text-[#8D96A0] mt-2 flex items-center gap-1.5 font-normal">
-              <MapPin className="w-3.5 h-3.5 text-[#2563EB] shrink-0" />
-              <span>Room 508 • 3 student slots booked</span>
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 4. BOTTOM WORKSPACE SPLIT GRID (65% Schedule / 35% Inquiries)             */}
+      {/* 2. TODAY'S TEACHING SCHEDULE & INQUIRIES WORKSPACE SPLIT GRID             */}
       {/* ========================================================================= */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-7">
         {/* Left Panel (65%): Today's Teaching Schedule */}
-        <div className="lg:col-span-8 rounded-3xl bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] p-6 flex flex-col justify-between shadow-xl">
+        <div className="lg:col-span-8 rounded-[20px] bg-surface border border-line p-5 sm:p-6 flex flex-col justify-between">
           <div>
             {/* Header bar */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-200 dark:border-[#30363D]">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-manrope font-bold text-slate-900 dark:text-[#F0F6FC] tracking-tight">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-line">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="text-lg font-bold text-fg tracking-tight">
                     Today&apos;s Teaching Schedule
                   </h2>
-                  <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-[#161B22] text-slate-600 dark:text-[#8D96A0] text-[11px] font-mono border border-slate-200 dark:border-[#30363D]">
-                    3 Sessions
+                  <span className="px-2 py-0.5 rounded-md bg-surface-2 text-fg-muted text-xs font-mono border border-line whitespace-nowrap">
+                    {SCHEDULE_SESSIONS.length} Sessions
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 dark:text-[#8D96A0] mt-0.5">
-                  Faculty course allocation for Monday, Spring 2026
+                <p className="text-xs text-fg-muted mt-0.5">
+                  Faculty course allocation for Monday, {ACTIVE_TERM}
                 </p>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAnnouncementOpen(true)}
+                  className="min-h-[44px] sm:min-h-[36px] px-3 py-1.5 rounded-xl bg-surface-2 text-xs font-semibold text-fg border border-line hover:border-brand/40 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Megaphone className="w-3.5 h-3.5 text-brand" />
+                  <span>Post Notice</span>
+                </button>
+
                 <Link
                   href="/teacher/routine"
-                  className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-[#161B22] text-xs font-semibold text-slate-800 dark:text-[#F0F6FC] border border-slate-200 dark:border-[#30363D] hover:border-[#2563EB]/40 transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+                  className="min-h-[44px] sm:min-h-[36px] px-3 py-1.5 rounded-xl bg-surface-2 text-xs font-semibold text-fg border border-line hover:border-brand/40 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
                 >
-                  <CalendarDays className="w-3.5 h-3.5 text-[#2563EB]" />
+                  <CalendarDays className="w-3.5 h-3.5 text-brand" />
                   <span>Full Week</span>
                 </Link>
 
                 <button
+                  type="button"
                   onClick={() => window.print()}
-                  className="px-3 py-1.5 rounded-xl bg-[#2563EB] text-white text-xs font-semibold shadow-xs hover:bg-[#1D4ED8] transition-colors flex items-center gap-1.5 cursor-pointer"
+                  className="min-h-[44px] sm:min-h-[36px] px-3 py-1.5 rounded-xl bg-brand text-on-brand text-xs font-semibold hover:bg-brand-hover transition-colors inline-flex items-center gap-1.5 cursor-pointer"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   <span>Export</span>
@@ -450,86 +276,75 @@ export default function TeacherCommandCenterPage() {
               </div>
             </div>
 
-            {/* Teaching Schedule Table */}
-            <div className="overflow-x-auto mt-4">
+            {/* Desktop Teaching Schedule Table */}
+            <div className="hidden md:block overflow-x-auto mt-4">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="text-[11px] font-mono uppercase tracking-wider text-slate-400 dark:text-[#6E747D] border-b border-slate-200 dark:border-[#30363D]/60">
-                    <th className="py-3 px-3 font-semibold">Time Slot</th>
-                    <th className="py-3 px-3 font-semibold">Course Code &amp; Title</th>
-                    <th className="py-3 px-3 font-semibold">Section</th>
-                    <th className="py-3 px-3 font-semibold">Room Number</th>
-                    <th className="py-3 px-3 font-semibold text-right">Enrolled Count</th>
-                    <th className="py-3 px-3 font-semibold text-right">Action</th>
+                  <tr className="text-xs font-mono text-fg-muted border-b border-line/60">
+                    <th className="py-3 px-2.5 font-semibold">Time Slot</th>
+                    <th className="py-3 px-2.5 font-semibold min-w-[160px]">Course</th>
+                    <th className="py-3 px-2.5 font-semibold">Section</th>
+                    <th className="py-3 px-2.5 font-semibold">Room</th>
+                    <th className="py-3 px-2.5 font-semibold text-right">Students</th>
+                    <th className="py-3 px-2.5 font-semibold text-right">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-[#30363D]/40">
-                  {SCHEDULE_SESSIONS.map((session, idx) => (
+                <tbody className="divide-y divide-line/40">
+                  {SCHEDULE_SESSIONS.map((session) => (
                     <tr
                       key={session.id}
-                      className="group hover:bg-slate-50 dark:hover:bg-[#161B22]/60 transition-colors"
+                      className="group hover:bg-surface-2/60 transition-colors"
                     >
                       {/* Time Slot */}
-                      <td className="py-4 px-3 font-mono font-semibold text-slate-900 dark:text-[#F0F6FC] whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          {session.isNext && (
-                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                          )}
-                          <span>{session.timeSlot}</span>
-                        </div>
+                      <td className="py-4 px-2.5 font-mono font-semibold text-fg whitespace-nowrap">
+                        <span>{session.timeSlot}</span>
                       </td>
 
                       {/* Course Code & Title */}
-                      <td className="py-4 px-3">
-                        <div className="font-mono font-bold text-[#2563EB] dark:text-[#60A5FA] group-hover:underline cursor-pointer">
+                      <td className="py-4 px-2.5 min-w-[160px]">
+                        <div className="font-mono font-bold text-brand">
                           {session.courseCode}
                         </div>
-                        <div className="text-[11px] text-slate-500 dark:text-[#8D96A0]">
+                        <div className="text-xs text-fg-muted">
                           {session.courseTitle}
                         </div>
                       </td>
 
                       {/* Section */}
-                      <td className="py-4 px-3 whitespace-nowrap">
-                        <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] font-mono text-[11px] text-slate-800 dark:text-[#F0F6FC] whitespace-nowrap inline-block">
+                      <td className="py-4 px-2.5 whitespace-nowrap">
+                        <span className="px-2 py-0.5 rounded bg-surface-2 border border-line font-mono text-xs text-fg whitespace-nowrap inline-block">
                           {session.section}
                         </span>
                       </td>
 
                       {/* Room Number */}
-                      <td className="py-4 px-3 font-mono text-slate-800 dark:text-[#F0F6FC] whitespace-nowrap">
+                      <td className="py-4 px-2.5 font-mono text-fg whitespace-nowrap">
                         <span className="inline-flex items-center gap-1.5">
-                          <MapPin className="w-3.5 h-3.5 text-slate-400 dark:text-[#6E747D]" />
+                          <MapPin className="w-3.5 h-3.5 text-fg-muted shrink-0" />
                           {session.room}
                         </span>
                       </td>
 
                       {/* Enrolled Count */}
-                      <td className="py-4 px-3 text-right font-mono text-slate-900 dark:text-[#F0F6FC] font-semibold tabular-nums">
-                        {session.enrolledCount}{" "}
-                        <span className="text-[10px] text-slate-400 dark:text-[#6E747D] font-sans">
-                          Students
-                        </span>
+                      <td className="py-4 px-2.5 text-right font-mono text-fg font-semibold tabular-nums whitespace-nowrap">
+                        {session.enrolledCount}
                       </td>
 
                       {/* Action */}
-                      <td className="py-4 px-3 text-right whitespace-nowrap">
-                        {idx === 0 ? (
+                      <td className="py-4 px-2.5 text-right whitespace-nowrap">
+                        {session.isNext ? (
                           <button
+                            type="button"
                             onClick={() => setActiveSessionModal(session)}
-                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-[0.98]"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-brand hover:bg-brand-hover text-on-brand text-xs font-semibold transition-all cursor-pointer active:scale-[0.98] whitespace-nowrap"
                           >
-                            <Play className="w-3.5 h-3.5 fill-white" />
-                            <span>Launch Class</span>
+                            <Play className="w-3.5 h-3.5 fill-current" />
+                            <span>Start QR</span>
                           </button>
                         ) : (
-                          <button
-                            onClick={() => setActiveSessionModal(session)}
-                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-[#161B22] hover:bg-slate-200 dark:hover:bg-[#21262D] text-slate-900 dark:text-[#F0F6FC] border border-slate-200 dark:border-[#30363D] text-xs font-medium transition-all cursor-pointer active:scale-[0.98]"
-                          >
-                            <Play className="w-3.5 h-3.5 text-slate-400 dark:text-[#6E747D]" />
-                            <span>Launch Class</span>
-                          </button>
+                          <span className="text-xs font-mono text-fg-muted whitespace-nowrap">
+                            Upcoming
+                          </span>
                         )}
                       </td>
                     </tr>
@@ -537,14 +352,65 @@ export default function TeacherCommandCenterPage() {
                 </tbody>
               </table>
             </div>
+
+            {/* Mobile Session Cards (< md) */}
+            <div className="md:hidden mt-4 space-y-3">
+              {SCHEDULE_SESSIONS.map((session) => (
+                <div
+                  key={session.id}
+                  className="p-4 rounded-2xl bg-surface-2 border border-line space-y-3"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-mono text-xs font-semibold text-fg">
+                      {session.timeSlot}
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-surface border border-line font-mono text-xs text-fg whitespace-nowrap">
+                      {session.section}
+                    </span>
+                  </div>
+
+                  <div>
+                    <div className="font-mono text-xs font-bold text-brand">
+                      {session.courseCode}
+                    </div>
+                    <div className="text-sm font-semibold text-fg mt-0.5">
+                      {session.courseTitle}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-mono text-fg-muted">
+                    <span className="inline-flex items-center gap-1.5 text-fg">
+                      <MapPin className="w-3.5 h-3.5 text-fg-muted shrink-0" />
+                      {session.room}
+                    </span>
+                    <span>{session.enrolledCount} students</span>
+                  </div>
+
+                  {session.isNext ? (
+                    <button
+                      type="button"
+                      onClick={() => setActiveSessionModal(session)}
+                      className="w-full min-h-[44px] px-4 py-2 rounded-xl bg-brand hover:bg-brand-hover text-on-brand text-xs font-semibold inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                    >
+                      <Play className="w-3.5 h-3.5 fill-current" />
+                      <span>Start QR</span>
+                    </button>
+                  ) : (
+                    <div className="text-xs font-mono text-fg-muted pt-1 border-t border-line">
+                      Status: Upcoming
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Table Footer */}
-          <div className="mt-4 pt-4 border-t border-slate-200 dark:border-[#30363D] flex items-center justify-between text-xs text-slate-500 dark:text-[#8D96A0]">
+          <div className="mt-4 pt-4 border-t border-line flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-fg-muted">
             <span className="font-mono">Total teaching hours scheduled today: 5.0 hrs</span>
             <Link
               href="/teacher/routine"
-              className="text-[#2563EB] dark:text-[#60A5FA] hover:underline font-semibold inline-flex items-center gap-1"
+              className="text-brand hover:underline font-semibold inline-flex items-center gap-1"
             >
               <span>View Enrolled Student Rosters</span>
               <ChevronRight className="w-3.5 h-3.5" />
@@ -553,20 +419,15 @@ export default function TeacherCommandCenterPage() {
         </div>
 
         {/* Right Panel (35%): Student Inquiries Requiring Review */}
-        <div className="lg:col-span-4 rounded-3xl bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] p-6 flex flex-col justify-between shadow-xl">
+        <div className="lg:col-span-4 rounded-[20px] bg-surface border border-line p-5 sm:p-6 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-[#30363D]">
-              <div>
-                <h2 className="text-lg font-manrope font-bold text-slate-900 dark:text-[#F0F6FC] tracking-tight">
-                  Student Inquiries Requiring Review
-                </h2>
-                <p className="text-xs text-slate-500 dark:text-[#8D96A0] mt-0.5">
-                  3 inquiries pending direct instructor review
-                </p>
-              </div>
-              <span className="w-6 h-6 rounded-full bg-[#2563EB]/20 text-[#2563EB] border border-[#2563EB]/30 text-xs font-mono font-bold flex items-center justify-center">
-                {inquiries.length}
-              </span>
+            <div className="pb-4 border-b border-line">
+              <h2 className="text-lg font-bold text-fg tracking-tight">
+                Student Inquiries Requiring Review
+              </h2>
+              <p className="text-xs text-fg-muted mt-0.5">
+                {inquiries.length} inquiries pending direct instructor review
+              </p>
             </div>
 
             {/* Inquiries List */}
@@ -574,51 +435,51 @@ export default function TeacherCommandCenterPage() {
               {inquiries.map((inquiry) => (
                 <div
                   key={inquiry.id}
-                  className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] hover:border-[#2563EB]/40 transition-colors group"
+                  className="p-3.5 rounded-2xl bg-surface-2 border border-line hover:border-brand/40 transition-colors group"
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#2563EB]/20 to-purple-500/20 border border-[#2563EB]/30 font-manrope font-bold text-xs text-slate-900 dark:text-[#F0F6FC] flex items-center justify-center shrink-0">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-8 h-8 rounded-xl bg-brand-soft border border-brand/20 font-bold text-xs text-brand flex items-center justify-center shrink-0">
                         {inquiry.name
                           .split(" ")
                           .map((n) => n[0])
                           .join("")}
                       </div>
-                      <div>
-                        <h4 className="text-xs font-bold font-manrope text-slate-900 dark:text-[#F0F6FC] group-hover:text-[#2563EB] transition-colors">
+                      <div className="min-w-0">
+                        <h4 className="text-xs font-bold text-fg group-hover:text-brand transition-colors truncate">
                           {inquiry.name}
                         </h4>
-                        <p className="text-[10px] font-mono text-slate-400 dark:text-[#6E747D]">
+                        <p className="text-xs font-mono text-fg-muted">
                           ID: {inquiry.studentId} •{" "}
-                          <span className="text-[#2563EB] font-semibold">
+                          <span className="text-brand font-semibold whitespace-nowrap">
                             {inquiry.courseCode}
                           </span>
                         </p>
                       </div>
                     </div>
-                    <span className="text-[10px] font-mono text-slate-400 dark:text-[#6E747D]">
+                    <span className="text-xs font-mono text-fg-muted whitespace-nowrap shrink-0">
                       {inquiry.timeAgo}
                     </span>
                   </div>
 
-                  <p className="text-xs text-slate-700 dark:text-slate-300 mt-2.5 leading-relaxed bg-white dark:bg-[#0D1117] p-2.5 rounded-xl border border-slate-200/80 dark:border-[#30363D]/60 font-normal">
+                  <p className="text-xs text-fg mt-2.5 leading-relaxed bg-surface p-2.5 rounded-xl border border-line font-normal">
                     &quot;{inquiry.message}&quot;
                   </p>
 
-                  <div className="mt-3 flex items-center justify-between pt-2 border-t border-slate-200 dark:border-[#30363D]/40 text-xs">
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-line text-xs">
                     {inquiry.attachment ? (
                       inquiry.attachment.type === "medical" ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">
-                          <CheckCircle2 className="w-3.5 h-3.5" /> Medical slip
+                        <span className="inline-flex items-center gap-1 text-xs font-mono text-success font-bold">
+                          <CheckCircle2 className="w-3.5 h-3.5 shrink-0" /> Medical slip
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-mono text-slate-500 dark:text-[#8D96A0]">
-                          <Paperclip className="w-3.5 h-3.5 text-amber-500" />{" "}
+                        <span className="inline-flex items-center gap-1 text-xs font-mono text-fg-muted">
+                          <Paperclip className="w-3.5 h-3.5 text-warning shrink-0" />{" "}
                           {inquiry.attachment.name}
                         </span>
                       )
                     ) : (
-                      <span className="text-[11px] text-slate-400 dark:text-[#6E747D] font-mono">
+                      <span className="text-xs text-fg-muted font-mono">
                         Office Hours Slot?
                       </span>
                     )}
@@ -626,12 +487,13 @@ export default function TeacherCommandCenterPage() {
                     <div className="flex items-center gap-2">
                       {inquiry.hasApproveAction && (
                         <button
+                          type="button"
                           onClick={() => handleApproveMedical(inquiry.id)}
                           disabled={inquiry.status === "approved"}
-                          className={`px-2 py-0.5 rounded-md text-[11px] font-mono font-bold transition-colors cursor-pointer ${
+                          className={`min-h-[36px] px-2.5 py-1 rounded-md text-xs font-mono font-bold transition-colors cursor-pointer ${
                             inquiry.status === "approved"
-                              ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
-                              : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20"
+                              ? "bg-success-light text-success border border-success/30"
+                              : "bg-success-light/60 text-success hover:bg-success-light border border-success/20"
                           }`}
                         >
                           {inquiry.status === "approved" ? "Approved" : "Approve"}
@@ -639,8 +501,9 @@ export default function TeacherCommandCenterPage() {
                       )}
 
                       <button
+                        type="button"
                         onClick={() => setReplyInquiry(inquiry)}
-                        className="text-xs font-semibold text-[#2563EB] dark:text-[#60A5FA] hover:underline transition-colors inline-flex items-center gap-1 cursor-pointer"
+                        className="min-h-[36px] px-1 text-xs font-semibold text-brand hover:underline transition-colors inline-flex items-center gap-1 cursor-pointer"
                       >
                         <span>Reply</span>
                         <ArrowRight className="w-3 h-3" />
@@ -653,188 +516,268 @@ export default function TeacherCommandCenterPage() {
           </div>
 
           {/* Bottom Action */}
-          <div className="mt-4 pt-4 border-t border-slate-200 dark:border-[#30363D]">
+          <div className="mt-4 pt-4 border-t border-line">
             <Link
               href="/messages"
-              className="w-full py-2.5 px-3 rounded-2xl bg-slate-50 dark:bg-[#161B22] hover:bg-slate-100 dark:hover:bg-[#1C2128] border border-slate-200 dark:border-[#30363D] text-xs font-semibold text-slate-900 dark:text-[#F0F6FC] flex items-center justify-center gap-2 transition-colors shadow-xs"
+              className="w-full min-h-[44px] py-2.5 px-3 rounded-2xl bg-surface-2 hover:bg-surface border border-line text-xs font-semibold text-fg flex items-center justify-center gap-2 transition-colors"
             >
-              <MessageSquare className="w-4 h-4 text-[#2563EB]" />
-              <span>Open Faculty Communication Hub</span>
+              <MessageSquare className="w-4 h-4 text-brand" />
+              <span>Open Messages</span>
             </Link>
           </div>
         </div>
       </section>
 
       {/* ========================================================================= */}
-      {/* 5. MODALS & SLIDE-OVERS (Class Launch & Announcements)                      */}
+      {/* 3. 4-COLUMN FACULTY METRIC BENTO GRID                                     */}
       {/* ========================================================================= */}
-      {/* Launch Class Modal */}
-      {activeSessionModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="max-w-lg w-full bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] rounded-3xl p-6 sm:p-7 shadow-2xl relative">
-            <button
-              onClick={() => setActiveSessionModal(null)}
-              className="absolute top-5 right-5 p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-[#F0F6FC] hover:bg-slate-100 dark:hover:bg-[#161B22] transition-colors cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <div className="flex items-center gap-2 mb-2">
-              <span className="px-2.5 py-0.5 rounded-md font-mono text-[10px] font-bold bg-[#2563EB]/15 text-[#2563EB] border border-[#2563EB]/30 uppercase">
-                {activeSessionModal.courseCode} • {activeSessionModal.section}
+      <section>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {/* Card 1: Total Assigned Students */}
+          <div className="rounded-[20px] bg-surface border border-line p-5 hover:border-brand/30 transition-colors relative">
+            <div className="flex items-center justify-between text-fg-muted mb-3">
+              <span className="text-xs font-semibold">
+                Total Assigned Students
               </span>
-              <span className="text-xs font-mono text-slate-400 dark:text-[#6E747D]">
-                {activeSessionModal.room}
+              <div className="w-8 h-8 rounded-lg bg-brand-soft border border-brand/20 text-brand flex items-center justify-center">
+                <Users className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="flex flex-wrap items-baseline gap-2">
+              <span className="text-3xl font-extrabold text-fg tracking-tight font-mono tabular-nums">
+                {TOTAL_ASSIGNED_STUDENTS}
+              </span>
+              <span className="text-xs font-mono text-success bg-success-light px-2 py-0.5 rounded-full border border-success/20 font-bold">
+                Active
               </span>
             </div>
+            <p className="text-xs text-fg-muted mt-2 font-normal">
+              Across {SCHEDULE_SESSIONS.length} active sections
+            </p>
+          </div>
 
-            <h3 className="text-xl font-manrope font-bold text-slate-900 dark:text-[#F0F6FC]">
-              {activeSessionModal.courseTitle}
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-[#8D96A0] mt-1">
+          {/* Card 2: Average Class Attendance */}
+          <div className="rounded-[20px] bg-surface border border-line p-5 hover:border-brand/30 transition-colors relative">
+            <div className="flex items-center justify-between text-fg-muted mb-3">
+              <span className="text-xs font-semibold">
+                Average Class Attendance
+              </span>
+              <div className="w-8 h-8 rounded-lg bg-success-light border border-success/20 text-success flex items-center justify-center">
+                <TrendingUp className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="flex flex-wrap items-baseline gap-2">
+              <span className="text-3xl font-extrabold text-fg tracking-tight font-mono tabular-nums">
+                88.5%
+              </span>
+              <span className="text-xs font-mono text-success bg-success-light px-2 py-0.5 rounded-full border border-success/20 inline-flex items-center gap-0.5 font-bold">
+                <TrendingUp className="w-3 h-3" />
+                +3.2% vs Dept Avg
+              </span>
+            </div>
+            <p className="text-xs text-fg-muted mt-2 font-normal">
+              Outperforming CSE Dept baseline (85%)
+            </p>
+          </div>
+
+          {/* Card 3: Pending Grading Tasks */}
+          <div className="rounded-[20px] bg-surface border border-line p-5 hover:border-brand/30 transition-colors relative">
+            <div className="flex items-center justify-between text-fg-muted mb-3">
+              <span className="text-xs font-semibold">
+                Pending Grading Tasks
+              </span>
+              <div className="w-8 h-8 rounded-lg bg-warning-light border border-warning/20 text-warning flex items-center justify-center">
+                <Clock className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="flex flex-wrap items-baseline gap-2">
+              <span className="text-3xl font-extrabold text-fg tracking-tight font-mono tabular-nums">
+                2
+              </span>
+              <span className="text-xs font-semibold text-fg-muted">
+                assignments
+              </span>
+            </div>
+            <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-warning-light border border-warning/25 text-xs font-mono text-warning font-bold truncate max-w-full">
+              <span className="truncate">CSE-3101 Quiz 2 &amp; CSE-3102 Lab</span>
+            </div>
+          </div>
+
+          {/* Card 4: Office Hours */}
+          <div className="rounded-[20px] bg-surface border border-line p-5 hover:border-brand/30 transition-colors relative">
+            <div className="flex items-center justify-between text-fg-muted mb-3">
+              <span className="text-xs font-semibold">
+                Office Consultation Hours
+              </span>
+              <div className="w-8 h-8 rounded-lg bg-brand-soft border border-brand/20 text-brand flex items-center justify-center">
+                <Calendar className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="flex items-baseline">
+              <span className="text-base font-bold text-fg tracking-tight font-mono">
+                Today {CANONICAL_FACULTY.officeHours.replace(/^Mon\s+/, "")}
+              </span>
+            </div>
+            <p className="text-xs text-fg-muted mt-2 flex items-center gap-1.5 font-normal">
+              <MapPin className="w-3.5 h-3.5 text-brand shrink-0" />
+              <span>{CANONICAL_FACULTY.office} • 3 student slots booked</span>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* 5. MODALS (Class Launch, Announcements & Reply)                           */}
+      {/* ========================================================================= */}
+      <Modal
+        open={Boolean(activeSessionModal)}
+        onClose={() => setActiveSessionModal(null)}
+        title={activeSessionModal?.courseTitle}
+        description={
+          activeSessionModal
+            ? `${activeSessionModal.courseCode} • ${activeSessionModal.section} • ${activeSessionModal.room}`
+            : undefined
+        }
+        size="md"
+      >
+        {activeSessionModal && (
+          <div className="space-y-5">
+            <p className="text-xs text-fg-muted">
               Time: {activeSessionModal.timeSlot} • {activeSessionModal.enrolledCount} Registered Students
             </p>
 
-            <div className="my-5 p-4 rounded-2xl bg-slate-50 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] space-y-3">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-500 dark:text-[#8D96A0]">Biometric Attendance:</span>
-                <span className="text-emerald-600 dark:text-emerald-400 font-mono font-bold flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <div className="p-4 rounded-2xl bg-surface-2 border border-line space-y-3">
+              <div className="flex items-center justify-between gap-2 text-xs">
+                <span className="text-fg-muted">Attendance Session:</span>
+                <span className="text-success font-mono font-bold">
                   Ready to stream
                 </span>
               </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-500 dark:text-[#8D96A0]">Presentation Mode:</span>
-                <span className="text-slate-800 dark:text-[#F0F6FC] font-mono">Lecture 08 Slides synced</span>
+              <div className="flex items-center justify-between gap-2 text-xs">
+                <span className="text-fg-muted">Presentation Mode:</span>
+                <span className="text-fg font-mono">Lecture 09 Slides synced</span>
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
               <Link
-                href={`/teacher/attendance?course=${activeSessionModal.courseCode}&section=${activeSessionModal.section}`}
-                className="flex-1 py-2.5 px-4 rounded-2xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md transition-all"
+                href={`/teacher/attendance?course=${activeSessionModal.courseCode}&section=${encodeURIComponent(activeSessionModal.section)}`}
+                className="flex-1 min-h-[44px] py-2.5 px-4 rounded-2xl bg-brand hover:bg-brand-hover text-on-brand text-xs font-bold flex items-center justify-center gap-2 transition-colors"
               >
                 <QrCode className="w-4 h-4" />
                 <span>Launch QR Attendance Now</span>
               </Link>
               <button
+                type="button"
                 onClick={() => setActiveSessionModal(null)}
-                className="py-2.5 px-4 rounded-2xl bg-slate-100 dark:bg-[#161B22] text-slate-800 dark:text-[#F0F6FC] border border-slate-200 dark:border-[#30363D] text-xs font-semibold hover:bg-slate-200 dark:hover:bg-[#21262D] transition-colors cursor-pointer"
+                className="min-h-[44px] py-2.5 px-4 rounded-2xl bg-surface-2 text-fg border border-line text-xs font-semibold hover:bg-surface transition-colors cursor-pointer"
               >
                 Close
               </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
 
-      {/* Post Class Announcement Modal */}
-      {isAnnouncementOpen && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="max-w-lg w-full bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] rounded-3xl p-6 sm:p-7 shadow-2xl relative">
-            <button
-              onClick={() => setIsAnnouncementOpen(false)}
-              className="absolute top-5 right-5 p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-[#F0F6FC] hover:bg-slate-100 dark:hover:bg-[#161B22] transition-colors cursor-pointer"
+      <Modal
+        open={isAnnouncementOpen}
+        onClose={() => setIsAnnouncementOpen(false)}
+        title="Post Class Announcement"
+        description="Send instant broadcast circulars to students enrolled in your teaching sections."
+        size="md"
+      >
+        <form onSubmit={handlePostAnnouncement} className="space-y-4">
+          <div>
+            <label
+              htmlFor="announcement-section"
+              className="block text-xs font-semibold text-fg mb-1"
             >
-              <X className="w-4 h-4" />
-            </button>
-
-            <div className="flex items-center gap-2 mb-2 text-[#2563EB]">
-              <Megaphone className="w-5 h-5" />
-              <h3 className="text-lg font-manrope font-bold text-slate-900 dark:text-[#F0F6FC]">
-                Post Class Announcement
-              </h3>
-            </div>
-            <p className="text-xs text-slate-500 dark:text-[#8D96A0] mb-4">
-              Send instant broadcast circulars to students enrolled in your teaching sections.
-            </p>
-
-            <form onSubmit={handlePostAnnouncement} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#F0F6FC] mb-1">
-                  Target Enrolled Section
-                </label>
-                <select
-                  value={announcementSection}
-                  onChange={(e) => setAnnouncementSection(e.target.value)}
-                  className="w-full h-10 px-3 bg-white dark:bg-[#161B22] border border-slate-300 dark:border-[#30363D] rounded-xl text-xs text-slate-900 dark:text-[#F0F6FC] focus:outline-none focus:border-[#2563EB]"
-                >
-                  <option value="All Sections">All Sections (184 Enrolled Students)</option>
-                  <option value="CSE-3101 Sec A">CSE-3101 Algorithms — Sec A (45 Students)</option>
-                  <option value="CSE-3101 Sec B">CSE-3101 Algorithms — Sec B (48 Students)</option>
-                  <option value="CSE-4109 Sec A">CSE-4109 Graph Theory — Sec A (36 Students)</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#F0F6FC] mb-1">
-                  Announcement Title
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={announcementTitle}
-                  onChange={(e) => setAnnouncementTitle(e.target.value)}
-                  placeholder="e.g. Lab 4 Submission Grace Period & Rubric Update"
-                  className="w-full h-10 px-3 bg-white dark:bg-[#161B22] border border-slate-300 dark:border-[#30363D] rounded-xl text-xs text-slate-900 dark:text-[#F0F6FC] focus:outline-none focus:border-[#2563EB]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-[#F0F6FC] mb-1">
-                  Message Body
-                </label>
-                <textarea
-                  rows={4}
-                  value={announcementBody}
-                  onChange={(e) => setAnnouncementBody(e.target.value)}
-                  placeholder="Details regarding lecture slides, lab deadline extensions, or room reallocations..."
-                  className="w-full p-3 bg-white dark:bg-[#161B22] border border-slate-300 dark:border-[#30363D] rounded-xl text-xs text-slate-900 dark:text-[#F0F6FC] focus:outline-none focus:border-[#2563EB]"
-                />
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="submit"
-                  className="flex-1 py-2.5 px-4 rounded-2xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
-                >
-                  <Send className="w-4 h-4" />
-                  <span>
-                    {announcementSuccess ? "Broadcast Dispatched!" : "Publish Announcement"}
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsAnnouncementOpen(false)}
-                  className="py-2.5 px-4 rounded-2xl bg-slate-100 dark:bg-[#161B22] text-slate-800 dark:text-[#F0F6FC] border border-slate-200 dark:border-[#30363D] text-xs font-semibold hover:bg-slate-200 dark:hover:bg-[#21262D] transition-colors cursor-pointer"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
+              Target Enrolled Section
+            </label>
+            <select
+              id="announcement-section"
+              value={announcementSection}
+              onChange={(e) => setAnnouncementSection(e.target.value)}
+              className="w-full h-11 px-3 bg-surface-2 border border-line rounded-xl text-xs text-fg focus:outline-none focus:border-brand"
+            >
+              {ANNOUNCEMENT_SECTION_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
           </div>
-        </div>
-      )}
 
-      {/* Quick Reply Modal */}
-      {replyInquiry && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] rounded-3xl p-6 shadow-2xl relative">
-            <button
-              onClick={() => setReplyInquiry(null)}
-              className="absolute top-5 right-5 p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-[#F0F6FC] hover:bg-slate-100 dark:hover:bg-[#161B22] transition-colors cursor-pointer"
+          <div>
+            <label
+              htmlFor="announcement-title"
+              className="block text-xs font-semibold text-fg mb-1"
             >
-              <X className="w-4 h-4" />
+              Announcement Title
+            </label>
+            <input
+              id="announcement-title"
+              type="text"
+              required
+              value={announcementTitle}
+              onChange={(e) => setAnnouncementTitle(e.target.value)}
+              placeholder="e.g. CSE-3102 Lab 4 Submission Grace Period & Rubric Update"
+              className="w-full h-11 px-3 bg-surface-2 border border-line rounded-xl text-xs text-fg placeholder:text-fg-muted focus:outline-none focus:border-brand"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="announcement-body"
+              className="block text-xs font-semibold text-fg mb-1"
+            >
+              Message Body
+            </label>
+            <textarea
+              id="announcement-body"
+              rows={4}
+              value={announcementBody}
+              onChange={(e) => setAnnouncementBody(e.target.value)}
+              placeholder="Details regarding lecture slides, lab deadline extensions, or room reallocations..."
+              className="w-full p-3 bg-surface-2 border border-line rounded-xl text-xs text-fg placeholder:text-fg-muted focus:outline-none focus:border-brand"
+            />
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 pt-2">
+            <button
+              type="submit"
+              className="flex-1 min-h-[44px] py-2.5 px-4 rounded-2xl bg-brand hover:bg-brand-hover text-on-brand text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer"
+            >
+              <Send className="w-4 h-4" />
+              <span>
+                {announcementSuccess ? "Broadcast Dispatched!" : "Publish Announcement"}
+              </span>
             </button>
+            <button
+              type="button"
+              onClick={() => setIsAnnouncementOpen(false)}
+              className="min-h-[44px] py-2.5 px-4 rounded-2xl bg-surface-2 text-fg border border-line text-xs font-semibold hover:bg-surface transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </Modal>
 
-            <h3 className="text-base font-manrope font-bold text-slate-900 dark:text-[#F0F6FC] mb-1">
-              Reply to {replyInquiry.name}
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-[#8D96A0] font-mono mb-4">
-              ID: {replyInquiry.studentId} • Course: {replyInquiry.courseCode}
-            </p>
-
-            <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] text-xs text-slate-600 dark:text-[#8D96A0] mb-4">
+      <Modal
+        open={Boolean(replyInquiry)}
+        onClose={() => setReplyInquiry(null)}
+        title={replyInquiry ? `Reply to ${replyInquiry.name}` : undefined}
+        description={
+          replyInquiry
+            ? `ID: ${replyInquiry.studentId} • Course: ${replyInquiry.courseCode}`
+            : undefined
+        }
+        size="sm"
+      >
+        {replyInquiry && (
+          <div className="space-y-4">
+            <div className="p-3 rounded-xl bg-surface-2 border border-line text-xs text-fg-muted">
               &quot;{replyInquiry.message}&quot;
             </div>
 
@@ -843,27 +786,29 @@ export default function TeacherCommandCenterPage() {
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
               placeholder="Type your response to the student..."
-              className="w-full p-3 bg-white dark:bg-[#161B22] border border-slate-300 dark:border-[#30363D] rounded-xl text-xs text-slate-900 dark:text-[#F0F6FC] focus:outline-none focus:border-[#2563EB] mb-4"
+              className="w-full p-3 bg-surface-2 border border-line rounded-xl text-xs text-fg placeholder:text-fg-muted focus:outline-none focus:border-brand"
             />
 
             <div className="flex gap-2">
               <button
+                type="button"
                 onClick={handleSendReply}
-                className="flex-1 py-2 px-3 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs"
+                className="flex-1 min-h-[44px] py-2 px-3 rounded-xl bg-brand hover:bg-brand-hover text-on-brand text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
               >
                 <Send className="w-3.5 h-3.5" />
                 <span>{replySentId ? "Sent!" : "Send Response"}</span>
               </button>
               <button
+                type="button"
                 onClick={() => setReplyInquiry(null)}
-                className="py-2 px-3 rounded-xl bg-slate-100 dark:bg-[#161B22] text-slate-700 dark:text-[#8D96A0] text-xs font-semibold hover:bg-slate-200 dark:hover:bg-[#21262D] transition-colors cursor-pointer"
+                className="min-h-[44px] py-2 px-3 rounded-xl bg-surface-2 text-fg-muted border border-line text-xs font-semibold hover:text-fg transition-colors cursor-pointer"
               >
                 Cancel
               </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
     </div>
   );
 }

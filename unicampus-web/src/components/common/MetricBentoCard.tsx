@@ -2,8 +2,7 @@
 
 import React from "react";
 import { LucideIcon } from "lucide-react";
-import SpotlightCard from "@/components/bits/SpotlightCard";
-import { SPOTLIGHT } from "@/lib/theme";
+import { Card, Stat, cn } from "@/components/ui";
 
 export interface MetricBentoCardProps {
   label: string;
@@ -26,60 +25,72 @@ export default function MetricBentoCard({
   denominator,
   badge,
   progressPercent,
-  progressBarGradient = "bg-brand dark:bg-[#2563EB]",
+  progressBarGradient = "bg-brand",
   footerText,
   icon: Icon,
-  iconBg = "bg-brand/10 border-brand/20 dark:bg-[#2563EB]/15 dark:border-[#2563EB]/30",
-  iconColor = "text-brand dark:text-[#2563EB]",
+  iconBg = "bg-brand-soft border-brand/20",
+  iconColor = "text-brand",
   className = "",
   onClick,
 }: MetricBentoCardProps) {
   return (
-    <SpotlightCard
+    <Card
+      padding="md"
+      interactive={Boolean(onClick)}
       onClick={onClick}
-      className={`rounded-3xl bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-[#30363D] p-6 hover:border-slate-300 dark:hover:border-[#2563EB]/60 hover:shadow-xs transition-all group flex flex-col justify-between relative overflow-hidden ${
-        onClick ? "cursor-pointer" : ""
-      } ${className}`.trim()}
-      spotlightColor={SPOTLIGHT.wash}
-      borderGlowColor={SPOTLIGHT.glow}
+      className={cn("flex flex-col justify-between gap-4", className)}
     >
-      <div className="relative z-10 flex flex-col justify-between h-full">
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-[#8D96A0]">
-            {label}
-          </span>
-          <div
-            className={`w-9 h-9 rounded-xl ${iconBg} border flex items-center justify-center ${iconColor} group-hover:scale-105 transition-transform shrink-0`}
-          >
-            <Icon className="w-4 h-4" />
-          </div>
-        </div>
-
-        <div>
-          <div className="flex items-baseline gap-2 mb-2">
-            <span className="font-manrope font-extrabold text-[32px] tracking-[-0.02em] text-slate-900 dark:text-[#F0F6FC] leading-none">
-              {value}
-            </span>
+      <Stat
+        label={label}
+        value={
+          <span className="inline-flex items-baseline gap-2">
+            <span>{value}</span>
             {denominator && (
-              <span className="font-mono text-xs text-slate-400 dark:text-[#6E747D]">
+              <span className="text-xs font-normal text-fg-muted">
                 {denominator}
               </span>
             )}
+          </span>
+        }
+        icon={
+          <div
+            className={cn(
+              "w-9 h-9 rounded-xl border flex items-center justify-center shrink-0",
+              iconBg,
+              iconColor
+            )}
+          >
+            <Icon className="w-4 h-4" aria-hidden="true" />
           </div>
+        }
+      />
 
+      {(progressPercent !== undefined || badge || footerText) && (
+        <div className="space-y-2">
           {progressPercent !== undefined && (
-            <div className="w-full bg-slate-100 dark:bg-[#161B22] h-1.5 rounded-full overflow-hidden border border-slate-200/60 dark:border-[#30363D]/50 mb-2.5">
+            <div className="w-full bg-surface-2 h-1.5 rounded-full overflow-hidden border border-line">
               <div
-                className={`h-full rounded-full transition-all duration-1000 ${progressBarGradient}`}
-                style={{ width: `${Math.min(100, Math.max(0, progressPercent))}%` }}
+                className={cn(
+                  "h-full rounded-full transition-all duration-300",
+                  progressBarGradient
+                )}
+                style={{
+                  width: `${
+                    Number.isFinite(progressPercent)
+                      ? Math.min(100, Math.max(0, progressPercent))
+                      : 0
+                  }%`,
+                }}
               />
             </div>
           )}
 
-          {badge && <div className="mt-1">{badge}</div>}
-          {footerText && <div className="text-[11px] font-mono text-slate-500 dark:text-[#8D96A0] mt-1">{footerText}</div>}
+          {badge && <div>{badge}</div>}
+          {footerText && (
+            <div className="text-xs text-fg-muted">{footerText}</div>
+          )}
         </div>
-      </div>
-    </SpotlightCard>
+      )}
+    </Card>
   );
 }

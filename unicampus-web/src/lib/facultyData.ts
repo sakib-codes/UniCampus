@@ -1,8 +1,14 @@
 /**
  * UniCampus Institutional Faculty & Leadership Directory Data
  * Contains comprehensive profiles for Board Chairman, Principal, Vice Principal,
- * and Department-wise Academic Faculty across CSE, EEE, BBA, Mathematics, and English.
+ * and Department-wise Academic Faculty across CSE, EEE, BBA, Pharmacy, Mathematics, and English.
  */
+
+import {
+  CANONICAL_COURSES,
+  CANONICAL_CSE_HOD,
+  CANONICAL_FACULTY,
+} from '@/lib/canonicalCampus';
 
 export type FacultyCategory = 'leadership' | 'academic';
 
@@ -36,7 +42,7 @@ export interface FacultyMember {
   category: FacultyCategory;
   isLeadership?: boolean;
   department: string;
-  departmentCode: 'EXEC' | 'CSE' | 'EEE' | 'BBA' | 'MAT' | 'ENG' | 'AI';
+  departmentCode: 'EXEC' | 'CSE' | 'EEE' | 'BBA' | 'PHARM' | 'MAT' | 'ENG' | 'AI';
   office: string;
   email: string;
   phone: string;
@@ -166,34 +172,63 @@ export const FACULTY_MEMBERS: FacultyMember[] = [
   // DEPARTMENT OF COMPUTER SCIENCE & ENGINEERING
   // ==========================================
   {
-    id: '1',
-    name: 'Dr. Asif Rahman',
-    honorificTitle: 'Associate Professor & HOD',
-    facultyCode: 'T-CSE-01',
-    role: 'Associate Professor & Head of Department (CSE)',
+    id: CANONICAL_CSE_HOD.facultyPageId,
+    name: CANONICAL_CSE_HOD.name,
+    honorificTitle: 'Professor & HOD',
+    facultyCode: CANONICAL_CSE_HOD.facultyCode,
+    role: 'Professor & Head of Department (CSE)',
     designationCategory: 'Head of Department',
     category: 'academic',
-    department: 'Computer Science & Engineering',
+    department: CANONICAL_CSE_HOD.departmentName,
     departmentCode: 'CSE',
-    office: 'Room 402 • Block B',
-    email: 'asif.rahman@unicampus.edu',
-    phone: '+880 1712-345678',
+    office: CANONICAL_CSE_HOD.office,
+    email: CANONICAL_CSE_HOD.email,
+    phone: CANONICAL_CSE_HOD.phone,
     status: 'In Office',
     avatar: '',
-    bio: 'Dr. Asif Rahman serves as Head of the Department of Computer Science & Engineering. His research focuses on high-performance database management systems, transactional scaling, and distributed storage engines.',
+    bio: 'Prof. Dr. M. Lutfar Rahman serves as Professor and Head of the Department of Computer Science & Engineering. His research spans formal verification, compiler optimization, and university-scale distributed computing systems.',
+    qualifications: [
+      'Ph.D. in Computer Science — University of Toronto, Canada',
+      'M.Sc. in Computer Science & Engineering — BUET',
+      'Fellow, Bangladesh Computer Society',
+    ],
+    courses: [
+      { code: 'CSE-4101', title: 'Compiler Construction & Formal Languages', credit: 3.0, enrollment: 52 },
+      { code: 'CSE-499', title: 'Senior Undergraduate Capstone Supervision', credit: 6.0, enrollment: 38 },
+    ],
+    consultations: [
+      { day: 'Sunday', time: '11:00 AM - 01:00 PM', room: 'Academic Bldg 1, Room 401' },
+      { day: 'Tuesday', time: '02:00 PM - 04:00 PM', room: 'Academic Bldg 1, Room 401' },
+    ],
+  },
+  {
+    id: CANONICAL_FACULTY.facultyPageId,
+    name: CANONICAL_FACULTY.name,
+    honorificTitle: CANONICAL_FACULTY.designation,
+    facultyCode: CANONICAL_FACULTY.facultyCode,
+    role: CANONICAL_FACULTY.designation,
+    designationCategory: 'Associate Professor',
+    category: 'academic',
+    department: CANONICAL_FACULTY.departmentName,
+    departmentCode: 'CSE',
+    office: CANONICAL_FACULTY.office,
+    email: CANONICAL_FACULTY.email,
+    phone: CANONICAL_FACULTY.phone,
+    status: 'In Office',
+    avatar: '',
+    bio: 'Dr. Asif Rahman serves as an Associate Professor in the Department of Computer Science & Engineering. His research focuses on algorithm design, network flow optimization, and high-performance distributed computing.',
     qualifications: [
       'Ph.D. in Computer Science — National University of Singapore (NUS)',
       'B.Sc. in Computer Science & Engineering — BUET',
       'Senior Member of ACM & IEEE',
     ],
     courses: [
-      { code: 'CSE 3201', title: 'Database Management Systems', credit: 3.0, enrollment: 65 },
-      { code: 'CSE 3202', title: 'Database Management Systems Lab', credit: 1.5, enrollment: 32 },
-      { code: 'CSE 4101', title: 'Advanced Distributed Database Systems', credit: 3.0, enrollment: 48 },
+      { code: CANONICAL_COURSES['CSE-3101'].code, title: CANONICAL_COURSES['CSE-3101'].title, credit: CANONICAL_COURSES['CSE-3101'].credit, enrollment: 93 },
+      { code: CANONICAL_COURSES['CSE-4109'].code, title: CANONICAL_COURSES['CSE-4109'].title, credit: CANONICAL_COURSES['CSE-4109'].credit, enrollment: 36 },
+      { code: CANONICAL_COURSES['CSE-3102'].code, title: CANONICAL_COURSES['CSE-3102'].title, credit: CANONICAL_COURSES['CSE-3102'].credit, enrollment: 45 },
     ],
     consultations: [
-      { day: 'Sunday', time: '02:30 PM - 04:00 PM', room: 'Cabin 402 • Block B' },
-      { day: 'Tuesday', time: '02:30 PM - 04:00 PM', room: 'Cabin 402 • Block B' },
+      { day: 'Monday', time: '04:15 PM - 05:30 PM', room: 'Room 508' },
     ],
   },
   {
@@ -228,7 +263,7 @@ export const FACULTY_MEMBERS: FacultyMember[] = [
   },
   {
     id: '6',
-    name: 'Prof. Tariqul Islam',
+    name: 'Dr. Tariqul Islam',
     honorificTitle: 'Associate Professor',
     facultyCode: 'T-CSE-04',
     role: 'Associate Professor',
@@ -241,13 +276,14 @@ export const FACULTY_MEMBERS: FacultyMember[] = [
     phone: '+880 1616-778899',
     status: 'In Office',
     avatar: '',
-    bio: 'Prof. Tariqul Islam specializes in computer network protocols, SDN architectures, and applied cryptographic systems. He directs the UniCampus Cyber Security Research Hub.',
+    bio: 'Dr. Tariqul Islam specializes in database management systems, computer network protocols, and applied cryptographic systems. He directs the UniCampus Cyber Security Research Hub.',
     qualifications: [
       'Ph.D. in Cybersecurity & Networking — TU Munich, Germany',
       'M.Sc. in Computer Engineering — BUET',
       'Certified Information Systems Security Professional (CISSP)',
     ],
     courses: [
+      { code: CANONICAL_COURSES['CSE-3103'].code, title: CANONICAL_COURSES['CSE-3103'].title, credit: CANONICAL_COURSES['CSE-3103'].credit, enrollment: 64 },
       { code: 'CSE 3301', title: 'Computer Networks & Protocols', credit: 3.0, enrollment: 60 },
       { code: 'CSE 4305', title: 'Network Security & Applied Cryptography', credit: 3.0, enrollment: 40 },
     ],
@@ -532,6 +568,40 @@ export const FACULTY_MEMBERS: FacultyMember[] = [
     consultations: [
       { day: 'Tuesday', time: '01:30 PM - 03:00 PM', room: 'Cabin 105 • Humanities Block' },
       { day: 'Thursday', time: '01:30 PM - 03:00 PM', room: 'Cabin 105 • Humanities Block' },
+    ],
+  },
+
+  // ==========================================
+  // DEPARTMENT OF PHARMACY
+  // ==========================================
+  {
+    id: '14',
+    name: 'Prof. Dr. Rezaul Karim',
+    honorificTitle: 'Professor & HOD',
+    facultyCode: 'T-PHARM-01',
+    role: 'Professor & Head of Department (PHARM)',
+    designationCategory: 'Head of Department',
+    category: 'academic',
+    department: 'Department of Pharmacy',
+    departmentCode: 'PHARM',
+    office: 'Science Complex, Room 105',
+    email: 'rezaul.pharm@unicampus.edu',
+    phone: '+880 1716-445566',
+    status: 'In Office',
+    avatar: '',
+    bio: 'Prof. Dr. Rezaul Karim serves as Professor and Head of the Department of Pharmacy. His research focuses on clinical pharmacology, targeted drug delivery systems, and pharmaceutical quality assurance.',
+    qualifications: [
+      'Ph.D. in Pharmaceutical Sciences — University of Tokyo, Japan',
+      'M.Pharm. in Clinical Pharmacy & Pharmacology — University of Dhaka',
+      'Registered Senior Pharmacist, Pharmacy Council of Bangladesh',
+    ],
+    courses: [
+      { code: 'PHARM-101', title: 'Pharmaceutical Chemistry & Dosage Design', credit: 3.0, enrollment: 74 },
+      { code: 'PHARM-301', title: 'Clinical Pharmacology & Therapeutics', credit: 3.0, enrollment: 68 },
+    ],
+    consultations: [
+      { day: 'Sunday', time: '02:00 PM - 03:30 PM', room: 'Science Complex, Room 105' },
+      { day: 'Wednesday', time: '11:00 AM - 12:30 PM', room: 'Science Complex, Room 105' },
     ],
   },
 ];

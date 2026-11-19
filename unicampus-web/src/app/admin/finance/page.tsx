@@ -41,11 +41,17 @@ import {
   PaymentStatus 
 } from "@/types/admin";
 import { ORDINAL_SEMESTERS } from "@/lib/mockData";
-import { themeTokens } from "@/lib/theme";
-import SpotlightCard from "@/components/bits/SpotlightCard";
 import CountUp from "@/components/bits/CountUp";
-import ClickSpark from "@/components/bits/ClickSpark";
-import DecryptedText from "@/components/bits/DecryptedText";
+
+const formatTransactionType = (type: string) => {
+  switch (type) {
+    case 'student_fee': return 'Student Fee';
+    case 'teacher_wage': return 'Teacher Wage';
+    case 'late_fine': return 'Late Fine';
+    default:
+      return type.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  }
+};
 
 export default function AdminFinancePage() {
   const { currentUser, isSuperAdmin, isDeptAdmin, effectiveDeptId, adminDepartmentName } = useAdminAuth();
@@ -303,24 +309,24 @@ export default function AdminFinancePage() {
       )}
 
       {/* Software Header Bar */}
-      <div className={`flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 ${themeTokens.card}`}>
+      <div className={`flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-[20px] bg-surface border border-line`}>
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-[#F0F6FC]">
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-fg">
               Fees, Payments &amp; Faculty Payroll
             </h1>
-            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wider uppercase bg-brand/15 text-brand border border-brand/35">
-              Treasury Core
+            <span className="px-2 py-0.5 rounded-md text-xs font-bold bg-brand/15 text-brand border border-brand/35">
+              Finance Hub
             </span>
           </div>
-          <p className={themeTokens.subheading}>
+          <p className={"text-xs text-fg-muted mt-1"}>
             Manage student fee collections, digital transaction vouchers, and faculty payroll disbursements.
           </p>
         </div>
       </div>
 
       {/* 4 Core Tabs Segmented Dock */}
-      <div className={`p-1.5 flex items-center gap-1.5 overflow-x-auto scrollbar-none ${themeTokens.card} relative`}>
+      <div className={`p-1.5 flex items-center gap-1.5 overflow-x-auto scrollbar-none rounded-[20px] bg-surface border border-line relative`}>
         {[
           { id: 'overview', label: 'Financial Overview', icon: Receipt },
           { id: 'transactions', label: 'All Transactions', icon: CreditCard, count: transactions.length },
@@ -336,23 +342,23 @@ export default function AdminFinancePage() {
               className={`relative px-4 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center gap-2 shrink-0 cursor-pointer z-10 ${
                 isActive
                   ? "text-slate-900 dark:text-white"
-                  : "text-slate-600 hover:text-slate-900 dark:text-[#8D96A0] dark:hover:text-white"
+                  : "text-slate-600 hover:text-slate-900 dark:text-fg-muted dark:hover:text-white"
               }`}
             >
               {isActive && (
                 <motion.div
                   layoutId="admin-finance-tab-pill"
-                  className="absolute inset-0 bg-white dark:bg-[#161B22] border border-slate-200 dark:border-[#30363D] rounded-xl shadow-xs -z-10"
+                  className="absolute inset-0 bg-white dark:bg-surface-2 border border-slate-200 dark:border-line rounded-xl shadow-xs -z-10"
                   transition={{ type: "spring", stiffness: 450, damping: 32 }}
                 />
               )}
               <Icon className="w-3.5 h-3.5" />
               <span>{tab.label}</span>
               {typeof tab.count === 'number' && (
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-md transition-colors ${
+                <span className={`text-xs px-1.5 py-0.2 rounded-md transition-colors ${
                   isActive
-                    ? 'bg-brand/15 text-brand dark:bg-brand/30 dark:text-[#2563EB] font-bold'
-                    : 'bg-slate-200 dark:bg-[#161B22] text-slate-600 dark:text-[#6E747D]'
+                    ? 'bg-brand/15 text-brand dark:bg-brand/30 dark:text-brand font-bold'
+                    : 'bg-slate-200 dark:bg-surface-2 text-slate-600 dark:text-fg-muted'
                 }`}>
                   {tab.count}
                 </span>
@@ -370,69 +376,69 @@ export default function AdminFinancePage() {
           {/* 4 Dynamic KPI Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
             {/* KPI 1: Inflow vs Outflow */}
-            <SpotlightCard className={`p-4 ${themeTokens.card}`} spotlightColor="rgba(99, 102, 241, 0.15)">
+            <div className="p-4 rounded-[20px] bg-surface border border-line">
               <div className="flex items-center justify-between mb-2.5">
-                <span className={`text-[10px] font-bold uppercase tracking-wider ${themeTokens.textMuted}`}>Treasury Flow</span>
+                <span className={`text-xs font-bold text-fg-muted`}>Net Cash Flow</span>
                 <span className="w-7 h-7 rounded-lg bg-brand/10 border border-brand/20 flex items-center justify-center text-brand">
                   <CreditCard className="w-3.5 h-3.5" />
                 </span>
               </div>
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-xs font-medium">
-                  <span className="text-emerald-500 dark:text-emerald-400 flex items-center gap-1 text-[11px]">
+                  <span className="text-emerald-500 dark:text-emerald-400 flex items-center gap-1 text-xs">
                     <ArrowDownLeft className="w-3 h-3" /> Inflow:
                   </span>
-                  <span className={`font-bold ${themeTokens.textPrimary}`}>৳{totalInflow.toLocaleString()}</span>
+                  <span className={`font-bold text-fg`}>৳{totalInflow.toLocaleString()}</span>
                 </div>
                 <div className="flex items-center justify-between text-xs font-medium">
-                  <span className="text-rose-500 dark:text-rose-400 flex items-center gap-1 text-[11px]">
+                  <span className="text-rose-500 dark:text-rose-400 flex items-center gap-1 text-xs">
                     <ArrowUpRight className="w-3 h-3" /> Outflow:
                   </span>
-                  <span className={`font-bold ${themeTokens.textPrimary}`}>৳{totalOutflow.toLocaleString()}</span>
+                  <span className={`font-bold text-fg`}>৳{totalOutflow.toLocaleString()}</span>
                 </div>
               </div>
-              <div className={`mt-2.5 pt-2 border-t ${themeTokens.border} flex items-center justify-between text-[11px] font-semibold ${themeTokens.textMuted}`}>
+              <div className={`mt-2.5 pt-2 border-t border-line flex items-center justify-between text-xs font-semibold text-fg-muted`}>
                 <span>Net Balance</span>
                 <span className="text-brand font-bold">৳{(totalInflow - totalOutflow).toLocaleString()}</span>
               </div>
-            </SpotlightCard>
+            </div>
 
             {/* KPI 2: Student Tuition Fees */}
-            <SpotlightCard className={`p-4 ${themeTokens.card}`} spotlightColor="rgba(16, 185, 129, 0.15)">
+            <div className="p-4 rounded-[20px] bg-surface border border-line">
               <div className="flex items-center justify-between mb-2.5">
-                <span className={`text-[10px] font-bold uppercase tracking-wider ${themeTokens.textMuted}`}>Tuition Collections</span>
+                <span className={`text-xs font-bold text-fg-muted`}>Tuition Collections</span>
                 <span className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 dark:text-emerald-400">
                   <ArrowDownLeft className="w-3.5 h-3.5" />
                 </span>
               </div>
-              <h3 className={`text-xl font-bold mb-1 ${themeTokens.textPrimary}`}>
+              <h3 className={`text-xl font-bold mb-1 text-fg`}>
                 ৳<CountUp to={totalTuitionFees} duration={0.8} />
               </h3>
-              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
                 <CheckCircle2 className="w-3 h-3" /> Fully verified through bKash, Nagad &amp; Bank
               </p>
-            </SpotlightCard>
+            </div>
 
             {/* KPI 3: Faculty Wages Disbursed */}
-            <SpotlightCard className={`p-4 ${themeTokens.card}`} spotlightColor="rgba(245, 158, 11, 0.15)">
+            <div className="p-4 rounded-[20px] bg-surface border border-line">
               <div className="flex items-center justify-between mb-2.5">
-                <span className={`text-[10px] font-bold uppercase tracking-wider ${themeTokens.textMuted}`}>Faculty Payroll</span>
+                <span className={`text-xs font-bold text-fg-muted`}>Faculty Payroll</span>
                 <span className="w-7 h-7 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 dark:text-amber-400">
                   <DollarSign className="w-3.5 h-3.5" />
                 </span>
               </div>
-              <h3 className={`text-xl font-bold mb-1 ${themeTokens.textPrimary}`}>
+              <h3 className={`text-xl font-bold mb-1 text-fg`}>
                 ৳<CountUp to={totalWagesDisbursed} duration={0.8} />
               </h3>
-              <p className={`text-[11px] font-medium ${themeTokens.textMuted}`}>
-                Disbursed to verified teachers across 6 departments
+              <p className={`text-xs font-medium text-fg-muted`}>
+                Disbursed to verified teachers across 5 academic departments
               </p>
-            </SpotlightCard>
+            </div>
 
             {/* KPI 4: Total Dues */}
-            <SpotlightCard className={`p-4 ${themeTokens.card}`} spotlightColor="rgba(244, 63, 94, 0.15)">
+            <div className="p-4 rounded-[20px] bg-surface border border-line">
               <div className="flex items-center justify-between mb-2.5">
-                <span className={`text-[10px] font-bold uppercase tracking-wider ${themeTokens.textMuted}`}>Outstanding Dues</span>
+                <span className={`text-xs font-bold text-fg-muted`}>Outstanding Dues</span>
                 <span className="w-7 h-7 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-500 dark:text-rose-400">
                   <AlertCircle className="w-3.5 h-3.5" />
                 </span>
@@ -440,20 +446,20 @@ export default function AdminFinancePage() {
               <h3 className="text-xl font-bold text-rose-500 dark:text-rose-400 mb-1">
                 ৳<CountUp to={totalDues} duration={0.8} />
               </h3>
-              <p className="text-[11px] text-rose-500 dark:text-rose-400 font-medium">
+              <p className="text-xs text-rose-500 dark:text-rose-400 font-medium">
                 Pending &amp; overdue student semester payments
               </p>
-            </SpotlightCard>
+            </div>
           </div>
 
           {/* Department Fee Collection Progress Bars */}
-          <div className={`p-5 ${themeTokens.card}`}>
+          <div className={`p-5 rounded-[20px] bg-surface border border-line`}>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className={`text-base font-bold ${themeTokens.textPrimary}`}>
+                <h3 className={`text-base font-bold text-fg`}>
                   Department Fee Collection Progress
                 </h3>
-                <p className={themeTokens.subheading}>
+                <p className={"text-xs text-fg-muted mt-1"}>
                   Real-time collection efficiency vs target tuition fee for the current semester
                 </p>
               </div>
@@ -467,13 +473,13 @@ export default function AdminFinancePage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {deptProgressList.map((dp) => (
-                <div key={dp.department.id} className={`p-3.5 rounded-xl border space-y-2 ${themeTokens.cardRecessed}`}>
+                <div key={dp.department.id} className={`p-3.5 rounded-xl border space-y-2 rounded-xl bg-canvas border border-line`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="px-2 py-0.5 bg-brand/10 border border-brand/20 text-brand rounded-md text-[10px] font-bold uppercase font-mono">
+                      <span className="px-2 py-0.5 bg-brand/10 border border-brand/20 text-brand rounded-md text-xs font-bold font-mono">
                         {dp.department.code}
                       </span>
-                      <span className={`font-semibold text-xs ${themeTokens.textPrimary}`}>
+                      <span className={`font-semibold text-xs text-fg`}>
                         {dp.department.name}
                       </span>
                     </div>
@@ -481,15 +487,15 @@ export default function AdminFinancePage() {
                   </div>
 
                   {/* Progress Bar */}
-                  <div className="w-full h-2 bg-slate-200 dark:bg-[#21262D] rounded-full overflow-hidden">
+                  <div className="w-full h-2 bg-slate-200 dark:bg-surface-2 rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-brand rounded-full transition-all duration-500"
                       style={{ width: `${dp.percentage}%` }}
                     ></div>
                   </div>
 
-                  <div className={`flex items-center justify-between text-[11px] font-medium pt-0.5 ${themeTokens.textMuted}`}>
-                    <span>Collected: <strong className={themeTokens.textPrimary}>৳{dp.collected.toLocaleString()}</strong></span>
+                  <div className={`flex items-center justify-between text-xs font-medium pt-0.5 text-fg-muted`}>
+                    <span>Collected: <strong className={"text-fg"}>৳{dp.collected.toLocaleString()}</strong></span>
                     <span>Target: ৳{dp.target.toLocaleString()}</span>
                   </div>
                 </div>
@@ -498,10 +504,10 @@ export default function AdminFinancePage() {
           </div>
 
           {/* Recent Transactions Preview */}
-          <div className={`overflow-hidden ${themeTokens.card}`}>
-            <div className={`p-4 border-b ${themeTokens.border} flex items-center justify-between`}>
-              <h3 className={`text-sm font-bold uppercase tracking-wider ${themeTokens.textPrimary}`}>
-                Recent Treasury Ledger Transactions
+          <div className={`overflow-hidden rounded-[20px] bg-surface border border-line`}>
+            <div className={`p-4 border-b border-line flex items-center justify-between`}>
+              <h3 className={`text-sm font-bold text-fg`}>
+                Recent Ledger Transactions
               </h3>
               <button 
                 onClick={() => setActiveTab('transactions')}
@@ -514,7 +520,7 @@ export default function AdminFinancePage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className={themeTokens.tableHeader}>
+                  <tr className={"bg-canvas font-mono text-xs text-fg-muted border-b border-line"}>
                     <th className="px-4 py-3">Transaction ID</th>
                     <th className="px-4 py-3">User</th>
                     <th className="px-4 py-3">Classification</th>
@@ -523,32 +529,32 @@ export default function AdminFinancePage() {
                     <th className="px-4 py-3">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-[#21262D]">
+                <tbody className="divide-y divide-slate-100 dark:divide-line">
                   {transactions.slice(0, 5).map((t) => (
                     <tr 
                       key={t.id} 
                       onClick={() => setViewingReceipt(t)}
-                      className={themeTokens.tableRow}
+                      className={"hover:bg-surface-2/60 border-b border-line transition-colors"}
                     >
                       <td className="px-4 py-3 font-mono font-bold text-xs text-brand">
                         {t.transaction_id}
                       </td>
-                      <td className={`px-4 py-3 font-semibold text-xs ${themeTokens.textPrimary}`}>
+                      <td className={`px-4 py-3 font-semibold text-xs text-fg`}>
                         {t.user_name}
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${themeTokens.cardRecessed} ${themeTokens.textSecondary}`}>
-                          {t.type.replace('_', ' ')}
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-md border rounded-xl bg-canvas border border-line text-fg-muted`}>
+                          {formatTransactionType(t.type)}
                         </span>
                       </td>
-                      <td className={`px-4 py-3 font-bold text-xs ${themeTokens.textPrimary}`}>
+                      <td className={`px-4 py-3 font-bold text-xs text-fg`}>
                         ৳{t.amount.toLocaleString()}
                       </td>
-                      <td className={`px-4 py-3 text-xs font-medium ${themeTokens.textSecondary}`}>
+                      <td className={`px-4 py-3 text-xs font-medium text-fg-muted`}>
                         {t.payment_method}
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${
+                        <span className={`px-2 py-0.5 rounded-md text-xs font-bold border ${
                           t.status === 'Paid' 
                             ? 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 border-emerald-500/20' 
                             : 'bg-rose-500/10 text-rose-500 dark:text-rose-400 border-rose-500/20'
@@ -571,22 +577,22 @@ export default function AdminFinancePage() {
       {activeTab === 'transactions' && (
         <div className="space-y-4">
           {/* Controls Bar: Search, Filters, CSV Export */}
-          <div className={`p-4 space-y-3.5 ${themeTokens.card}`}>
+          <div className={`p-4 space-y-3.5 rounded-[20px] bg-surface border border-line`}>
             <div className="flex flex-col md:flex-row items-center justify-between gap-3.5">
               <div className="relative w-full md:w-96">
-                <Search className={`w-3.5 h-3.5 absolute left-3.5 top-1/2 -translate-y-1/2 ${themeTokens.textMuted}`} />
+                <Search className={`w-3.5 h-3.5 absolute left-3.5 top-1/2 -translate-y-1/2 text-fg-muted`} />
                 <input 
                   type="text" 
                   value={txnSearch}
                   onChange={(e) => setTxnSearch(e.target.value)}
                   placeholder="Search Txn ID, student/teacher name, receipt..."
-                  className={`w-full pl-9 pr-3.5 py-2 font-medium ${themeTokens.input}`}
+                  className={`w-full pl-9 pr-3.5 py-2 font-medium rounded-xl bg-canvas border border-line text-fg placeholder:text-fg-muted text-xs outline-hidden focus:border-brand`}
                 />
               </div>
 
               <button
                 onClick={handleExportTransactionsCSV}
-                className={`${themeTokens.btnSecondary} px-3.5 py-2 flex items-center gap-1.5 self-start md:self-auto`}
+                className={`bg-canvas hover:bg-surface-2 text-fg border border-line rounded-xl font-semibold px-3.5 py-2 flex items-center gap-1.5 self-start md:self-auto`}
               >
                 <Download className="w-3.5 h-3.5" />
                 Export Ledger (CSV)
@@ -594,8 +600,8 @@ export default function AdminFinancePage() {
             </div>
 
             {/* Classification Chips */}
-            <div className={`flex flex-wrap items-center gap-1.5 pt-2 border-t ${themeTokens.border}`}>
-              <span className={`text-[10px] font-bold uppercase tracking-wider mr-1 ${themeTokens.textMuted}`}>Classification:</span>
+            <div className={`flex flex-wrap items-center gap-1.5 pt-2 border-t border-line`}>
+              <span className={`text-xs font-bold mr-1 text-fg-muted`}>Classification:</span>
               {[
                 { id: 'all', label: 'All Transactions' },
                 { id: 'student_fee', label: 'Student Fees' },
@@ -607,8 +613,8 @@ export default function AdminFinancePage() {
                   onClick={() => setSelectedType(chip.id)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                     selectedType === chip.id
-                      ? themeTokens.tabActive
-                      : themeTokens.tabInactive
+                      ? "bg-surface text-fg font-bold shadow-xs rounded-lg px-3 py-1.5 text-xs transition-colors"
+                      : "text-fg-muted hover:text-fg rounded-lg px-3 py-1.5 text-xs transition-colors"
                   }`}
                 >
                   {chip.label}
@@ -619,11 +625,11 @@ export default function AdminFinancePage() {
             {/* Filter Dropdowns */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
               <div className="relative">
-                <label className={`text-[9px] font-bold uppercase tracking-wider block mb-1 ${themeTokens.textMuted}`}>Gateway</label>
+                <label className={`text-xs font-bold block mb-1 text-fg-muted`}>Gateway</label>
                 <select 
                   value={selectedGateway}
                   onChange={(e) => setSelectedGateway(e.target.value)}
-                  className={`w-full px-3 py-1.5 font-semibold cursor-pointer ${themeTokens.select}`}
+                  className={`w-full px-3 py-1.5 font-semibold cursor-pointer rounded-xl bg-canvas border border-line text-fg text-xs outline-hidden focus:border-brand cursor-pointer`}
                 >
                   <option value="all">All Gateways</option>
                   <option value="bKash">bKash</option>
@@ -634,11 +640,11 @@ export default function AdminFinancePage() {
               </div>
 
               <div className="relative">
-                <label className={`text-[9px] font-bold uppercase tracking-wider block mb-1 ${themeTokens.textMuted}`}>Payment Status</label>
+                <label className={`text-xs font-bold block mb-1 text-fg-muted`}>Payment Status</label>
                 <select 
                   value={selectedStatus}
                   onChange={(e) => setSelectedStatus(e.target.value)}
-                  className={`w-full px-3 py-1.5 font-semibold cursor-pointer ${themeTokens.select}`}
+                  className={`w-full px-3 py-1.5 font-semibold cursor-pointer rounded-xl bg-canvas border border-line text-fg text-xs outline-hidden focus:border-brand cursor-pointer`}
                 >
                   <option value="all">All Statuses</option>
                   <option value="Paid">Paid</option>
@@ -648,11 +654,11 @@ export default function AdminFinancePage() {
               </div>
 
               <div className="relative">
-                <label className={`text-[9px] font-bold uppercase tracking-wider block mb-1 ${themeTokens.textMuted}`}>Department</label>
+                <label className={`text-xs font-bold block mb-1 text-fg-muted`}>Department</label>
                 <select 
                   value={selectedDeptFilter}
                   onChange={(e) => setSelectedDeptFilter(e.target.value)}
-                  className={`w-full px-3 py-1.5 font-semibold cursor-pointer ${themeTokens.select}`}
+                  className={`w-full px-3 py-1.5 font-semibold cursor-pointer rounded-xl bg-canvas border border-line text-fg text-xs outline-hidden focus:border-brand cursor-pointer`}
                 >
                   <option value="all">All Departments</option>
                   {departments.map(d => (
@@ -662,11 +668,11 @@ export default function AdminFinancePage() {
               </div>
 
               <div className="relative">
-                <label className={`text-[9px] font-bold uppercase tracking-wider block mb-1 ${themeTokens.textMuted}`}>Date Range</label>
+                <label className={`text-xs font-bold block mb-1 text-fg-muted`}>Date Range</label>
                 <select 
                   value={selectedDateRange}
                   onChange={(e) => setSelectedDateRange(e.target.value)}
-                  className={`w-full px-3 py-1.5 font-semibold cursor-pointer ${themeTokens.select}`}
+                  className={`w-full px-3 py-1.5 font-semibold cursor-pointer rounded-xl bg-canvas border border-line text-fg text-xs outline-hidden focus:border-brand cursor-pointer`}
                 >
                   <option value="all">All Time</option>
                   <option value="today">Today</option>
@@ -679,11 +685,11 @@ export default function AdminFinancePage() {
           </div>
 
           {/* Transactions Data: Mobile Cards + Desktop Table */}
-          <div className={`overflow-hidden shadow-sm ${themeTokens.card}`}>
+          <div className={`overflow-hidden shadow-sm rounded-[20px] bg-surface border border-line`}>
             {/* Mobile View: Cards */}
-            <div className="block md:hidden divide-y divide-slate-100 dark:divide-[#21262D]">
+            <div className="block md:hidden divide-y divide-slate-100 dark:divide-line">
               {filteredTransactions.length === 0 ? (
-                <div className={`px-6 py-12 text-center text-xs font-medium ${themeTokens.textMuted}`}>
+                <div className={`px-6 py-12 text-center text-xs font-medium text-fg-muted`}>
                   No transactions found matching your criteria.
                 </div>
               ) : (
@@ -691,7 +697,7 @@ export default function AdminFinancePage() {
                   <div 
                     key={t.id} 
                     onClick={() => setViewingReceipt(t)}
-                    className="p-4 space-y-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-[#161B22]/50 transition-colors"
+                    className="p-4 space-y-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-surface-2/50 transition-colors"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
@@ -705,17 +711,17 @@ export default function AdminFinancePage() {
                               copyToClipboard(t.transaction_id, "Transaction ID copied");
                             }}
                             title="Copy TXN ID"
-                            className={themeTokens.btnGhost}
+                            className={"text-fg-muted hover:text-fg rounded-lg p-1"}
                           >
                             <Copy className="w-3.5 h-3.5" />
                           </button>
                         </div>
-                        <span className={`text-[10px] block mt-0.5 ${themeTokens.textMuted}`}>
+                        <span className={`text-xs block mt-0.5 text-fg-muted`}>
                           {new Date(t.created_at).toLocaleString()}
                         </span>
                       </div>
 
-                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border shrink-0 ${
+                      <span className={`px-2 py-0.5 rounded-md text-xs font-bold border shrink-0 ${
                         t.status === 'Paid'
                           ? 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 border-emerald-500/20'
                           : t.status === 'Pending'
@@ -728,27 +734,27 @@ export default function AdminFinancePage() {
 
                     <div className="flex items-center justify-between text-xs">
                       <div>
-                        <div className={`font-semibold ${themeTokens.textPrimary}`}>
+                        <div className={`font-semibold text-fg`}>
                           {t.user_name}
                         </div>
-                        <div className={`text-[11px] font-mono ${themeTokens.textMuted}`}>
+                        <div className={`text-xs font-mono text-fg-muted`}>
                           {t.student_id ? `ID: ${t.student_id}` : 'Faculty Member'} • {t.department_name} ({t.semester_name})
                         </div>
                       </div>
 
                       <div className="text-right">
-                        <div className={`font-bold text-sm ${themeTokens.textPrimary}`}>
+                        <div className={`font-bold text-sm text-fg`}>
                           ৳{t.amount.toLocaleString()}
                         </div>
-                        <div className={`text-[10px] uppercase ${themeTokens.textMuted}`}>
+                        <div className={`text-xs text-fg-muted`}>
                           {t.payment_method}
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-[#21262D]">
-                      <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${themeTokens.cardRecessed} ${themeTokens.textSecondary}`}>
-                        {t.type.replace('_', ' ')}
+                    <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-line">
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded-md border rounded-xl bg-canvas border border-line text-fg-muted`}>
+                        {formatTransactionType(t.type)}
                       </span>
 
                       <button
@@ -756,7 +762,7 @@ export default function AdminFinancePage() {
                           e.stopPropagation();
                           setViewingReceipt(t);
                         }}
-                        className={`${themeTokens.btnSecondary} px-2.5 py-1 inline-flex items-center gap-1.5 text-xs`}
+                        className={`bg-canvas hover:bg-surface-2 text-fg border border-line rounded-xl font-semibold px-2.5 py-1 inline-flex items-center gap-1.5 text-xs`}
                       >
                         <Receipt className="w-3.5 h-3.5 text-brand" />
                         <span>View Voucher</span>
@@ -771,7 +777,7 @@ export default function AdminFinancePage() {
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className={themeTokens.tableHeader}>
+                  <tr className={"bg-canvas font-mono text-xs text-fg-muted border-b border-line"}>
                     <th className="px-4 py-3">Transaction ID</th>
                     <th className="px-4 py-3">User Identity</th>
                     <th className="px-4 py-3">Department &amp; Semester</th>
@@ -781,10 +787,10 @@ export default function AdminFinancePage() {
                     <th className="px-4 py-3 text-right">Receipt Voucher</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-[#21262D]">
+                <tbody className="divide-y divide-slate-100 dark:divide-line">
                   {filteredTransactions.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className={`px-6 py-12 text-center text-xs font-medium ${themeTokens.textMuted}`}>
+                      <td colSpan={7} className={`px-6 py-12 text-center text-xs font-medium text-fg-muted`}>
                         No transactions found matching your criteria.
                       </td>
                     </tr>
@@ -793,7 +799,7 @@ export default function AdminFinancePage() {
                       <tr 
                         key={t.id} 
                         onClick={() => setViewingReceipt(t)}
-                        className={`${themeTokens.tableRow} group`}
+                        className={`hover:bg-surface-2/60 border-b border-line transition-colors group`}
                       >
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
@@ -806,47 +812,47 @@ export default function AdminFinancePage() {
                                 copyToClipboard(t.transaction_id, "Transaction ID copied");
                               }}
                               title="Copy TXN ID"
-                              className={themeTokens.btnGhost}
+                              className={"text-fg-muted hover:text-fg rounded-lg p-1"}
                             >
                               <Copy className="w-3.5 h-3.5" />
                             </button>
                           </div>
-                          <span className={`text-[10px] block mt-0.5 ${themeTokens.textMuted}`}>
+                          <span className={`text-xs block mt-0.5 text-fg-muted`}>
                             {new Date(t.created_at).toLocaleString()}
                           </span>
                         </td>
 
                         <td className="px-4 py-3">
-                          <div className={`font-semibold text-xs ${themeTokens.textPrimary}`}>
+                          <div className={`font-semibold text-xs text-fg`}>
                             {t.user_name}
                           </div>
-                          <div className={`text-[11px] font-mono ${themeTokens.textMuted}`}>
+                          <div className={`text-xs font-mono text-fg-muted`}>
                             {t.student_id ? `Student ID: ${t.student_id}` : 'Faculty Member'}
                           </div>
                         </td>
 
                         <td className="px-4 py-3">
-                          <div className={`text-xs font-medium ${themeTokens.textSecondary}`}>
+                          <div className={`text-xs font-medium text-fg-muted`}>
                             {t.department_name}
                           </div>
-                          <div className="text-[11px] text-brand font-medium">
+                          <div className="text-xs text-brand font-medium">
                             {t.semester_name}
                           </div>
                         </td>
 
-                        <td className={`px-4 py-3 font-bold text-xs ${themeTokens.textPrimary}`}>
+                        <td className={`px-4 py-3 font-bold text-xs text-fg`}>
                           ৳{t.amount.toLocaleString()}
-                          <span className={`block text-[10px] font-normal uppercase ${themeTokens.textMuted}`}>
-                            {t.type.replace('_', ' ')}
+                          <span className={`block text-xs font-normal text-fg-muted`}>
+                            {formatTransactionType(t.type)}
                           </span>
                         </td>
 
-                        <td className={`px-4 py-3 text-xs font-medium ${themeTokens.textSecondary}`}>
+                        <td className={`px-4 py-3 text-xs font-medium text-fg-muted`}>
                           {t.payment_method}
                         </td>
 
                         <td className="px-4 py-3">
-                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${
+                          <span className={`px-2 py-0.5 rounded-md text-xs font-bold border ${
                             t.status === 'Paid'
                               ? 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 border-emerald-500/20'
                               : t.status === 'Pending'
@@ -863,7 +869,7 @@ export default function AdminFinancePage() {
                               e.stopPropagation();
                               setViewingReceipt(t);
                             }}
-                            className={`${themeTokens.btnSecondary} px-2.5 py-1 inline-flex items-center gap-1.5 text-xs`}
+                            className={`bg-canvas hover:bg-surface-2 text-fg border border-line rounded-xl font-semibold px-2.5 py-1 inline-flex items-center gap-1.5 text-xs`}
                           >
                             <Receipt className="w-3.5 h-3.5 text-brand" />
                             View Voucher
@@ -885,7 +891,7 @@ export default function AdminFinancePage() {
       {activeTab === 'departments' && currentDeptObj && (
         <div className="space-y-5">
           {/* Department Selector Pills */}
-          <div className={`flex items-center gap-1.5 overflow-x-auto pb-1 p-1 scrollbar-none ${themeTokens.tabTrack}`}>
+          <div className={`flex items-center gap-1.5 overflow-x-auto pb-1 p-1 scrollbar-none rounded-xl bg-canvas border border-line p-1`}>
             {departments.map((dept) => {
               const isSelected = activeDeptTab === dept.id;
               return (
@@ -894,11 +900,11 @@ export default function AdminFinancePage() {
                   onClick={() => setActiveDeptTab(dept.id)}
                   className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 flex items-center gap-2 ${
                     isSelected
-                      ? themeTokens.tabActive
-                      : themeTokens.tabInactive
+                      ? "bg-surface text-fg font-bold shadow-xs rounded-lg px-3 py-1.5 text-xs transition-colors"
+                      : "text-fg-muted hover:text-fg rounded-lg px-3 py-1.5 text-xs transition-colors"
                   }`}
                 >
-                  <span className="font-bold uppercase font-mono">{dept.code}</span>
+                  <span className="font-bold font-mono">{dept.code}</span>
                   <span className="opacity-80 font-normal">({dept.name})</span>
                 </button>
               );
@@ -906,13 +912,13 @@ export default function AdminFinancePage() {
           </div>
 
           {/* Department Collection Efficiency Banner */}
-          <div className={`p-5 ${themeTokens.card}`}>
-            <div className={`flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b ${themeTokens.border}`}>
+          <div className={`p-5 rounded-[20px] bg-surface border border-line`}>
+            <div className={`flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-line`}>
               <div>
-                <span className="text-[10px] font-bold uppercase text-brand tracking-wider bg-brand/10 border border-brand/20 px-2 py-0.5 rounded-md font-mono">
+                <span className="text-xs font-bold text-brand bg-brand/10 border border-brand/20 px-2 py-0.5 rounded-md font-mono">
                   {currentDeptObj.code} Fiscal Efficiency
                 </span>
-                <h2 className={`text-xl font-bold mt-1 ${themeTokens.textPrimary}`}>
+                <h2 className={`text-xl font-bold mt-1 text-fg`}>
                   {currentDeptObj.name}
                 </h2>
               </div>
@@ -920,7 +926,7 @@ export default function AdminFinancePage() {
               <div className="flex items-center gap-2.5">
                 <button
                   onClick={handleExportDepartmentCSV}
-                  className={`${themeTokens.btnSecondary} px-3 py-1.5 text-xs flex items-center gap-1.5`}
+                  className={`bg-canvas hover:bg-surface-2 text-fg border border-line rounded-xl font-semibold px-3 py-1.5 text-xs flex items-center gap-1.5`}
                 >
                   <Download className="w-3.5 h-3.5" /> Export Department Summary (CSV)
                 </button>
@@ -928,29 +934,29 @@ export default function AdminFinancePage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 pt-4">
-              <div className={`p-3 rounded-xl border ${themeTokens.cardRecessed}`}>
-                <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${themeTokens.textMuted}`}>Total Fee Target</p>
-                <h3 className={`text-lg font-bold ${themeTokens.textPrimary}`}>
+              <div className={`p-3 rounded-xl border rounded-xl bg-canvas border border-line`}>
+                <p className={`text-xs font-bold mb-1 text-fg-muted`}>Total Fee Target</p>
+                <h3 className={`text-lg font-bold text-fg`}>
                   ৳{currentDeptProgress.target.toLocaleString()}
                 </h3>
               </div>
-              <div className={`p-3 rounded-xl border ${themeTokens.cardRecessed}`}>
-                <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${themeTokens.textMuted}`}>Tuition Collected</p>
+              <div className={`p-3 rounded-xl border rounded-xl bg-canvas border border-line`}>
+                <p className={`text-xs font-bold mb-1 text-fg-muted`}>Tuition Collected</p>
                 <h3 className="text-lg font-bold text-emerald-500 dark:text-emerald-400">
                   ৳{currentDeptProgress.collected.toLocaleString()}
                 </h3>
               </div>
-              <div className={`p-3 rounded-xl border ${themeTokens.cardRecessed}`}>
-                <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${themeTokens.textMuted}`}>Pending Balance</p>
+              <div className={`p-3 rounded-xl border rounded-xl bg-canvas border border-line`}>
+                <p className={`text-xs font-bold mb-1 text-fg-muted`}>Pending Balance</p>
                 <h3 className="text-lg font-bold text-rose-500 dark:text-rose-400">
                   ৳{currentDeptProgress.pending.toLocaleString()}
                 </h3>
               </div>
-              <div className={`p-3 rounded-xl border ${themeTokens.cardRecessed}`}>
-                <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${themeTokens.textMuted}`}>Collection Efficiency</p>
+              <div className={`p-3 rounded-xl border rounded-xl bg-canvas border border-line`}>
+                <p className={`text-xs font-bold mb-1 text-fg-muted`}>Collection Efficiency</p>
                 <div className="flex items-center gap-2">
                   <h3 className="text-lg font-bold text-brand">{currentDeptProgress.percentage}%</h3>
-                  <div className="flex-1 h-2 bg-slate-200 dark:bg-[#21262D] rounded-full overflow-hidden">
+                  <div className="flex-1 h-2 bg-slate-200 dark:bg-surface-2 rounded-full overflow-hidden">
                     <div 
                       className="h-full bg-brand rounded-full" 
                       style={{ width: `${currentDeptProgress.percentage}%` }}
@@ -963,7 +969,7 @@ export default function AdminFinancePage() {
 
           {/* Interactive Accordion by Ordinal Semester (1st to 8th Semester) */}
           <div className="space-y-3">
-            <h3 className={`text-xs font-bold uppercase tracking-wider ${themeTokens.textSecondary}`}>
+            <h3 className={`text-xs font-bold text-fg-muted`}>
               Granular Semester Tuition Ledgers (1st Semester to 8th Semester)
             </h3>
 
@@ -976,21 +982,21 @@ export default function AdminFinancePage() {
               return (
                 <div 
                   key={semName} 
-                  className={`overflow-hidden ${themeTokens.card}`}
+                  className={`overflow-hidden rounded-[20px] bg-surface border border-line`}
                 >
                   <div 
                     onClick={() => setExpandedSemester(isExpanded ? null : semName)}
-                    className="p-3.5 sm:p-4 flex items-center justify-between cursor-pointer hover:bg-slate-100/50 dark:hover:bg-[#161B22]/50 transition-colors"
+                    className="p-3.5 sm:p-4 flex items-center justify-between cursor-pointer hover:bg-slate-100/50 dark:hover:bg-surface-2/50 transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       <span className="w-7 h-7 rounded-lg bg-brand/10 border border-brand/20 text-brand font-bold text-xs flex items-center justify-center font-mono">
                         {semName.split(' ')[0]}
                       </span>
                       <div>
-                        <h4 className={`font-bold text-xs ${themeTokens.textPrimary}`}>
+                        <h4 className={`font-bold text-xs text-fg`}>
                           {semName}
                         </h4>
-                        <p className={`text-[11px] ${themeTokens.textMuted}`}>
+                        <p className={`text-xs text-fg-muted`}>
                           {semTxns.length} payment record{semTxns.length !== 1 ? 's' : ''} • Total ৳{semTotal.toLocaleString()}
                         </p>
                       </div>
@@ -1009,22 +1015,22 @@ export default function AdminFinancePage() {
                           Send Reminders ({overdueCount})
                         </button>
                       )}
-                      {isExpanded ? <ChevronUp className={`w-4 h-4 ${themeTokens.textMuted}`} /> : <ChevronDown className={`w-4 h-4 ${themeTokens.textMuted}`} />}
+                      {isExpanded ? <ChevronUp className={`w-4 h-4 text-fg-muted`} /> : <ChevronDown className={`w-4 h-4 text-fg-muted`} />}
                     </div>
                   </div>
 
                   {/* Accordion Content */}
                   {isExpanded && (
-                    <div className={`border-t ${themeTokens.border} p-3 sm:p-4 ${themeTokens.subtle}`}>
+                    <div className="border-t border-line p-3 sm:p-4 bg-canvas/50">
                       {semTxns.length === 0 ? (
-                        <p className={`text-xs text-center py-3 font-medium ${themeTokens.textMuted}`}>
+                        <p className={`text-xs text-center py-3 font-medium text-fg-muted`}>
                           No student payments recorded for {semName} in {currentDeptObj.name}.
                         </p>
                       ) : (
                         <div className="overflow-x-auto">
                           <table className="w-full text-left border-collapse">
                             <thead>
-                              <tr className={`border-b ${themeTokens.border} ${themeTokens.textMuted} text-[10px] font-bold uppercase tracking-wider`}>
+                              <tr className={`border-b border-line text-fg-muted text-xs font-bold`}>
                                 <th className="pb-2">Student Name</th>
                                 <th className="pb-2">Student ID</th>
                                 <th className="pb-2">Amount</th>
@@ -1033,15 +1039,15 @@ export default function AdminFinancePage() {
                                 <th className="pb-2 text-right">Receipt</th>
                               </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-[#21262D] text-xs">
+                            <tbody className="divide-y divide-slate-100 dark:divide-line text-xs">
                               {semTxns.map((t) => (
-                                <tr key={t.id} className={themeTokens.tableRow}>
-                                  <td className={`py-2.5 font-semibold ${themeTokens.textPrimary}`}>{t.user_name}</td>
-                                  <td className={`py-2.5 font-mono text-[11px] ${themeTokens.textMuted}`}>{t.student_id || 'N/A'}</td>
-                                  <td className={`py-2.5 font-bold ${themeTokens.textPrimary}`}>৳{t.amount.toLocaleString()}</td>
-                                  <td className={`py-2.5 font-medium ${themeTokens.textSecondary}`}>{t.payment_method}</td>
+                                <tr key={t.id} className={"hover:bg-surface-2/60 border-b border-line transition-colors"}>
+                                  <td className={`py-2.5 font-semibold text-fg`}>{t.user_name}</td>
+                                  <td className={`py-2.5 font-mono text-xs text-fg-muted`}>{t.student_id || 'N/A'}</td>
+                                  <td className={`py-2.5 font-bold text-fg`}>৳{t.amount.toLocaleString()}</td>
+                                  <td className={`py-2.5 font-medium text-fg-muted`}>{t.payment_method}</td>
                                   <td className="py-2.5">
-                                    <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${
+                                    <span className={`px-2 py-0.5 rounded-md text-xs font-bold border ${
                                       t.status === 'Paid' 
                                         ? 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 border-emerald-500/20' 
                                         : 'bg-rose-500/10 text-rose-500 dark:text-rose-400 border-rose-500/20'
@@ -1079,20 +1085,20 @@ export default function AdminFinancePage() {
       {/* ========================================================================= */}
       {activeTab === 'payroll' && (
         isDeptAdmin ? (
-          <div className="p-8 text-center rounded-2xl border border-dashed border-slate-300 dark:border-[#30363D] bg-slate-50/50 dark:bg-[#0d1117] max-w-xl mx-auto my-8">
-            <div className="w-12 h-12 rounded-2xl bg-brand/10 border border-brand/20 flex items-center justify-center mx-auto mb-4 text-brand dark:text-[#60A5FA]">
+          <div className="p-8 text-center rounded-2xl border border-dashed border-slate-300 dark:border-line bg-slate-50/50 dark:bg-surface max-w-xl mx-auto my-8">
+            <div className="w-12 h-12 rounded-2xl bg-brand/10 border border-brand/20 flex items-center justify-center mx-auto mb-4 text-brand dark:text-brand">
               <Crown className="w-6 h-6" />
             </div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-[#F0F6FC] mb-1">
+            <h3 className="text-base font-bold text-slate-900 dark:text-fg mb-1">
               Super Admin Authority Required
             </h3>
-            <p className="text-xs text-slate-500 dark:text-[#8D96A0] leading-relaxed mb-4">
+            <p className="text-xs text-slate-500 dark:text-fg-muted leading-relaxed mb-4">
               Institutional faculty salary disbursements and corporate banking transfers are restricted to the central Super Administrator.
               As {adminDepartmentName || 'Department'} Administrator, you have full oversight over student fee collections and clearances under the <strong>Department Breakdown</strong> tab.
             </p>
             <button
               onClick={() => setActiveTab('departments')}
-              className={`px-4 py-2 ${themeTokens.btnHero} text-xs font-bold cursor-pointer`}
+              className={`px-4 py-2 bg-brand text-white hover:bg-brand-hover rounded-xl font-bold text-xs font-bold cursor-pointer`}
             >
               Go to Department Tuition Ledger
             </button>
@@ -1100,17 +1106,17 @@ export default function AdminFinancePage() {
         ) : (
           <div className="space-y-4">
           {/* Month Cycle Navigation & Actions */}
-          <div className={`p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 ${themeTokens.card}`}>
+          <div className={`p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-[20px] bg-surface border border-line`}>
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-              <span className={`text-[10px] font-bold uppercase tracking-wider mr-1 ${themeTokens.textMuted}`}>Payroll Cycle:</span>
+              <span className={`text-xs font-bold mr-1 text-fg-muted`}>Payroll Cycle:</span>
               {MONTH_CYCLES.map((m) => (
                 <button
                   key={m}
                   onClick={() => setSelectedMonth(m)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 ${
                     selectedMonth === m
-                      ? themeTokens.tabActive
-                      : themeTokens.tabInactive
+                      ? "bg-surface text-fg font-bold shadow-xs rounded-lg px-3 py-1.5 text-xs transition-colors"
+                      : "text-fg-muted hover:text-fg rounded-lg px-3 py-1.5 text-xs transition-colors"
                   }`}
                 >
                   {m}
@@ -1121,7 +1127,7 @@ export default function AdminFinancePage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={handleExportPayrollCSV}
-                className={`${themeTokens.btnSecondary} px-3.5 py-2 text-xs flex items-center gap-1.5`}
+                className={`bg-canvas hover:bg-surface-2 text-fg border border-line rounded-xl font-semibold px-3.5 py-2 text-xs flex items-center gap-1.5`}
               >
                 <Download className="w-3.5 h-3.5" /> Export Payroll (CSV)
               </button>
@@ -1129,7 +1135,7 @@ export default function AdminFinancePage() {
               <button
                 onClick={() => setIsBulkDisburseOpen(true)}
                 disabled={payrollSummary.pendingCount === 0}
-                className={`${themeTokens.btnHero} px-3.5 py-2 text-xs flex items-center gap-1.5 disabled:opacity-40`}
+                className={`bg-brand text-white hover:bg-brand-hover rounded-xl font-bold px-3.5 py-2 text-xs flex items-center gap-1.5 disabled:opacity-40`}
               >
                 <DollarSign className="w-3.5 h-3.5" /> Disburse All Pending ({payrollSummary.pendingCount})
               </button>
@@ -1138,39 +1144,39 @@ export default function AdminFinancePage() {
 
           {/* Payroll Cycle Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-            <SpotlightCard className={`p-4 ${themeTokens.card}`} spotlightColor="rgba(99, 102, 241, 0.15)">
-              <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${themeTokens.textMuted}`}>Total Faculty Budget</p>
-              <h3 className={`text-xl font-bold ${themeTokens.textPrimary}`}>
+            <div className="p-4 rounded-[20px] bg-surface border border-line">
+              <p className={`text-xs font-bold mb-1 text-fg-muted`}>Total Faculty Budget</p>
+              <h3 className={`text-xl font-bold text-fg`}>
                 ৳<CountUp to={payrollSummary.totalBudget} duration={0.8} />
               </h3>
-              <p className={`text-[11px] mt-1 ${themeTokens.textMuted}`}>Total allocations for {selectedMonth}</p>
-            </SpotlightCard>
+              <p className={`text-xs mt-1 text-fg-muted`}>Total allocations for {selectedMonth}</p>
+            </div>
 
-            <SpotlightCard className={`p-4 ${themeTokens.card}`} spotlightColor="rgba(16, 185, 129, 0.15)">
-              <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${themeTokens.textMuted}`}>Disbursed Wages</p>
+            <div className="p-4 rounded-[20px] bg-surface border border-line">
+              <p className={`text-xs font-bold mb-1 text-fg-muted`}>Disbursed Wages</p>
               <h3 className="text-xl font-bold text-emerald-500 dark:text-emerald-400">
                 ৳<CountUp to={payrollSummary.disbursed} duration={0.8} />
               </h3>
-              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium mt-1">Disbursed into faculty bank accounts</p>
-            </SpotlightCard>
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-1">Disbursed into faculty bank accounts</p>
+            </div>
 
-            <SpotlightCard className={`p-4 ${themeTokens.card}`} spotlightColor="rgba(245, 158, 11, 0.15)">
-              <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${themeTokens.textMuted}`}>Pending Disbursements</p>
+            <div className="p-4 rounded-[20px] bg-surface border border-line">
+              <p className={`text-xs font-bold mb-1 text-fg-muted`}>Pending Disbursements</p>
               <h3 className="text-xl font-bold text-amber-500 dark:text-amber-400">
                 ৳<CountUp to={payrollSummary.pending} duration={0.8} />
               </h3>
-              <p className="text-[11px] text-amber-600 dark:text-amber-400 font-medium mt-1">
+              <p className="text-xs text-amber-600 dark:text-amber-400 font-medium mt-1">
                 {payrollSummary.pendingCount} faculty member{payrollSummary.pendingCount !== 1 ? 's' : ''} awaiting payout
               </p>
-            </SpotlightCard>
+            </div>
           </div>
 
           {/* Faculty Salary Data: Mobile Cards + Desktop Table */}
-          <div className={`overflow-hidden shadow-sm ${themeTokens.card}`}>
+          <div className={`overflow-hidden shadow-sm rounded-[20px] bg-surface border border-line`}>
             {/* Mobile View: Cards */}
-            <div className="block md:hidden divide-y divide-slate-100 dark:divide-[#21262D]">
+            <div className="block md:hidden divide-y divide-slate-100 dark:divide-line">
               {currentMonthWages.length === 0 ? (
-                <div className={`px-6 py-12 text-center text-xs font-medium ${themeTokens.textMuted}`}>
+                <div className={`px-6 py-12 text-center text-xs font-medium text-fg-muted`}>
                   No faculty wages registered for {selectedMonth}.
                 </div>
               ) : (
@@ -1178,19 +1184,19 @@ export default function AdminFinancePage() {
                   <div 
                     key={wage.id}
                     onClick={() => setViewingSalarySlip(wage)}
-                    className="p-4 space-y-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-[#161B22]/50 transition-colors"
+                    className="p-4 space-y-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-surface-2/50 transition-colors"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <div className={`font-bold text-xs ${themeTokens.textPrimary}`}>
+                        <div className={`font-bold text-xs text-fg`}>
                           {wage.teacher_name}
                         </div>
-                        <div className={`text-[11px] font-mono ${themeTokens.textMuted}`}>
+                        <div className={`text-xs font-mono text-fg-muted`}>
                           {wage.teacher_code} • {wage.department_name}
                         </div>
                       </div>
 
-                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border shrink-0 ${
+                      <span className={`px-2 py-0.5 rounded-md text-xs font-bold border shrink-0 ${
                         wage.status === 'Disbursed'
                           ? 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 border-emerald-500/20'
                           : 'bg-amber-500/10 text-amber-500 dark:text-amber-400 border-amber-500/20'
@@ -1201,23 +1207,23 @@ export default function AdminFinancePage() {
 
                     <div className="grid grid-cols-3 gap-2 text-xs">
                       <div>
-                        <span className={`text-[10px] block ${themeTokens.textMuted}`}>Base</span>
+                        <span className={`text-xs block text-fg-muted`}>Base</span>
                         <span className="font-semibold text-xs">৳{wage.base_amount.toLocaleString()}</span>
                       </div>
                       <div>
-                        <span className={`text-[10px] block text-emerald-500`}>Allowances</span>
+                        <span className={`text-xs block text-emerald-500`}>Allowances</span>
                         <span className="font-semibold text-xs text-emerald-600 dark:text-emerald-400">+৳{wage.allowances.toLocaleString()}</span>
                       </div>
                       <div>
-                        <span className={`text-[10px] block text-rose-500`}>Deductions</span>
+                        <span className={`text-xs block text-rose-500`}>Deductions</span>
                         <span className="font-semibold text-xs text-rose-600 dark:text-rose-400">-৳{wage.deductions.toLocaleString()}</span>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-[#21262D]">
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-line">
                       <div>
-                        <span className={`text-[10px] block ${themeTokens.textMuted}`}>Net Amount</span>
-                        <span className={`font-bold text-sm ${themeTokens.textPrimary}`}>৳{wage.net_amount.toLocaleString()}</span>
+                        <span className={`text-xs block text-fg-muted`}>Net Amount</span>
+                        <span className={`font-bold text-sm text-fg`}>৳{wage.net_amount.toLocaleString()}</span>
                       </div>
 
                       <div className="flex items-center gap-1.5">
@@ -1237,7 +1243,7 @@ export default function AdminFinancePage() {
                               e.stopPropagation();
                               setViewingSalarySlip(wage);
                             }}
-                            className={`${themeTokens.btnSecondary} px-3 py-1.5 text-xs rounded-xl`}
+                            className={`bg-canvas hover:bg-surface-2 text-fg border border-line rounded-xl font-semibold px-3 py-1.5 text-xs rounded-xl`}
                           >
                             Salary Slip
                           </button>
@@ -1253,7 +1259,7 @@ export default function AdminFinancePage() {
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className={themeTokens.tableHeader}>
+                  <tr className={"bg-canvas font-mono text-xs text-fg-muted border-b border-line"}>
                     <th className="px-4 py-3">Faculty Member</th>
                     <th className="px-4 py-3">Department</th>
                     <th className="px-4 py-3">Base Salary</th>
@@ -1264,10 +1270,10 @@ export default function AdminFinancePage() {
                     <th className="px-4 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-[#21262D]">
+                <tbody className="divide-y divide-slate-100 dark:divide-line">
                   {currentMonthWages.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className={`px-6 py-12 text-center text-xs font-medium ${themeTokens.textMuted}`}>
+                      <td colSpan={8} className={`px-6 py-12 text-center text-xs font-medium text-fg-muted`}>
                         No faculty wages registered for {selectedMonth}.
                       </td>
                     </tr>
@@ -1276,22 +1282,22 @@ export default function AdminFinancePage() {
                       <tr 
                         key={wage.id}
                         onClick={() => setViewingSalarySlip(wage)}
-                        className={themeTokens.tableRow}
+                        className={"hover:bg-surface-2/60 border-b border-line transition-colors"}
                       >
                         <td className="px-4 py-3">
-                          <div className={`font-semibold text-xs ${themeTokens.textPrimary}`}>
+                          <div className={`font-semibold text-xs text-fg`}>
                             {wage.teacher_name}
                           </div>
-                          <div className={`text-[11px] font-mono ${themeTokens.textMuted}`}>
+                          <div className={`text-xs font-mono text-fg-muted`}>
                             {wage.teacher_code}
                           </div>
                         </td>
 
-                        <td className={`px-4 py-3 text-xs font-medium ${themeTokens.textSecondary}`}>
+                        <td className={`px-4 py-3 text-xs font-medium text-fg-muted`}>
                           {wage.department_name}
                         </td>
 
-                        <td className={`px-4 py-3 text-xs font-medium ${themeTokens.textSecondary}`}>
+                        <td className={`px-4 py-3 text-xs font-medium text-fg-muted`}>
                           ৳{wage.base_amount.toLocaleString()}
                         </td>
 
@@ -1303,12 +1309,12 @@ export default function AdminFinancePage() {
                           -৳{wage.deductions.toLocaleString()}
                         </td>
 
-                        <td className={`px-4 py-3 font-bold text-xs ${themeTokens.textPrimary}`}>
+                        <td className={`px-4 py-3 font-bold text-xs text-fg`}>
                           ৳{wage.net_amount.toLocaleString()}
                         </td>
 
                         <td className="px-4 py-3">
-                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${
+                          <span className={`px-2 py-0.5 rounded-md text-xs font-bold border ${
                             wage.status === 'Disbursed'
                               ? 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 border-emerald-500/20'
                               : 'bg-amber-500/10 text-amber-500 dark:text-amber-400 border-amber-500/20'
@@ -1335,7 +1341,7 @@ export default function AdminFinancePage() {
                                   e.stopPropagation();
                                   setViewingSalarySlip(wage);
                                 }}
-                                className={`${themeTokens.btnSecondary} px-2.5 py-1 text-xs`}
+                                className={`bg-canvas hover:bg-surface-2 text-fg border border-line rounded-xl font-semibold px-2.5 py-1 text-xs`}
                               >
                                 Salary Slip
                               </button>
@@ -1356,27 +1362,27 @@ export default function AdminFinancePage() {
       {/* DIGITAL RECEIPT VOUCHER MODAL */}
       {/* ========================================================================= */}
       {viewingReceipt && (
-        <div className={themeTokens.modalOverlay}>
-          <div className={`w-full max-w-lg p-6 ${themeTokens.modalBox}`}>
+        <div className={"fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"}>
+          <div className={`w-full max-w-lg p-6 rounded-[20px] bg-surface border border-line shadow-2xl`}>
             {/* Voucher Header with UniCampus Branding */}
-            <div className={`flex items-center justify-between pb-3.5 border-b ${themeTokens.border} mb-5`}>
+            <div className={`flex items-center justify-between pb-3.5 border-b border-line mb-5`}>
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-brand text-white flex items-center justify-center font-bold text-sm">
                   U
                 </div>
                 <div>
-                  <h3 className={`text-sm font-bold ${themeTokens.textPrimary}`}>UniCampus Treasury</h3>
-                  <p className={`text-[10px] font-semibold uppercase tracking-wider ${themeTokens.textMuted}`}>Official Digital Receipt</p>
+                  <h3 className={`text-sm font-bold text-fg`}>UniCampus Treasury</h3>
+                  <p className={`text-xs font-semibold text-fg-muted`}>Official Digital Receipt</p>
                 </div>
               </div>
-              <button onClick={() => setViewingReceipt(null)} className={themeTokens.btnGhost}>
+              <button onClick={() => setViewingReceipt(null)} className={"text-fg-muted hover:text-fg rounded-lg p-1"}>
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Receipt Summary Card */}
-            <div className={`p-4 rounded-xl border mb-5 text-center ${themeTokens.cardRecessed}`}>
-              <span className={`text-[10px] font-bold uppercase tracking-wider block mb-1 ${themeTokens.textMuted}`}>Receipt Number</span>
+            <div className={`p-4 rounded-xl border mb-5 text-center rounded-xl bg-canvas border border-line`}>
+              <span className={`text-xs font-bold block mb-1 text-fg-muted`}>Receipt Number</span>
               <h2 className="text-xl font-bold font-mono text-brand mb-2">{viewingReceipt.receipt_number}</h2>
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-semibold bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 border border-emerald-500/20">
                 <Check className="w-3 h-3" /> Status: {viewingReceipt.status}
@@ -1385,46 +1391,46 @@ export default function AdminFinancePage() {
 
             {/* Itemized Details */}
             <div className="space-y-2 text-xs mb-5">
-              <div className={`flex justify-between py-1.5 border-b ${themeTokens.border}`}>
-                <span className={themeTokens.textMuted}>Transaction Reference:</span>
-                <span className={`font-mono font-bold ${themeTokens.textPrimary}`}>{viewingReceipt.transaction_id}</span>
+              <div className={`flex justify-between py-1.5 border-b border-line`}>
+                <span className={"text-fg-muted"}>Transaction Reference:</span>
+                <span className={`font-mono font-bold text-fg`}>{viewingReceipt.transaction_id}</span>
               </div>
-              <div className={`flex justify-between py-1.5 border-b ${themeTokens.border}`}>
-                <span className={themeTokens.textMuted}>Recipient / Payer:</span>
-                <span className={`font-semibold ${themeTokens.textPrimary}`}>{viewingReceipt.user_name}</span>
+              <div className={`flex justify-between py-1.5 border-b border-line`}>
+                <span className={"text-fg-muted"}>Recipient / Payer:</span>
+                <span className={`font-semibold text-fg`}>{viewingReceipt.user_name}</span>
               </div>
               {viewingReceipt.student_id && (
-                <div className={`flex justify-between py-1.5 border-b ${themeTokens.border}`}>
-                  <span className={themeTokens.textMuted}>Student ID:</span>
-                  <span className={`font-mono font-semibold ${themeTokens.textPrimary}`}>{viewingReceipt.student_id}</span>
+                <div className={`flex justify-between py-1.5 border-b border-line`}>
+                  <span className={"text-fg-muted"}>Student ID:</span>
+                  <span className={`font-mono font-semibold text-fg`}>{viewingReceipt.student_id}</span>
                 </div>
               )}
-              <div className={`flex justify-between py-1.5 border-b ${themeTokens.border}`}>
-                <span className={themeTokens.textMuted}>Academic Department:</span>
-                <span className={`font-semibold ${themeTokens.textPrimary}`}>{viewingReceipt.department_name}</span>
+              <div className={`flex justify-between py-1.5 border-b border-line`}>
+                <span className={"text-fg-muted"}>Academic Department:</span>
+                <span className={`font-semibold text-fg`}>{viewingReceipt.department_name}</span>
               </div>
-              <div className={`flex justify-between py-1.5 border-b ${themeTokens.border}`}>
-                <span className={themeTokens.textMuted}>Ordinal Semester:</span>
+              <div className={`flex justify-between py-1.5 border-b border-line`}>
+                <span className={"text-fg-muted"}>Ordinal Semester:</span>
                 <span className="font-bold text-brand">{viewingReceipt.semester_name}</span>
               </div>
-              <div className={`flex justify-between py-1.5 border-b ${themeTokens.border}`}>
-                <span className={themeTokens.textMuted}>Payment Gateway:</span>
-                <span className={`font-semibold ${themeTokens.textPrimary}`}>{viewingReceipt.payment_method}</span>
+              <div className={`flex justify-between py-1.5 border-b border-line`}>
+                <span className={"text-fg-muted"}>Payment Gateway:</span>
+                <span className={`font-semibold text-fg`}>{viewingReceipt.payment_method}</span>
               </div>
-              <div className={`flex justify-between py-1.5 border-b ${themeTokens.border}`}>
-                <span className={themeTokens.textMuted}>Date &amp; Timestamp:</span>
-                <span className={themeTokens.textSecondary}>{new Date(viewingReceipt.created_at).toLocaleString()}</span>
+              <div className={`flex justify-between py-1.5 border-b border-line`}>
+                <span className={"text-fg-muted"}>Date &amp; Timestamp:</span>
+                <span className={"text-fg-muted"}>{new Date(viewingReceipt.created_at).toLocaleString()}</span>
               </div>
               <div className="flex justify-between py-2 text-sm font-bold pt-2">
-                <span className={themeTokens.textPrimary}>Total Settled Amount:</span>
+                <span className={"text-fg"}>Total Settled Amount:</span>
                 <span className="text-brand">৳{viewingReceipt.amount.toLocaleString()} BDT</span>
               </div>
             </div>
 
-            <div className={`flex justify-end gap-2.5 pt-4 border-t ${themeTokens.border}`}>
+            <div className={`flex justify-end gap-2.5 pt-4 border-t border-line`}>
               <button
                 onClick={() => copyToClipboard(viewingReceipt.transaction_id, "TXN ID")}
-                className={`${themeTokens.btnSecondary} px-3.5 py-1.5 text-xs flex items-center gap-1.5`}
+                className={`bg-canvas hover:bg-surface-2 text-fg border border-line rounded-xl font-semibold px-3.5 py-1.5 text-xs flex items-center gap-1.5`}
               >
                 <Copy className="w-3.5 h-3.5" /> Copy TXN ID
               </button>
@@ -1432,7 +1438,7 @@ export default function AdminFinancePage() {
                 onClick={() => {
                   window.print();
                 }}
-                className={`${themeTokens.btnHero} px-3.5 py-1.5 text-xs flex items-center gap-1.5`}
+                className={`bg-brand text-white hover:bg-brand-hover rounded-xl font-bold px-3.5 py-1.5 text-xs flex items-center gap-1.5`}
               >
                 <Printer className="w-3.5 h-3.5" /> Print Receipt
               </button>
@@ -1445,29 +1451,29 @@ export default function AdminFinancePage() {
       {/* FACULTY SALARY SLIP VOUCHER MODAL */}
       {/* ========================================================================= */}
       {viewingSalarySlip && (
-        <div className={themeTokens.modalOverlay}>
-          <div className={`w-full max-w-lg p-6 ${themeTokens.modalBox}`}>
-            <div className={`flex items-center justify-between pb-3.5 border-b ${themeTokens.border} mb-5`}>
+        <div className={"fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"}>
+          <div className={`w-full max-w-lg p-6 rounded-[20px] bg-surface border border-line shadow-2xl`}>
+            <div className={`flex items-center justify-between pb-3.5 border-b border-line mb-5`}>
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-brand text-white flex items-center justify-center font-bold text-sm">
                   U
                 </div>
                 <div>
-                  <h3 className={`text-sm font-bold ${themeTokens.textPrimary}`}>Faculty Salary Voucher</h3>
-                  <p className={`text-[10px] font-semibold uppercase tracking-wider ${themeTokens.textMuted}`}>{viewingSalarySlip.month}</p>
+                  <h3 className={`text-sm font-bold text-fg`}>Faculty Salary Voucher</h3>
+                  <p className={`text-xs font-semibold text-fg-muted`}>{viewingSalarySlip.month}</p>
                 </div>
               </div>
-              <button onClick={() => setViewingSalarySlip(null)} className={themeTokens.btnGhost}>
+              <button onClick={() => setViewingSalarySlip(null)} className={"text-fg-muted hover:text-fg rounded-lg p-1"}>
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Teacher Details */}
-            <div className={`p-3.5 rounded-xl border mb-5 ${themeTokens.cardRecessed}`}>
-              <h4 className={`font-bold text-sm ${themeTokens.textPrimary}`}>{viewingSalarySlip.teacher_name}</h4>
-              <p className={`text-xs mt-0.5 ${themeTokens.textMuted}`}>{viewingSalarySlip.department_name} • Faculty Code: {viewingSalarySlip.teacher_code}</p>
+            <div className={`p-3.5 rounded-xl border mb-5 rounded-xl bg-canvas border border-line`}>
+              <h4 className={`font-bold text-sm text-fg`}>{viewingSalarySlip.teacher_name}</h4>
+              <p className={`text-xs mt-0.5 text-fg-muted`}>{viewingSalarySlip.department_name} • Faculty Code: {viewingSalarySlip.teacher_code}</p>
               <div className="mt-2 flex items-center gap-2">
-                <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${
+                <span className={`px-2 py-0.5 rounded-md text-xs font-bold border ${
                   viewingSalarySlip.status === 'Disbursed' 
                     ? 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 border-emerald-500/20' 
                     : 'bg-amber-500/10 text-amber-500 dark:text-amber-400 border-amber-500/20'
@@ -1475,37 +1481,37 @@ export default function AdminFinancePage() {
                   Status: {viewingSalarySlip.status}
                 </span>
                 {viewingSalarySlip.transaction_id && (
-                  <span className={`text-[10px] font-mono ${themeTokens.textMuted}`}>Ref: {viewingSalarySlip.transaction_id}</span>
+                  <span className={`text-xs font-mono text-fg-muted`}>Ref: {viewingSalarySlip.transaction_id}</span>
                 )}
               </div>
             </div>
 
             {/* Salary Calculation Breakdown */}
             <div className="space-y-2 text-xs mb-5">
-              <div className={`flex justify-between py-1.5 border-b ${themeTokens.border}`}>
-                <span className={themeTokens.textMuted}>Base Monthly Compensation:</span>
-                <span className={`font-bold ${themeTokens.textPrimary}`}>৳{viewingSalarySlip.base_amount.toLocaleString()}</span>
+              <div className={`flex justify-between py-1.5 border-b border-line`}>
+                <span className={"text-fg-muted"}>Base Monthly Compensation:</span>
+                <span className={`font-bold text-fg`}>৳{viewingSalarySlip.base_amount.toLocaleString()}</span>
               </div>
-              <div className={`flex justify-between py-1.5 border-b ${themeTokens.border}`}>
-                <span className={themeTokens.textMuted}>Academic &amp; Research Allowances:</span>
+              <div className={`flex justify-between py-1.5 border-b border-line`}>
+                <span className={"text-fg-muted"}>Academic &amp; Research Allowances:</span>
                 <span className="font-semibold text-emerald-500 dark:text-emerald-400">+৳{viewingSalarySlip.allowances.toLocaleString()}</span>
               </div>
-              <div className={`flex justify-between py-1.5 border-b ${themeTokens.border}`}>
-                <span className={themeTokens.textMuted}>Tax &amp; Provident Fund Deductions:</span>
+              <div className={`flex justify-between py-1.5 border-b border-line`}>
+                <span className={"text-fg-muted"}>Tax &amp; Provident Fund Deductions:</span>
                 <span className="font-semibold text-rose-500 dark:text-rose-400">-৳{viewingSalarySlip.deductions.toLocaleString()}</span>
               </div>
               <div className="flex justify-between py-2 text-sm font-bold pt-2">
-                <span className={themeTokens.textPrimary}>Net Payable Disbursed:</span>
+                <span className={"text-fg"}>Net Payable Disbursed:</span>
                 <span className="text-brand">৳{viewingSalarySlip.net_amount.toLocaleString()} BDT</span>
               </div>
             </div>
 
-            <div className={`flex justify-end gap-2.5 pt-4 border-t ${themeTokens.border}`}>
+            <div className={`flex justify-end gap-2.5 pt-4 border-t border-line`}>
               <button
                 onClick={() => {
                   window.print();
                 }}
-                className={`${themeTokens.btnHero} px-3.5 py-1.5 text-xs flex items-center gap-1.5`}
+                className={`bg-brand text-white hover:bg-brand-hover rounded-xl font-bold px-3.5 py-1.5 text-xs flex items-center gap-1.5`}
               >
                 <Printer className="w-3.5 h-3.5" /> Print Salary Slip
               </button>
@@ -1518,28 +1524,28 @@ export default function AdminFinancePage() {
       {/* BULK DISBURSE CONFIRMATION MODAL */}
       {/* ========================================================================= */}
       {isBulkDisburseOpen && (
-        <div className={themeTokens.modalOverlay}>
-          <div className={`w-full max-w-md p-6 text-center ${themeTokens.modalBox}`}>
+        <div className={"fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"}>
+          <div className={`w-full max-w-md p-6 text-center rounded-[20px] bg-surface border border-line shadow-2xl`}>
             <div className="w-11 h-11 rounded-xl bg-brand/10 border border-brand/20 text-brand flex items-center justify-center mx-auto mb-3.5">
               <DollarSign className="w-5 h-5" />
             </div>
 
-            <h3 className={`text-base font-bold mb-1 ${themeTokens.textPrimary}`}>
+            <h3 className={`text-base font-bold mb-1 text-fg`}>
               Disburse All Pending Faculty Wages?
             </h3>
-            <p className={`text-xs mb-4 ${themeTokens.textMuted}`}>
-              Cycle: <strong className={themeTokens.textPrimary}>{selectedMonth}</strong> • Total Payout: <strong className="text-emerald-500 dark:text-emerald-400">৳{payrollSummary.pending.toLocaleString()} BDT</strong>
+            <p className={`text-xs mb-4 text-fg-muted`}>
+              Cycle: <strong className={"text-fg"}>{selectedMonth}</strong> • Total Payout: <strong className="text-emerald-500 dark:text-emerald-400">৳{payrollSummary.pending.toLocaleString()} BDT</strong>
             </p>
 
             <div className="space-y-3 mb-5 text-left">
               <div>
-                <label className={`block text-xs font-semibold mb-1 ${themeTokens.textSecondary}`}>
+                <label className={`block text-xs font-semibold mb-1 text-fg-muted`}>
                   Settlement Gateway
                 </label>
                 <select 
                   value={bulkGateway}
                   onChange={(e) => setBulkGateway(e.target.value as PaymentMethod)}
-                  className={`w-full px-3 py-2 font-semibold cursor-pointer ${themeTokens.select}`}
+                  className={`w-full px-3 py-2 font-semibold cursor-pointer rounded-xl bg-canvas border border-line text-fg text-xs outline-hidden focus:border-brand cursor-pointer`}
                 >
                   <option value="Bank Transfer">Bank Electronic Transfer</option>
                   <option value="bKash">bKash Corporate Payout</option>
@@ -1547,21 +1553,21 @@ export default function AdminFinancePage() {
                 </select>
               </div>
 
-              <div className={`p-3 rounded-xl border text-[11px] ${themeTokens.cardRecessed} ${themeTokens.textMuted}`}>
-                This action will mark all {payrollSummary.pendingCount} pending teacher wage records as <strong className={themeTokens.textPrimary}>Disbursed</strong> and record individual debit vouchers in the master ledger.
+              <div className={`p-3 rounded-xl border text-xs rounded-xl bg-canvas border border-line text-fg-muted`}>
+                This action will mark all {payrollSummary.pendingCount} pending teacher wage records as <strong className={"text-fg"}>Disbursed</strong> and record individual debit vouchers in the master ledger.
               </div>
             </div>
 
             <div className="flex justify-center gap-2.5">
               <button
                 onClick={() => setIsBulkDisburseOpen(false)}
-                className={`${themeTokens.btnSecondary} px-4 py-2`}
+                className={`bg-canvas hover:bg-surface-2 text-fg border border-line rounded-xl font-semibold px-4 py-2`}
               >
                 Cancel
               </button>
               <button
                 onClick={handleConfirmBulkDisburse}
-                className={`${themeTokens.btnHero} px-4 py-2`}
+                className={`bg-brand text-white hover:bg-brand-hover rounded-xl font-bold px-4 py-2`}
               >
                 Confirm Bulk Payout
               </button>
@@ -1574,26 +1580,26 @@ export default function AdminFinancePage() {
       {/* SEND DUE REMINDERS MODAL (TAB 3) */}
       {/* ========================================================================= */}
       {reminderModalSemester && (
-        <div className={themeTokens.modalOverlay}>
-          <div className={`w-full max-w-md p-6 text-center ${themeTokens.modalBox}`}>
+        <div className={"fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"}>
+          <div className={`w-full max-w-md p-6 text-center rounded-[20px] bg-surface border border-line shadow-2xl`}>
             <div className="w-11 h-11 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 dark:text-amber-400 flex items-center justify-center mx-auto mb-3.5">
               <Send className="w-5 h-5" />
             </div>
 
-            <h3 className={`text-base font-bold mb-1 ${themeTokens.textPrimary}`}>
+            <h3 className={`text-base font-bold mb-1 text-fg`}>
               Broadcast Due Payment Reminders
             </h3>
-            <p className={`text-xs mb-4 ${themeTokens.textMuted}`}>
-              {currentDeptObj?.name} • <strong className={themeTokens.textPrimary}>{reminderModalSemester}</strong>
+            <p className={`text-xs mb-4 text-fg-muted`}>
+              {currentDeptObj?.name} • <strong className={"text-fg"}>{reminderModalSemester}</strong>
             </p>
 
-            <div className={`p-3 rounded-xl border max-h-48 overflow-y-auto mb-5 space-y-2 text-left ${themeTokens.cardRecessed}`}>
-              <p className={`text-[10px] font-bold uppercase tracking-wider ${themeTokens.textMuted}`}>
+            <div className={`p-3 rounded-xl border max-h-48 overflow-y-auto mb-5 space-y-2 text-left rounded-xl bg-canvas border border-line`}>
+              <p className={`text-xs font-bold text-fg-muted`}>
                 Recipients ({overdueStudentsInSelectedSemester.length} students)
               </p>
               {overdueStudentsInSelectedSemester.map(s => (
                 <div key={s.id} className="flex justify-between items-center text-xs">
-                  <span className={`font-semibold ${themeTokens.textPrimary}`}>{s.user_name} ({s.student_id})</span>
+                  <span className={`font-semibold text-fg`}>{s.user_name} ({s.student_id})</span>
                   <span className="font-mono text-rose-500 dark:text-rose-400 font-bold">৳{s.amount.toLocaleString()}</span>
                 </div>
               ))}
@@ -1602,13 +1608,13 @@ export default function AdminFinancePage() {
             <div className="flex justify-center gap-2.5">
               <button
                 onClick={() => setReminderModalSemester(null)}
-                className={`${themeTokens.btnSecondary} px-4 py-2`}
+                className={`bg-canvas hover:bg-surface-2 text-fg border border-line rounded-xl font-semibold px-4 py-2`}
               >
                 Cancel
               </button>
               <button
                 onClick={handleSendDueReminders}
-                className={`${themeTokens.btnHero} px-4 py-2`}
+                className={`bg-brand text-white hover:bg-brand-hover rounded-xl font-bold px-4 py-2`}
               >
                 Dispatch Reminders (SMS/Email)
               </button>

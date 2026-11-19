@@ -1,157 +1,115 @@
-# UniCampus — Project Memory & Master Roadmap
+# UniCampus — Master Architecture & Canonical Project Memory
 
-> **Last Updated:** September 2026  
-> **Status:** Web UI Student Portal Complete • Ready for Mobile UI (Flutter) Implementation
-
----
-
-## 1. Project Architecture
-
-The UniCampus workspace is structured as a unified monorepo:
-* **`/unicampus-web`**: Next.js 16 (Turbopack, App Router, TypeScript, Tailwind CSS v4) Web Application.
-* **`/unicampus-mobile`**: Flutter cross-platform mobile application (Android, iOS, Windows, Linux — Web excluded).
-* **`/unicampus-supabase`**: Backend migrations, schema scripts, and Edge Functions.
+> **Status:** Monorepo Active • Web Portal Complete • Mobile Porting in Progress • Supabase Schema Live  
+> **Master Router:** [`AGENTS.md`](file:///home/sakib360/sakib-codes/UniCampus/AGENTS.md) • **Task Tracker:** [`PROGRESS.md`](file:///home/sakib360/sakib-codes/UniCampus/PROGRESS.md) • **Bug Tracker:** [`BUGS_AND_DEBT.md`](file:///home/sakib360/sakib-codes/UniCampus/BUGS_AND_DEBT.md)
 
 ---
 
-## 2. What Has Been Designed & Implemented (`unicampus-web`)
+## 1. Monorepo Architecture Overview
 
-### Design System & Global Layout
-- **Color Palette**: Theme background `#EAEBF6`, Brand Indigo `#605BFF`, Success Emerald `#10B981`, Amber `#F59E0B`.
-- **Card Aesthetics**: Rounded cards (`rounded-3xl` / `rounded-[48px]`), subtle shadows, clean typography.
-- **Custom Favicon**: Custom UniCampus SVG branding in browser tab with gradient squircle and bold white "U".
-- **Scrolling & Viewport**: Custom smooth webkit scrollbars; fixed layout flex constraints enabling full scroll on all screen sizes.
-- **Global Shell (`AppShell.tsx`)**:
-  - Automatically hides Sidebar/Header on `/` and `/splash` for full-screen focus.
-  - Renders persistent `Sidebar` and `Header` on all portal routes.
-- **Header Interactive Flyouts (`Header.tsx`)**:
-  - **Dynamic Multi-Level Breadcrumbs**: Auto-formats sub-routes (`Portal / Notices / Detail View`, `Portal / Teachers / Profile`, etc.).
-  - **Notification Bell Dropdown**: Shows 3 actionable alerts with unread badge and "Mark read" action.
-  - **User Profile Dropdown**: User identity banner, links to Profile, Milestones, Settings, sync status, and Sign Out.
+UniCampus is architected as an integrated cross-platform campus management and student lifecycle platform:
 
-### Web UI Pages Built (12 Screens / Views)
-| Route | Screen | Description | Status |
-|---|---|---|---|
-| `/` & `/splash` | **Splash Screen** | Animated 87% campus database sync card, logo squircle, and automatic portal transition. | **Completed** |
-| `/dashboard` | **Student Dashboard** | "Good afternoon, Sakib", live lecture card (DBMS) with progress bar, pinned notice, upcoming routine, accomplishments, recent notices. | **Completed** |
-| `/dashboard/progress` | **Academic Progress & Degree Audit** | Overall CGPA radial arc gauge (3.78/4.00), degree completion (66%), credit distribution meters, forecast SGPA (3.85), SVG SGPA vs CGPA trajectory spline with tooltips, filterable semester course table, unofficial transcript modal, and interactive GPA Simulator. | **Completed** |
-| `/profile` | **Student Profile** | Profile hero with avatar, Personal Info, Academic Registry, Contact Info, and Campus Activities. | **Completed** |
-| `/routine` | **Class Routine (Student)** | 6-day timetable matrix (Sat–Thu), day selector pills, color-coded courses (Theory blue, SE green, Lab amber). | **Completed** |
-| `/notices` | **Campus Noticeboard** | Category filters (Exams, General, Admission, Seminars, Schedules), live search, and notice cards with attachment tags. | **Completed** |
-| `/notices/[id]` | **Notice Detail View** | Announcement body, author card (Dr. Asif Rahman), downloadable attachment widgets, action buttons, related notices. | **Completed** |
-| `/students` | **Student Directory** | Batch & department filter pills, live search bar, student cards with avatars and section tags. | **Completed** |
-| `/teachers` | **Faculty Directory** | Search by name/course, department filter tabs, availability status indicators (*In Office*, *In Class*, *Online*). | **Completed** |
-| `/teachers/[id]` | **Teacher Profile** | Faculty profile card, contact info, Courses Taught list with enrollments, and consultation hours schedule cards. | **Completed** |
-| `/settings` | **Portal Settings** | Profile details form, notification switches (Email, SMS, Routine), 2FA toggle, password update, Supabase sync status. | **Completed** |
-| `/teachers` ↔ `/teachers/[id]` | **Faculty Profile Link** | Direct routing from faculty cards to individual consultation profiles. | **Completed** |
+```mermaid
+graph TD
+    ClientWeb["unicampus-web<br/>(Next.js 16 • React 19 • Tailwind v4)"]
+    ClientMobile["unicampus-mobile<br/>(Flutter 3.47 • Dart 3.13)"]
+    BackendDB["unicampus-supabase<br/>(PostgreSQL • RLS Policies • Edge Functions)"]
+
+    ClientWeb -->|Data Access / RPC| BackendDB
+    ClientMobile -->|Data Access / RPC| BackendDB
+```
+
+- **[`unicampus-web`](file:///home/sakib360/sakib-codes/UniCampus/unicampus-web/)**: Web portal for Students, Faculty, and University Administrators. Built with Next.js 16 App Router, React 19, Tailwind CSS v4, and Framer Motion.
+- **[`unicampus-mobile`](file:///home/sakib360/sakib-codes/UniCampus/unicampus-mobile/)**: Cross-platform mobile client for Android, iOS, Windows, and Linux. Built with Flutter 3.47 and Google Fonts Inter.
+- **[`unicampus-supabase`](file:///home/sakib360/sakib-codes/UniCampus/unicampus-supabase/)**: Relational Postgres database, authentication, RLS security policies, and migration scripts.
 
 ---
 
-## 3. Current Phase: Mobile Application (`unicampus-mobile`)
+## 2. Canonical Design Tokens & Design System
 
-We have built the mobile design system, splash screens, and 3-step onboarding flow in Flutter:
+Both Web and Mobile clients strictly conform to these shared Calm Campus design tokens:
 
-### Flutter Mobile Screens Built:
-| Feature | Files | Description | Status |
-|---|---|---|---|
-| **Design System & Theme** | `lib/src/core/theme.dart` | Light and dark themes, brand colors (`#605BFF`), Google Fonts Inter typography. | **Completed** |
-| **Brand Logo Widget** | `lib/src/widgets/brand_logo.dart` | Gradient squircle, white "U" insignia, frosted outer container for dark/light modes. | **Completed** |
-| **Splash Screen (Dark)** | `lib/src/features/splash/splash_screen.dart` | Deep dark `#0A0815` background, centered frosted logo, smooth scale & fade animations. | **Completed** |
-| **Splash Screen (Light)** | `lib/src/features/splash/splash_screen.dart` | Clean `#F7F8FD` background, elevated squircle logo with soft drop shadow. | **Completed** |
-| **Onboarding 1 (Notices)** | `lib/src/features/onboarding/` | "Stay updated with university notices", 3D glossy purple orb & orbital ring illustration, indicator pill. | **Completed** |
-| **Onboarding 2 (Routine)** | `lib/src/features/onboarding/` | "Manage your class routine", tilted floating frosted cards & amber accent dot illustration. | **Completed** |
-| **Onboarding 3 (Directory)** | `lib/src/features/onboarding/` | "Find teachers & students easily", intersecting concentric rings illustration, "Get Started" action. | **Completed** |
-| **Onboarding Host & Transitions** | `lib/src/features/onboarding/onboarding_screen.dart` | Top bar (logo + Skip), PageView with smooth text transitions, bottom floating white card. | **Completed** |
-| **Login Screen** | `lib/src/features/auth/login_screen.dart` | "Welcome back", email & password inputs, "Forgot Password?", "Sign In" button, "Create Account" secondary button. | **Completed** |
-| **Multi-Step Sign Up Wizard** | `lib/src/features/auth/register_screen.dart` | UX Best Practice: Split into 3 bite-sized steps (Identity, Academic/Faculty, Security) with role tabs and progress bar. | **Completed** |
-| **Forgot Password Screen** | `lib/src/features/auth/forgot_password_screen.dart` | Central frosted padlock icon, email input, "Send Reset Link", back to login link. | **Completed** |
-| **Reset Password Screen** | `lib/src/features/auth/reset_password_screen.dart` | New & confirm password, 3-segment strength meter ("Strong"), and animated success alert banner. | **Completed** |
+### Brand Color Palette
+| Token Name | Hex Code | Semantic Role |
+|---|---|---|
+| **Brand Primary Indigo** | `#605BFF` | Primary action buttons, active states, progress arcs |
+| **Brand Indigo Hover / Dark**| `#4F46E5` / `#7C78FF` | Focus rings, hover states, dark mode accent |
+| **Light Canvas Base** | `#F5F5FA` | Web background, mobile light background base |
+| **Light Card Surface** | `#FFFFFF` | Elevated cards, modals, navigation drawers |
+| **Light Hairline Border** | `#E7E7F0` | Light mode card borders, hairline list dividers |
+| **Dark Canvas Base** | `#0B0B10` | Web & mobile dark canvas background |
+| **Dark Card Surface** | `#15151D` | Web & mobile dark elevated cards & panels |
+| **Dark Border Default** | `#262630` | Dark mode dividers, borders, input outlines |
+| **Success Emerald** | `#10B981` | Paid status, lecture in-progress, passing grades |
+| **Warning Amber** | `#F59E0B` | Pending approvals, lab course indicator, alerts |
+| **Danger Rose** | `#EF4444` | Rejected status, overdue balances, errors |
 
-
----
-
-## 4. Master TODO List & Return-to-Web Backlog
-
-When mobile UI design is complete, we will return to complete these remaining Web and Backend features:
-
-### Phase A: Web Authentication & Onboarding
-- [ ] **Login Screen (`/login`)**: Email/password inputs, "Remember me", validation, link to forgot password.
-- [ ] **Registration Screen (`/register`)**: Student & teacher registration form with role selection, ID, department, and password setup.
-- [ ] **Role-Based Auth Gate**: Redirect users based on role (`student`, `teacher`, `admin`).
-
-### Phase B: Web Admin Console Screens (Completed)
-- [x] **Admin Authentication & Role Gate (`AdminRoleGate.tsx`, `AdminAuthContext.tsx`)**:
-  - Strict route protection: Only verified users with `role === 'admin'` can access admin layout.
-  - Interactive Clearance Gate with test role switching and return navigation.
-- [x] **Admin Executive Dashboard (`/admin/dashboard`)**:
-  - Top 5 Metric KPI cards: Active Students, Verified Faculty, Pending User Approvals, Monthly Fee Collection, System Notices.
-  - Urgent review banner with 1-click pending user navigation.
-  - Quick navigation shortcuts: Approve Users, Create Routine, Post Notice, Disburse Wages.
-  - Express notice composer with instant broadcast and live system activity stream.
-- [x] **Admin User Approvals & Directory (`/admin/users`)**:
-  - Filter segments: All Accounts, Pending Approvals, Students, Teachers, Administrators.
-  - Instant search across name, email, student ID, and teacher code.
-  - 1-click Approve and Reject confirmation workflows.
-  - User role editing dialog with dynamic semester dropdown loading.
-  - Add New User Account provisioning modal.
-- [x] **Admin Notices Dispatch & Broadcast Manager (`/admin/notices`)**:
-  - Full CRUD: Create, View Details modal, Edit, and Delete notices.
-  - Bulk select & delete notices.
-  - 1-click Pinned announcement toggle.
-  - Storage attachment support (PDF & image uploads).
-  - Multi-level audience targeting (All Campus, Students Only, Faculty Only, Department).
-- [x] **Admin Timetable & Routine Maker Workspace (`/admin/routine`)**:
-  - Department and Ordinal Semester (`1st Semester` to `8th Semester`) context selectors.
-  - Interactive Day tabs (`Sunday` to `Thursday`) with lecture slot matrix.
-  - Visual schedule builder modal with subject selection from curriculum and time presets.
-  - Live Conflict Detection warning against occupied rooms and double-booked faculty.
-  - Quick duplicate and delete actions.
-- [x] **Admin Departments & Curriculum Roster (`/admin/departments`)**:
-  - Department directory cards with faculty count, student count, and Head of Department indicator.
-  - Assign or change Head of Department (HOD) from eligible verified faculty.
-  - Semester-wise Curriculum Course Manager grouped from `1st Semester` to `8th Semester`.
-  - Add/Edit/Delete curriculum subjects with Course Code, Title, and Credit Hours.
-- [x] **Fees, Payments & Faculty Payroll Portal (`/admin/finance`)**:
-  - Tab 1: Financial Overview with 4 KPI cards and department fee collection progress bars.
-  - Tab 2: All Transactions ledger with search, multi-faceted filtering, 1-tap Copy TXN ID, Digital Receipt Voucher modal, and RFC 4180 CSV export.
-  - Tab 3: Department Breakdown with collection efficiency banner, ordinal semester accordions, and Send Due Reminders broadcast modal.
-  - Tab 4: Teacher Wages (Payroll) with cycle navigation, faculty salary table, 1-click single/bulk disbursement, and itemized Faculty Salary Slip Voucher modal.
-
-### Phase C: Profile & Teacher Enhancements
-- [ ] **Profile Edit & Photo Upload Modal (`/profile/edit`)**:
-  - Drag-and-drop avatar uploader.
-  - Edit form for contact number, emergency contact, present address, and bio.
-- [ ] **Class Routine — Teacher View (`/routine/teacher`)**:
-  - Toggle or view showing instructor's assigned lectures across departments, free slots, and office hours.
-
-### Phase D: Backend & Supabase Integration (`unicampus-supabase`)
-- [x] Database Schema & Migrations (`20261017_admin_portal_schema.sql`):
-  - `profiles`, `user_roles`, `departments`, `semesters` (1st to 8th Semester check), `subjects`, `class_routines`, `notices`, `payments`, `teacher_wages`.
-  - Row Level Security (RLS) policies for Student, Teacher, and Admin roles.
-  - Storage bucket attachment support.
-- [ ] Real-time Supabase channels configuration in production.
+### Typography & Geometry
+- **Font Family**: Google Fonts `Inter` (across both Web and Mobile). Minimum 12px anywhere; 15px standard body; 13px subtext.
+- **Corner Radii**: Standard cards `rounded-[20px]`; modals `rounded-[24px]`; pills `rounded-full`.
+- **Card Aesthetics**: Solid surfaces, 1px subtle border, zero glassmorphism, zero floating glow or ambient radial effects.
+- **Touch Target Minimum**: 44px × 44px with 8px+ touch margins on all interactive controls.
+- **Motion Easings**: Subtle `framer-motion` transitions with cubic-bezier `[0.16, 1, 0.3, 1]` with instant snap on completion. Zero dead Tailwind v4 classes.
+- **Unified Portal Shell**: Single responsive `PortalShell` for Student, Teacher, and Admin portals featuring desktop `SideNav`, sticky `TopBar`, and mobile `BottomTabs`.
 
 ---
 
-## 5. UI/UX Global Design Skills & Responsive Architecture (Completed)
+## 3. Database Schema Reference (`unicampus-supabase`)
 
-- **UI Intelligence & Skills Mounted Globally (`~/.gemini/config/skills/`)**:
-  - `ui-ux-pro-max`: Design intelligence for web & mobile with 79 styles, 192 palettes, 119 UX guidelines, and tech stack references.
-  - `styleseed`: Open-source design-method engine with 22 workflows for token architecture, accessibility audits, and motion curves.
-  - `awesome-design-md`: Design token systems reverse-engineered from world-class software craft (Linear, Supabase, Vercel, Stripe, Raycast, Notion, GitHub).
-  - `react-bits`: Complete animated and interactive component catalog (`SpotlightCard`, `CountUp`, `ShinyText`).
-  - `awesome-design-skills`: 67 aesthetic systems (`clean`, `bento`, `enterprise`, `shadcn`, `neobrutalism`, `glassmorphism`, `minimal`, `modern`).
+Defined in [`unicampus-supabase/migrations/20261017_admin_portal_schema.sql`](file:///home/sakib360/sakib-codes/UniCampus/unicampus-supabase/migrations/20261017_admin_portal_schema.sql):
 
-- **Responsive Engineering & Layout Upgrades**:
-  - **Zero Horizontal Overflow**: Fixed desktop-first static pixel containers (`w-80`, `w-84`, `w-96`) replaced with viewport-safe responsive boundaries (`w-[calc(100vw-2rem)] sm:w-... max-w-[...]`).
-  - **Dual Mobile/Desktop Rendering**:
-    - `/routine`: Mobile timeline view with horizontal day picker and vertical lecture cards; wide timetable table on desktop.
-    - `/admin/users`: Dedicated mobile cards with user avatars, roles, department tags, and 1-tap Approve/Edit/Reject actions; full table on desktop.
-    - `/admin/departments`: Mobile course cards with credit/type badges and actions; full table on desktop.
-    - `/admin/finance`: Mobile transaction ledger cards and payroll cards with copy TXN ID, view voucher, and disburse triggers; full table on desktop.
-    - `/admin/notices`: Mobile notice cards with priority pins, target audience pills, and view/edit/delete actions; full table on desktop.
-  - **Interactive Craft & Component Micro-Interactions**:
-    - `SpotlightCard`: Integrated across Student, Faculty, and Admin interfaces with responsive cursor-following ambient gradient lighting.
-    - `CountUp`: Smooth cubic-bezier `[0.16, 1, 0.3, 1]` easing with instant completion hard-snap, completely resolving asymptotic animation crawl.
-    - `Select-none` stripped from tabular and informative sections so students, faculty, and admins can freely copy IDs, emails, codes, and currency amounts.
-    - Touch target accessibility compliant with 44px minimum sizing and 8px+ touch gaps across all mobile drawers and action bars.
+```mermaid
+erDiagram
+    DEPARTMENTS ||--o{ SEMESTERS : contains
+    DEPARTMENTS ||--o{ PROFILES : belongs_to
+    SEMESTERS ||--o{ PROFILES : enrolled_in
+    DEPARTMENTS ||--o{ SUBJECTS : offers
+    SEMESTERS ||--o{ SUBJECTS : schedules
+    PROFILES ||--o{ CLASS_ROUTINES : instructs
+    SUBJECTS ||--o{ CLASS_ROUTINES : teaches
+    PROFILES ||--o{ PAYMENTS : pays
+    PROFILES ||--o{ TEACHER_WAGES : earns
+    PROFILES ||--o{ NOTICES : publishes
+```
+
+### Core Tables Summary
+1. `departments`: ID, name, unique code, `head_teacher_id` (FK to profiles), faculty classification.
+2. `semesters`: Strictly ordinal (`1st Semester` through `8th Semester`), order index (1–8), linked to department.
+3. `profiles`: Extends `auth.users`, role enum (`student`, `teacher`, `admin`), student ID / teacher code, approval flag.
+4. `user_roles`: Multi-role assignment support per user profile.
+5. `subjects`: Department & semester curriculum courses, code, title, credits (e.g. 3.0), type (`Theory` or `Lab`).
+6. `class_routines`: Weekly schedules, day of week (`Sunday`–`Thursday`), start/end time, room number, instructor.
+7. `notices`: Campus announcements with target audience filter (`all`, `students`, `teachers`, `department`), pinned flag, attachments.
+8. `payments`: Student tuition and fees ledger, transaction ID, receipt reference, status (`Paid`, `Pending`).
+9. `teacher_wages`: Monthly faculty payroll, disbursement records, salary slips, status (`Disbursed`, `Pending`).
+
+---
+
+## 4. Platform Parity Status
+
+For the granular task-by-task breakdown, see [`PROGRESS.md`](file:///home/sakib360/sakib-codes/UniCampus/PROGRESS.md).
+
+```
+Feature Area                   Web Status      Mobile Status     Backend Schema
+--------------------------------------------------------------------------------
+Splash & Brand Intro           Completed       Completed         N/A
+Authentication & Onboarding    Completed       Completed         Supabase Auth
+Student Dashboard              Completed       Pending Port      profiles, routines
+Academic Audit & Degree Audit  Completed       Pending Port      subjects, semesters
+Class Routine Matrix           Completed       Pending Port      class_routines
+Campus Noticeboard             Completed       Pending Port      notices
+Student Directory              Completed       Pending Port      profiles, departments
+Faculty Directory              Completed       Pending Port      profiles, departments
+Admin Executive Console        Completed       Web-Only          All tables
+Teacher Attendance / Scanner   Completed       Pending Port      profiles, routines
+Finance & Faculty Payroll      Completed       Web-Only          payments, teacher_wages
+```
+
+---
+
+## 5. Responsive Engineering Guidelines (Web & Mobile)
+
+- **Zero Horizontal Overflow**: Never place static containers wider than 320px without viewport-relative constraints (`w-[calc(100vw-2rem)]` or `max-w-md`).
+- **Dual View Layout Pattern**:
+  - Complex matrix views (like `/routine` and `/admin/users`) render as scrollable desktop data tables on screen width >= 1024px, and transform into vertical timeline / cards on mobile screen width < 1024px.
+- **Copy Protection Policy**: Never apply `select-none` to student IDs, transaction hashes, roll numbers, or emails. Users must always be able to highlight and copy academic data.

@@ -10,7 +10,14 @@
  * - Dual verification via Live QR Camera scanning or 6-digit classroom PIN.
  */
 
-export type AttendanceStatus = "present" | "late" | "absent";
+import {
+  ACTIVE_TERM,
+  CANONICAL_COURSES,
+  CANONICAL_FACULTY,
+  CANONICAL_STUDENT,
+} from "@/lib/canonicalCampus";
+
+export type AttendanceStatus = "present" | "late" | "absent" | "unscanned";
 export type CheckInMethod = "QR" | "PIN" | "MANUAL" | "--";
 
 export interface StudentRosterRecord {
@@ -69,68 +76,68 @@ export interface AttendanceEvent {
   timestamp: number;
 }
 
-const STORAGE_SESSION_KEY = "unicampus_active_attendance_session";
-const STORAGE_ROSTER_KEY = "unicampus_attendance_roster";
+const STORAGE_SESSION_KEY = "unicampus_active_attendance_session_v2";
+const STORAGE_ROSTER_KEY = "unicampus_attendance_roster_v2";
 const CHANNEL_NAME = "unicampus_attendance_channel_v1";
 
 export const DEFAULT_INITIAL_ROSTER: StudentRosterRecord[] = [
   {
     id: "stud-1",
-    name: "Sakib Ahmed",
-    studentId: "211-15-4424",
+    name: CANONICAL_STUDENT.name,
+    studentId: CANONICAL_STUDENT.studentId,
     avatarText: "SA",
-    avatarBg: "bg-[#2563EB]/20",
-    avatarTextCol: "text-[#2563EB]",
-    rankBadge: "Rank #1 • 3.98 CGPA",
+    avatarBg: "bg-brand/20",
+    avatarTextCol: "text-brand",
+    rankBadge: "Section A",
     checkInTime: "--:--:--",
     checkInMethod: "--",
-    status: "absent", // Starts absent until student scans from dashboard!
+    status: "unscanned", // Starts unscanned until student scans from dashboard
   },
   {
     id: "stud-2",
-    name: "Nusrat Jahan",
+    name: "Anika Tabassum",
     studentId: "211-15-4425",
-    avatarText: "NJ",
-    avatarBg: "bg-[#3FB950]/20",
-    avatarTextCol: "text-[#3FB950]",
+    avatarText: "AT",
+    avatarBg: "bg-success/20",
+    avatarTextCol: "text-success",
     rankBadge: "CR Assistant • Sec A",
-    checkInTime: "10:01:45 AM",
+    checkInTime: "10:16:45 AM",
     checkInMethod: "QR",
     status: "present",
   },
   {
     id: "stud-3",
-    name: "Tanvir Hasan",
+    name: "Tanvir Mahmud",
     studentId: "211-15-4428",
-    avatarText: "TH",
-    avatarBg: "bg-[#D29922]/20",
-    avatarTextCol: "text-[#D29922]",
+    avatarText: "TM",
+    avatarBg: "bg-warning/20",
+    avatarTextCol: "text-warning",
     rankBadge: "Checked in +14m late",
-    checkInTime: "10:14:08 AM",
+    checkInTime: "10:29:08 AM",
     checkInMethod: "PIN",
     status: "late",
   },
   {
     id: "stud-4",
-    name: "Rafiqul Islam",
+    name: "Rifat Chowdhury",
     studentId: "211-15-4430",
-    avatarText: "RI",
-    avatarBg: "bg-[#F85149]/20",
-    avatarTextCol: "text-[#F85149]",
-    rankBadge: "No device ping detected",
+    avatarText: "RC",
+    avatarBg: "bg-surface-2",
+    avatarTextCol: "text-fg-muted",
+    rankBadge: "Awaiting check-in",
     checkInTime: "--:--:--",
     checkInMethod: "--",
-    status: "absent",
+    status: "unscanned",
   },
   {
     id: "stud-5",
     name: "Mehrin Sultana",
     studentId: "211-15-4432",
     avatarText: "MS",
-    avatarBg: "bg-[#2563EB]/20",
-    avatarTextCol: "text-[#2563EB]",
-    rankBadge: "Bio-Informatics Lab",
-    checkInTime: "10:02:19 AM",
+    avatarBg: "bg-brand/20",
+    avatarTextCol: "text-brand",
+    rankBadge: "Algorithms Lab Sec A",
+    checkInTime: "10:17:19 AM",
     checkInMethod: "QR",
     status: "present",
   },
@@ -139,10 +146,10 @@ export const DEFAULT_INITIAL_ROSTER: StudentRosterRecord[] = [
     name: "Farhan Sadik",
     studentId: "211-15-4435",
     avatarText: "FS",
-    avatarBg: "bg-[#60A5FA]/20",
-    avatarTextCol: "text-[#60A5FA]",
+    avatarBg: "bg-brand/20",
+    avatarTextCol: "text-brand",
     rankBadge: "Competitive Prog Lead",
-    checkInTime: "10:03:04 AM",
+    checkInTime: "10:18:04 AM",
     checkInMethod: "QR",
     status: "present",
   },
@@ -161,16 +168,17 @@ export function generateToken(courseCode: string, section: string, rotationCount
  * Initialize default session data
  */
 export function createDefaultSession(): ActiveAttendanceSession {
-  const initialToken = generateToken("CSE-3101", "A", 1);
+  const course = CANONICAL_COURSES["CSE-3101"];
+  const initialToken = generateToken(course.code, "A", 1);
   return {
     sessionId: "SES-CSE3101-A-LIVE",
-    courseCode: "CSE-3101",
-    courseName: "Design & Analysis of Algorithms",
-    section: "Section A (Spring 2026)",
+    courseCode: course.code,
+    courseName: course.title,
+    section: `Section A (${ACTIVE_TERM})`,
     room: "Room 402",
-    instructor: "Dr. Asif Rahman",
+    instructor: CANONICAL_FACULTY.name,
     topic: "Lecture 09: Shortest Paths & Dijkstra's Algorithm",
-    dateStr: "Today (10:00 AM - 11:30 AM)",
+    dateStr: "Today (10:15 AM - 11:45 AM)",
     currentToken: initialToken,
     currentPin: "482915",
     validTokens: [initialToken],
@@ -408,8 +416,8 @@ export function recordCheckIn(payload: CheckInPayload): {
       name: payload.name,
       studentId: payload.studentId,
       avatarText: initials || "ST",
-      avatarBg: "bg-[#2563EB]/20",
-      avatarTextCol: "text-[#2563EB]",
+      avatarBg: "bg-brand/20",
+      avatarTextCol: "text-brand",
       rankBadge: "Verified Attendee",
       checkInTime: timeFormatted,
       checkInMethod: payload.method,

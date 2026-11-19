@@ -2,128 +2,161 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  /* Global Layout Colors - Refined Frosted Studio Light Mode (User Reference: Slide 1 & 4 Ice-Blue Mist) */
-  --bg-canvas: #F0F4FA;       /* Studio ice-blue mist background */
-  --bg-surface: rgba(255, 255, 255, 0.78); /* Frosted glass elevated cards */
-  --bg-surface-secondary: rgba(255, 255, 255, 0.58); /* Secondary glass surface */
-  --bg-subtle: rgba(29, 91, 216, 0.035);  /* Subtle input & hover insets */
-  --bg-accent: rgba(29, 91, 216, 0.08); /* Brand-tinted glass */
-  --border-surface: rgba(255, 255, 255, 0.88); /* Specular white border */
-  --border-accent: rgba(255, 255, 255, 0.96);  /* Stronger glass border */
-  --text-primary: #0A192F;    /* Deep academic navy */
-  --text-secondary: #334155;  /* Slate body copy */
-  --text-muted: #64748B;      /* Muted metadata */
+  /* Option A Indigo — Light Mode */
+  --canvas: #F5F5FA;
+  --surface: #FFFFFF;
+  --surface-2: #F2F2F8;
+  --line: #E7E7F0;
+  --fg: #14141B;
+  --fg-muted: #6B6E80;
+  --fg-subtle: #9A9CAD;
 
-  /* Universal Brand Theme Controller - Royal Academic Cobalt (#1D5BD8) */
-  --brand-primary: #1D5BD8;
-  --brand-hover: #1548B0;
-  --brand-light: #EBF2FE;
-  --brand-lighter: #F4F8FE;
-  --brand-shadow: rgba(29, 91, 216, 0.22);
-
-  /* Hero Button Controller */
-  --btn-primary-bg: #1D5BD8;
-  --btn-primary-text: #FFFFFF;
-  --btn-primary-hover: #1548B0;
+  /* Brand Indigo */
+  --brand: #605BFF;
+  --brand-hover: #4E49EB;
+  --brand-soft: #EFEEFF;
+  --on-brand: #FFFFFF;
+  --brand-shadow: rgba(96, 91, 255, 0.22);
 
   /* Status Colors */
-  --color-success: #10B981;
-  --color-success-light: #D1FAE5;
-  --color-warning: #F59E0B;
-  --color-warning-light: #FEF3C7;
-  --color-error: #EF4444;
-  --color-error-light: #FEE2E2;
-  --color-info: #1D5BD8;
-  --color-info-light: #EBF2FE;
+  --success: #12A150;
+  --success-light: #E7F7EE;
+  --warning: #B45309;
+  --warning-light: #FEF3C7;
 
-  /* Clean Elevation Shadows for General Elements (Cards have their own dedicated specular highlights) */
-  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
-  --shadow-md: 0 8px 20px -4px rgba(15, 23, 42, 0.08);
-  --shadow-lg: 0 16px 32px -8px rgba(15, 23, 42, 0.10);
+  /* Chat Message Bubbles */
+  --chat-bubble-me: var(--brand);
+  --chat-bubble-me-fg: #FFFFFF;
+  --chat-bubble-them: var(--surface-2);
+  --chat-bubble-them-fg: var(--fg);
+  --danger: #E5484D;
+  --danger-light: #FEECEE;
+  --info: #605BFF;
+  --info-light: #EFEEFF;
+
+  /* Floating-layer elevation shadows (cards stay flat with 1px line border) */
+  --shadow-sm: 0 1px 2px rgba(20, 20, 27, 0.04);
+  --shadow-md: 0 6px 16px -4px rgba(20, 20, 27, 0.08);
+  --shadow-lg: 0 12px 28px -6px rgba(20, 20, 27, 0.10);
   --shadow-premium: 0 6px 20px -2px var(--brand-shadow);
-  --shadow-xl: 0 24px 48px -12px rgba(15, 23, 42, 0.14);
+  --shadow-xl: 0 20px 40px -12px rgba(20, 20, 27, 0.14);
+
+  /* Legacy CSS variable aliases mapped to Option A */
+  --bg-canvas: var(--canvas);
+  --bg-surface: var(--surface);
+  --bg-surface-secondary: var(--surface-2);
+  --bg-subtle: var(--surface-2);
+  --bg-accent: var(--brand-soft);
+  --border-surface: var(--line);
+  --border-accent: var(--line);
+  --text-primary: var(--fg);
+  --text-secondary: var(--fg-muted);
+  --text-muted: var(--fg-muted);
+  --brand-primary: var(--brand);
+  --brand-light: var(--brand-soft);
+  --brand-lighter: var(--brand-soft);
+  --btn-primary-bg: var(--brand);
+  --btn-primary-text: var(--on-brand);
+  --btn-primary-hover: var(--brand-hover);
 }
 
 .dark {
-  /* Cosmic Midnight / Academic Sapphire Dark Mode */
-  --bg-canvas: #060A14;       /* Deep obsidian cosmic canvas */
-  --bg-surface: rgba(11, 18, 32, 0.75); /* Frosted dark surface cards */
-  --bg-surface-secondary: rgba(16, 26, 46, 0.65); /* Secondary dark glass */
-  --bg-subtle: rgba(255, 255, 255, 0.04); /* Subtle dark inset */
-  --bg-accent: rgba(37, 99, 235, 0.16); /* Dark brand wash */
-  --border-surface: rgba(255, 255, 255, 0.12); /* Luminous dark border */
-  --border-accent: rgba(255, 255, 255, 0.22);
-  --text-primary: #F0F6FC;    /* High contrast text */
-  --text-secondary: #94A3B8;  /* Secondary text */
-  --text-muted: #64748B;      /* Subtitles */
+  /* Option A Indigo — Dark Mode */
+  --canvas: #0B0B10;
+  --surface: #15151D;
+  --surface-2: #1C1C26;
+  --line: #262630;
+  --fg: #EDEDF3;
+  --fg-muted: #9C9CAE;
+  --fg-subtle: #6E6E80;
 
-  --brand-primary: #2563EB;
-  --brand-hover: #3B82F6;
-  --brand-light: rgba(37, 99, 235, 0.18);
-  --brand-lighter: rgba(37, 99, 235, 0.09);
-  --brand-shadow: rgba(37, 99, 235, 0.32);
-
-  /* Hero Button Controller */
-  --btn-primary-bg: #2563EB;
-  --btn-primary-text: #FFFFFF;
-  --btn-primary-hover: #1D4ED8;
+  --brand: #7C78FF;
+  --brand-hover: #918EFF;
+  --brand-soft: rgba(124, 120, 255, 0.14);
+  --on-brand: #FFFFFF;
+  --brand-shadow: rgba(124, 120, 255, 0.28);
 
   /* Status Colors - Dark Mode */
-  --color-success: #3FB950;
-  --color-success-light: rgba(63, 185, 80, 0.15);
-  --color-warning: #D29922;
-  --color-warning-light: rgba(210, 153, 34, 0.15);
-  --color-error: #F85149;
-  --color-error-light: rgba(248, 81, 73, 0.15);
-  --color-info: #38BDF8;
-  --color-info-light: rgba(56, 189, 248, 0.15);
+  --success: #34D399;
+  --success-light: rgba(52, 211, 153, 0.14);
+  --warning: #FBBF24;
+  --warning-light: rgba(251, 191, 36, 0.14);
+  --danger: #F87171;
+  --danger-light: rgba(248, 113, 113, 0.14);
+  --info: #7C78FF;
+  --info-light: rgba(124, 120, 255, 0.14);
 
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 8px 20px -4px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 16px 32px -8px rgba(0, 0, 0, 0.5);
+  /* Chat Message Bubbles - Dark Mode */
+  --chat-bubble-me: var(--brand);
+  --chat-bubble-me-fg: #FFFFFF;
+  --chat-bubble-them: var(--surface-2);
+  --chat-bubble-them-fg: var(--fg);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 6px 16px -4px rgba(0, 0, 0, 0.40);
+  --shadow-lg: 0 12px 28px -6px rgba(0, 0, 0, 0.50);
   --shadow-premium: 0 4px 24px -2px var(--brand-shadow);
-  --shadow-xl: 0 24px 48px -12px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 20px 40px -12px rgba(0, 0, 0, 0.60);
 }
 
 @theme inline {
-  --color-background: var(--bg-canvas);
-  --color-foreground: var(--text-primary);
+  /* Option A Indigo semantic tokens */
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
 
-  --color-brand: var(--brand-primary);
+  --color-brand: var(--brand);
   --color-brand-hover: var(--brand-hover);
-  --color-brand-light: var(--brand-light);
-  --color-brand-lighter: var(--brand-lighter);
+  --color-brand-soft: var(--brand-soft);
+  --color-on-brand: var(--on-brand);
 
-  --color-surface: var(--bg-surface);
-  --color-surface-secondary: var(--bg-surface-secondary);
-  --color-card: var(--bg-surface);
-  --color-card-foreground: var(--text-primary);
-  --color-popover: var(--bg-surface);
-  --color-popover-foreground: var(--text-primary);
-  --color-sidebar: var(--bg-surface);
-  --color-sidebar-foreground: var(--text-primary);
-  --color-sidebar-border: var(--border-surface);
+  --color-success: var(--success);
+  --color-success-light: var(--success-light);
+  --color-warning: var(--warning);
+  --color-warning-light: var(--warning-light);
+  --color-danger: var(--danger);
+  --color-danger-light: var(--danger-light);
+  --color-info: var(--info);
+  --color-info-light: var(--info-light);
 
-  --color-border: var(--border-surface);
-  --color-border-accent: var(--border-accent);
-  --color-subtle: var(--bg-subtle);
-  --color-accent-bg: var(--bg-accent);
-  --color-card-border: var(--border-surface);
-  --color-muted-text: var(--text-muted);
-  --color-secondary-text: var(--text-secondary);
+  --color-chat-me: var(--chat-bubble-me);
+  --color-chat-me-fg: var(--chat-bubble-me-fg);
+  --color-chat-them: var(--chat-bubble-them);
+  --color-chat-them-fg: var(--chat-bubble-them-fg);
 
-  --color-btn-fill: var(--btn-primary-bg);
-  --color-btn-text: var(--btn-primary-text);
-  --color-btn-hover: var(--btn-primary-hover);
+  /* Legacy aliases preserved -> zero breakage */
+  --color-background: var(--canvas);
+  --color-foreground: var(--fg);
+  --color-brand-light: var(--brand-soft);
+  --color-brand-lighter: var(--brand-soft);
 
-  --color-success: var(--color-success);
-  --color-success-light: var(--color-success-light);
-  --color-warning: var(--color-warning);
-  --color-warning-light: var(--color-warning-light);
-  --color-error: var(--color-error);
-  --color-error-light: var(--color-error-light);
-  --color-info: var(--color-info);
-  --color-info-light: var(--color-info-light);
+  --color-surface-secondary: var(--surface-2);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--fg);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--fg);
+  --color-sidebar: var(--surface);
+  --color-sidebar-foreground: var(--fg);
+  --color-sidebar-border: var(--line);
+
+  --color-border: var(--line);
+  --color-border-accent: var(--line);
+  --color-subtle: var(--surface-2);
+  --color-accent-bg: var(--brand-soft);
+  --color-card-border: var(--line);
+  --color-muted-text: var(--fg-muted);
+  --color-secondary-text: var(--fg-muted);
+
+  --color-btn-fill: var(--brand);
+  --color-btn-text: var(--on-brand);
+  --color-btn-hover: var(--brand-hover);
+
+  --color-error: var(--danger);
+  --color-error-light: var(--danger-light);
 
   --shadow-sm: var(--shadow-sm);
   --shadow-md: var(--shadow-md);
@@ -131,13 +164,18 @@
   --shadow-premium: var(--shadow-premium);
   --shadow-xl: var(--shadow-xl);
 
-  --font-sans: var(--font-geist-sans);
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.125rem;
+
+  --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  font-size: 15px;
+  line-height: 1.5;
+  background: var(--canvas);
+  color: var(--fg);
   font-family: var(--font-sans), system-ui, sans-serif;
   scrollbar-gutter: stable;
 }
@@ -153,20 +191,20 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.4);
+  background: rgba(107, 110, 128, 0.30);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(29, 91, 216, 0.6);
+  background: var(--brand);
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #30363D;
+  background: var(--line);
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #484F58;
+  background: var(--fg-subtle);
 }
 
 /* Scoped transitions for theme switching & interaction */
@@ -178,7 +216,7 @@ button, [role="button"], a, input, select, textarea, [role="tablist"] {
 
 /* Focus indicator */
 :focus-visible {
-  outline: 2px solid var(--brand-primary);
+  outline: 2px solid var(--brand);
   outline-offset: 2px;
 }
 
@@ -218,63 +256,26 @@ nextjs-portal, [data-nextjs-toast], #__next-build-watcher, [data-nextjs-dev-over
   display: none !important;
 }
 
-/* ========================================================================= */
-/* UNIVERSAL FROSTED GLASS (GLASSMORPHISM) ENGINE                            */
-/* ========================================================================= */
-.frosted-glass-card,
-[class*="rounded-3xl"].bg-white:not(.frosted-glass-dropdown):not(.dropdown-glass):not([data-dropdown="true"]):not([role="menu"]):not([role="dialog"]),
-[class*="rounded-2xl"].bg-white:not(button):not([role="menuitem"]):not(.frosted-glass-dropdown):not(.dropdown-glass):not([data-dropdown="true"]):not([role="menu"]):not([role="dialog"]),
-section[class*="rounded-3xl"].bg-white {
-  background-color: rgba(255, 255, 255, 0.68) !important;
-  backdrop-filter: blur(28px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
-  border-color: rgba(255, 255, 255, 0.85) !important;
-  box-shadow: 0 20px 50px -15px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(15, 23, 42, 0.02), inset 0 1.5px 1.5px rgba(255, 255, 255, 1) !important;
+/* Clean 2-pane chat layout helper */
+.chat-layout-2pane {
+  display: grid;
+  grid-template-columns: minmax(280px, 340px) 1fr;
+  height: 100%;
+  overflow: hidden;
 }
 
-.dark .frosted-glass-card,
-.dark [class*="rounded-3xl"].bg-white:not(.frosted-glass-dropdown):not(.dropdown-glass):not([data-dropdown="true"]):not([role="menu"]):not([role="dialog"]),
-.dark [class*="rounded-2xl"].bg-white:not(button):not([role="menuitem"]):not(.frosted-glass-dropdown):not(.dropdown-glass):not([data-dropdown="true"]):not([role="menu"]):not([role="dialog"]),
-.dark [class*="rounded-3xl"].dark\:bg-\[\#0D1117\]:not(.frosted-glass-dropdown):not(.dropdown-glass):not([data-dropdown="true"]):not([role="menu"]):not([role="dialog"]),
-.dark [class*="rounded-2xl"].dark\:bg-\[\#0D1117\]:not(button):not([role="menuitem"]):not(.frosted-glass-dropdown):not(.dropdown-glass):not([data-dropdown="true"]):not([role="menu"]):not([role="dialog"]),
-.dark [class*="rounded-3xl"].dark\:bg-\[\#0D131F\]:not(.frosted-glass-dropdown):not(.dropdown-glass):not([data-dropdown="true"]):not([role="menu"]):not([role="dialog"]),
-.dark [class*="rounded-2xl"].dark\:bg-\[\#0D131F\]:not(button):not([role="menuitem"]):not(.frosted-glass-dropdown):not(.dropdown-glass):not([data-dropdown="true"]):not([role="menu"]):not([role="dialog"]),
-.dark section[class*="rounded-3xl"] {
-  background-color: rgba(13, 19, 31, 0.72) !important;
-  backdrop-filter: blur(28px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
-  border-color: rgba(255, 255, 255, 0.12) !important;
-  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.65), inset 0 1px 1px rgba(255, 255, 255, 0.14) !important;
+@media (max-width: 768px) {
+  .chat-layout-2pane {
+    grid-template-columns: 1fr;
+  }
 }
 
-/* ========================================================================= */
-/* PREMIUM FROSTED GLASS DROPDOWNS & FLOATING MENUS                          */
-/* High-density optical glass: diffuse light transmission, zero bleed-through*/
-/* ========================================================================= */
-.frosted-glass-dropdown,
-.dropdown-glass,
-[data-dropdown="true"] {
-  background: #FFFFFF !important;
-  backdrop-filter: blur(40px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(40px) saturate(190%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.95) !important;
-  box-shadow: 
-    0 24px 60px -12px rgba(15, 23, 42, 0.18),
-    0 4px 16px -2px rgba(15, 23, 42, 0.06),
-    inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 1) !important;
-}
-
-.dark .frosted-glass-dropdown,
-.dark .dropdown-glass,
-.dark [data-dropdown="true"] {
-  background: #0D1117 !important;
-  backdrop-filter: blur(40px) saturate(190%) !important;
-  -webkit-backdrop-filter: blur(40px) saturate(190%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
-  box-shadow: 
-    0 25px 60px -12px rgba(0, 0, 0, 0.85),
-    0 4px 16px rgba(0, 0, 0, 0.4),
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.12) !important;
+/* Subtle Popovers & Menus */
+.popover-surface {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-md);
 }
 
 
