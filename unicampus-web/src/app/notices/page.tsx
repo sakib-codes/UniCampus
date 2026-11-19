@@ -68,8 +68,8 @@ export const OFFICIAL_NOTICES: NoticeItem[] = [
     category: "EXAM SCHEDULE",
     categoryKey: "exam",
     categoryColor: {
-      bg: "bg-brand/15 dark:bg-brand/20",
-      text: "text-brand dark:text-brand",
+      bg: "bg-brand-soft",
+      text: "text-brand",
       border: "border-brand/30",
     },
     title: "Final Examination Schedule Spring 2026 Released",
@@ -325,15 +325,9 @@ export function NoticeboardContent({ initialNoticeId }: { initialNoticeId?: stri
   const readerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const queryId = searchParams.get("id") || initialNoticeId || "not-exam-108";
-  
-  const [selectedNoticeId, setSelectedNoticeId] = useState<string>(queryId);
-  const [prevQueryId, setPrevQueryId] = useState<string>(queryId);
-
-  if (queryId !== prevQueryId) {
-    setPrevQueryId(queryId);
-    setSelectedNoticeId(queryId);
-  }
+  const [userSelectedId, setUserSelectedId] = useState<string | null>(null);
+  const selectedNoticeId =
+    userSelectedId || searchParams.get("id") || initialNoticeId || "not-exam-108";
 
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -395,7 +389,7 @@ export function NoticeboardContent({ initialNoticeId }: { initialNoticeId?: stri
   }, [selectedNoticeId]);
 
   const handleSelectNotice = (id: string) => {
-    setSelectedNoticeId(id);
+    setUserSelectedId(id);
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
       url.searchParams.set("id", id);
@@ -556,7 +550,7 @@ ${activeNotice.authorCouncil}
       {/* ========================================================================= */}
       {/* 2. PINNED URGENT NOTICE BANNER                                            */}
       {/* ========================================================================= */}
-        <section className="relative overflow-hidden rounded-2xl bg-rose-500/[0.08] dark:bg-rose-500/[0.07] border border-rose-500/30 p-4 sm:p-5 px-6 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-[0_0_24px_-4px_rgba(248,81,73,0.12)]">
+        <section className="relative overflow-hidden rounded-2xl bg-rose-500/[0.08] dark:bg-rose-500/[0.07] border border-rose-500/30 p-4 sm:p-5 px-6 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
           <div className="flex items-start gap-4">
             <div className="mt-1 w-9 h-9 rounded-xl bg-rose-500/15 dark:bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0">
               <AlertTriangle className="w-5 h-5" />
@@ -626,10 +620,18 @@ ${activeNotice.authorCouncil}
               return (
                 <article
                   key={notice.id}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => handleSelectNotice(notice.id)}
-                  className={`p-4 sm:p-5 rounded-2xl cursor-pointer transition-colors duration-150 flex flex-col gap-3 relative border ${
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleSelectNotice(notice.id);
+                    }
+                  }}
+                  className={`p-4 sm:p-5 rounded-2xl cursor-pointer transition-colors duration-150 flex flex-col gap-3 relative border focus:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                     isSelected
-                      ? "bg-white dark:bg-surface-2 border-brand shadow-[0_0_20px_-3px_rgba(37, 99, 235,0.22)]"
+                      ? "bg-white dark:bg-surface-2 border-brand shadow-sm"
                       : "bg-white dark:bg-surface border-slate-200 dark:border-line hover:border-slate-300 dark:hover:border-fg-muted/80 hover:bg-slate-50 dark:hover:bg-surface-2/60"
                   }`}
                 >
@@ -692,7 +694,7 @@ ${activeNotice.authorCouncil}
         {/* ================= RIGHT COLUMN: STICKY OFFICIAL CIRCULAR READER ================= */}
         <div
           ref={readerRef}
-          className="col-span-12 lg:col-span-7 lg:sticky lg:top-20 bg-white dark:bg-surface rounded-3xl border border-slate-200 dark:border-line overflow-hidden shadow-xl relative"
+          className="col-span-12 lg:col-span-7 lg:sticky lg:top-20 bg-white dark:bg-surface rounded-3xl border border-slate-200 dark:border-line overflow-hidden shadow-sm relative"
         >
           {/* Background University Seal Watermark */}
           <div className="absolute right-4 top-20 pointer-events-none opacity-[0.03] select-none">
