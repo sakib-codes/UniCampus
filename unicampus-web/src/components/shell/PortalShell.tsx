@@ -13,6 +13,19 @@ import { MoreSheet } from "@/components/shell/MoreSheet";
 
 const emptySubscribe = () => () => {};
 
+const WIDE_WORKSPACE_ROUTES = new Set([
+  "/teacher/attendance",
+  "/teacher/grades",
+  "/teacher/routine",
+  "/routine",
+  "/admin/users",
+  "/admin/finance",
+  "/admin/routine",
+  "/admin/departments",
+  "/admin/analytics",
+  "/admin/notices",
+]);
+
 function subscribeXlBreakpoint(callback: () => void) {
   const mq = window.matchMedia("(min-width: 1280px)");
   mq.addEventListener("change", callback);
@@ -133,6 +146,9 @@ export function PortalShell({
   }, [pathname]);
 
   const { section, title, homeHref } = getPortalTitle(role, pathname);
+  const isWideWorkspace = Boolean(
+    pathname && WIDE_WORKSPACE_ROUTES.has(pathname.replace(/\/$/, ""))
+  );
 
   return (
     <div className="h-dvh w-full overflow-hidden flex bg-canvas text-fg">
@@ -163,7 +179,11 @@ export function PortalShell({
           </div>
         ) : (
           <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-4 sm:px-6 xl:px-10 py-6 pb-24 md:pb-10">
-            <div className="max-w-[1240px] mx-auto w-full">
+            <div
+              className={`${
+                isWideWorkspace ? "max-w-[1600px]" : "max-w-[1240px]"
+              } mx-auto w-full`}
+            >
               <PageTransition key={pathname}>{children}</PageTransition>
             </div>
           </div>

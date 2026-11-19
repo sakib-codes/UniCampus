@@ -481,7 +481,8 @@ async function testTeacherAttendance(browser, baseUrl) {
 
       for (const tr of rows) {
         const rowText = tr.innerText || "";
-        if (!rowText.includes("--:--:--")) {
+        const isUnscanned = tr.dataset.unscanned === "true" || rowText.includes("—") || rowText.includes("--:--:--");
+        if (!isUnscanned) {
           continue;
         }
         unscannedCount += 1;

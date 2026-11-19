@@ -84,13 +84,13 @@ async function run() {
     assert("Landing page title contains UniCampus", (await page.title()).toLowerCase().includes("unicampus"));
 
     // Role aliases redirects
-    const rStudentAlias = await navigateAndSettle(page, BASE_URL, "/student");
+    const _rStudentAlias = await navigateAndSettle(page, BASE_URL, "/student");
     assert("/student redirects to /dashboard", page.url().endsWith("/dashboard"));
 
-    const rTeacherAlias = await navigateAndSettle(page, BASE_URL, "/teacher");
+    const _rTeacherAlias = await navigateAndSettle(page, BASE_URL, "/teacher");
     assert("/teacher redirects to /teacher/dashboard", page.url().endsWith("/teacher/dashboard"));
 
-    const rAdminAlias = await navigateAndSettle(page, BASE_URL, "/admin");
+    const _rAdminAlias = await navigateAndSettle(page, BASE_URL, "/admin");
     assert("/admin redirects to /admin/dashboard", page.url().endsWith("/admin/dashboard"));
 
     // Login page
