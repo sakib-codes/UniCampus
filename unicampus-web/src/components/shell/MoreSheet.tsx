@@ -78,14 +78,16 @@ export function MoreSheet({
     <AnimatePresence>
       {isOpen && (
         <div className="md:hidden fixed inset-0 z-50 flex items-end">
-          <motion.div
+          <motion.button
+            type="button"
+            aria-label="Close menu"
+            tabIndex={-1}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.16 }}
             onClick={onClose}
             className="fixed inset-0 bg-black/45 dark:bg-black/70"
-            aria-hidden="true"
           />
 
           <motion.div
@@ -96,7 +98,7 @@ export function MoreSheet({
             animate={{ y: 0 }}
             exit={reduceMotion ? { opacity: 0 } : { y: "100%" }}
             transition={{ duration: 0.18, ease: "easeOut" }}
-            className="relative z-10 w-full max-h-[85vh] overflow-y-auto rounded-t-[20px] border-t border-line bg-surface shadow-lg px-4 pt-3 pb-[calc(1.25rem+env(safe-area-inset-bottom))]"
+            className="relative z-10 w-full max-h-[85vh] overflow-y-auto rounded-t-2xl border-t border-line bg-surface shadow-lg px-4 pt-3 pb-[calc(1.25rem+env(safe-area-inset-bottom))]"
           >
             {/* Drag handle + Header */}
             <div className="w-10 h-1 rounded-full bg-line mx-auto mb-3" />

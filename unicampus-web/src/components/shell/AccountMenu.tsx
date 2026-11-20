@@ -99,7 +99,7 @@ export function AccountMenu({ role, onOpenShortcuts }: AccountMenuProps) {
       : role === "teacher"
       ? [
           {
-            href: "/teachers/1",
+            href: "/teacher/profile",
             label: "Faculty Profile",
             icon: UserIcon,
             locked: false,
@@ -164,7 +164,7 @@ export function AccountMenu({ role, onOpenShortcuts }: AccountMenuProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 4, scale: 0.98 }}
             transition={{ duration: 0.16, ease: "easeOut" }}
-            className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-72 max-w-[320px] rounded-[20px] border border-line bg-surface shadow-lg p-4 text-fg z-50"
+            className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-72 max-w-[320px] rounded-2xl border border-line bg-surface shadow-lg p-4 text-fg z-50"
           >
             {/* User Header */}
             <div className="flex items-center gap-3 pb-3.5 border-b border-line">

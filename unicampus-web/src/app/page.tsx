@@ -12,7 +12,7 @@ import { LandingFAQ } from "@/components/landing/LandingFAQ";
 import LandingFooter from "@/components/landing/LandingFooter";
 import { DemoModal } from "@/components/landing/DemoModal";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonVariants } from "@/components/ui/Button";
 import { ACTIVE_TERM } from "@/lib/canonicalCampus";
 
 export default function LandingPage() {
@@ -58,10 +58,11 @@ export default function LandingPage() {
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <ThemeToggle />
 
-            <Link href="/login" className="hidden sm:inline-block">
-              <Button variant="ghost" size="sm">
-                Sign in
-              </Button>
+            <Link
+              href="/login"
+              className={buttonVariants({ variant: "ghost", size: "sm", className: "hidden sm:inline-flex" })}
+            >
+              Sign in
             </Link>
 
             <div className="hidden sm:inline-flex">
@@ -106,10 +107,12 @@ export default function LandingPage() {
               Portals Overview
             </a>
             <div className="pt-2 border-t border-line flex flex-col gap-2">
-              <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                <Button variant="secondary" size="md" fullWidth>
-                  Sign in
-                </Button>
+              <Link
+                href="/login"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={buttonVariants({ variant: "secondary", size: "md", fullWidth: true })}
+              >
+                Sign in
               </Link>
               <Button
                 variant="primary"
@@ -170,19 +173,18 @@ export default function LandingPage() {
             Explore student, faculty, and administrative workflows or request an institutional account for {ACTIVE_TERM}.
           </p>
           <div className="pt-3 flex flex-wrap justify-center gap-3">
-            <Link href="/register">
-              <Button
-                variant="primary"
-                size="lg"
-                rightIcon={<ArrowRight className="w-4 h-4" />}
-              >
-                Request account
-              </Button>
+            <Link
+              href="/register"
+              className={buttonVariants({ variant: "primary", size: "lg" })}
+            >
+              Request account
+              <ArrowRight className="w-4 h-4 shrink-0" aria-hidden="true" />
             </Link>
-            <Link href="/login">
-              <Button variant="secondary" size="lg">
-                Sign in
-              </Button>
+            <Link
+              href="/login"
+              className={buttonVariants({ variant: "secondary", size: "lg" })}
+            >
+              Sign in
             </Link>
           </div>
         </div>

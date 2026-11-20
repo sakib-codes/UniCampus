@@ -60,15 +60,9 @@ export default function LectureScheduleCard({
       padding="md"
       className={cn(
         "relative overflow-hidden p-5",
-        isOngoing && "border-brand/40 bg-brand-soft/20"
+        isOngoing && "border-brand/50 bg-brand-soft/20"
       )}
     >
-      {isOngoing && (
-        <div
-          className="absolute left-0 top-0 bottom-0 w-1 bg-brand rounded-r-full"
-          aria-hidden="true"
-        />
-      )}
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-2 min-w-0">

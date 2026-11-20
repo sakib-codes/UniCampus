@@ -2,7 +2,9 @@ export { cn, type ClassValue } from "./cn";
 
 export {
   Button,
+  buttonVariants,
   type ButtonProps,
+  type ButtonVariantsOptions,
   type ButtonVariant,
   type ButtonSize,
 } from "./Button";

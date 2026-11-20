@@ -89,8 +89,8 @@ export const AttendanceQrHub = memo(function AttendanceQrHub({
           />
           <defs>
             <linearGradient id="indigoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="var(--color-brand, #605BFF)" />
-              <stop offset="100%" stopColor="var(--color-brand, #7C78FF)" />
+              <stop offset="0%" stopColor="var(--brand)" />
+              <stop offset="100%" stopColor="var(--brand-hover)" />
             </linearGradient>
           </defs>
         </svg>
@@ -113,8 +113,8 @@ export const AttendanceQrHub = memo(function AttendanceQrHub({
 
           {/* Center UniCampus Academic Squircle */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-8 h-8 rounded-lg bg-brand border-2 border-surface shadow-xs flex items-center justify-center text-white">
-              <GraduationCap className="w-4 h-4 text-white" aria-hidden="true" />
+            <div className="w-8 h-8 rounded-lg bg-brand border-2 border-surface shadow-xs flex items-center justify-center text-on-brand">
+              <GraduationCap className="w-4 h-4 text-on-brand" aria-hidden="true" />
             </div>
           </div>
         </div>

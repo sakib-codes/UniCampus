@@ -45,34 +45,28 @@
 | `/teacher/attendance` | `src/app/teacher/attendance/page.tsx` | Interactive QR scanner & live attendance logging modal | `TeacherRoleGate` |
 | `/teacher/grades` | `src/app/teacher/grades/page.tsx` | Grade submission matrix and student marks entry | `TeacherRoleGate` |
 | `/teacher/materials` | `src/app/teacher/materials/page.tsx` | Lecture slides & assignment document repository | `TeacherRoleGate` |
+| `/teacher/notices` | `src/app/teacher/notices/page.tsx` | Faculty circular feed, scope filters & notice detail modal | `TeacherRoleGate` |
+| `/teacher/profile` | `src/app/teacher/profile/page.tsx` | Faculty dossier, live availability switcher & course quick-links | `TeacherRoleGate` |
 | `/teacher/routine` | `src/app/teacher/routine/page.tsx` | Instructor timetable across university departments | `TeacherRoleGate` |
 
 ---
 
 ## 2. Component Hierarchy & Modular Directory
 
-- **`src/components/shell/`** (Unified Portal Shell):
-  - `PortalShell.tsx`: Unified, responsive shell container for Student, Teacher, and Admin portals.
-  - `SideNav.tsx`: Desktop 240px clean hairline sidebar with active route pill indicators.
-  - `TopBar.tsx`: Sticky calm topbar with breadcrumb context, search trigger, notifications, and profile menu.
-  - `BottomTabs.tsx`: Mobile 5-tab bar with 4 primary destinations + `More` trigger (fixes 390px mobile header overflow).
-  - `NotificationsMenu.tsx`: Notification popover with mark-all-read.
-  - `AccountMenu.tsx`: Account switcher & theme toggle dropdown.
-  - `MoreSheet.tsx`: Mobile bottom sheet for secondary navigation items.
+- **`src/components/shell/`** (Unified Portal Shell & 3-Tier Container System):
+  - `PortalShell.tsx`: Enforces 3 container tiers: **Tier 1** (`w-full p-0` edge-to-edge for `/messages`), **Tier 2** (`max-w-[1600px] mx-auto w-full px-4 sm:px-6 xl:px-8` for 11 wide workspaces: `/teacher/attendance`, `/teacher/grades`, `/teacher/dashboard`, `/routine`, `/dashboard/progress`, `/admin/finance`, `/admin/routine`, `/admin/users`, `/admin/analytics`, `/admin/departments`, `/admin/notices`), and **Tier 3** (`max-w-[1240px] mx-auto w-full` for all 15+ standard reading/feed/form routes).
+  - `SideNav.tsx`, `TopBar.tsx`, `BottomTabs.tsx`, `NotificationsMenu.tsx`, `AccountMenu.tsx`, `MoreSheet.tsx`: Unified desktop sidebar, sticky topbar, mobile 5-tab navigation, notifications, account switcher, and overflow sheet.
 - **`src/components/ui/`** (Calm Campus Primitives):
-  - `Button.tsx`, `Card.tsx`, `PageHeader.tsx`, `Stat.tsx`, `Badge.tsx`, `Chip.tsx`, `ListRow.tsx`, `DataTable.tsx`, `Tabs.tsx`, `Modal.tsx`, `Sheet.tsx`, `Toast.tsx`, `EmptyState.tsx`, `Skeleton.tsx`, `Avatar.tsx`, `cn.ts`.
+  - `Button.tsx` (`Button` + `buttonVariants` for styled `<Link>` CTAs), `Card.tsx`, `PageHeader.tsx`, `Stat.tsx`, `Badge.tsx`, `Chip.tsx`, `ListRow.tsx`, `DataTable.tsx`, `Tabs.tsx`, `Modal.tsx`, `Sheet.tsx`, `Toast.tsx`, `EmptyState.tsx`, `Skeleton.tsx`, `Avatar.tsx`, `cn.ts`.
 - **`src/components/layout/`**:
-  - `AppShell.tsx`: Root layout shell mounting `PortalShell` for authenticated routes and bare layouts for landing/splash/auth.
-  - `AdminRoleGate.tsx`: Role guard protecting `/admin/*` routes.
-  - `TeacherRoleGate.tsx`: Role guard protecting `/teacher/*` routes.
-- **`src/components/bits/`** (Micro-Interactions):
-  - `CountUp.tsx`: Cubic-bezier easing metric counter with hard-snap finish.
-  - `FadeIn.tsx`: Subtle Framer Motion enter transition.
-  - *(Gimmicks retired: SpotlightCard, PixelCard, Aurora, BlurText, ShinyText, TiltedCard, DecryptedText, StarBorder, TrueFocus, ClickSpark)*.
-- **`src/components/common/`** (Composed Components):
-  - `StatCard.tsx`, `MetricBentoCard.tsx`, `FilterPill.tsx`, `SegmentedTabs.tsx`, `Switch.tsx`, `ThemeToggle.tsx`.
-  - `CommandPalette.tsx`: Global `Cmd+K` / `Ctrl+K` calm search modal.
-  - `KeyboardShortcutsModal.tsx`: Navigation shortcuts overlay (`?`).
+  - `AppShell.tsx`, `AdminRoleGate.tsx`, `TeacherRoleGate.tsx`: Root shell & role access guards.
+- **Feature Component Modules (`React.memo`-optimized decompositions)**:
+  - **Student / Shared**: `progress/` (CGPA bento, spline chart, breakdown table, GPA simulator, transcript modal), `settings/` (`GeneralTab`, `TeachingTab`, `NotificationsTab`, `SecurityTab`), `routine/` (daily list, weekly matrix, companion sidebar, modals), `students/` (`StudentPeerCard`, `StudentsStatsStrip`, `InvitePeerModal`), `materials/` (`CourseResourceGroup`, `MaterialsStatsStrip`, `MaterialPreviewModal`), `notices/` (`NoticeboardContent`, `NoticeFeedRow`, `NoticeReaderPane`), `messages/` (`ConversationList`, `ConversationRow`, `MessageStream`, `MessageBubble`, `MessageComposer`, `ThreadInfoDrawer`, `ChatHeader`, modals).
+  - **Admin Console (`src/components/admin/`)**: `finance/` (`FinanceOverviewTab`, `FinanceTransactionsTab`, `FinanceDepartmentsTab`, `FinancePayrollTab`, `FinanceModals`), `users/` (`UsersDirectoryTable`, `UsersFilterBar`, `UsersModals`), `routine/` (`TimetableMatrixGrid`, `SlotInspectorPanel`, `AdminRoutineToolbar`, `PublishTimetableModal`), `notices/` (`AdminNoticesTable`, compose/detail/delete modals), `departments/` (`DepartmentCard`, `DepartmentModals`).
+  - **Teacher Portal (`src/components/teacher/`)**: `dashboard/` (`TeacherMetricBento`, `TeachingSchedulePanel`, `StudentInquiriesPanel`, `TeacherDashboardModals`), `attendance/` (`SessionConfigBar`, `AttendanceQrHub`, `AttendanceRosterPanel`, `AttendanceRosterRow`, `AttendanceStickyFooter`), `grades/` (`GradesMatrixTable`, `GradesOverviewRow`, `GradesModals`).
+- **`src/components/bits/` & `src/components/common/`**:
+  - `bits/`: `CountUp.tsx`, `FadeIn.tsx` *(gimmicks retired)*.
+  - `common/`: `StatCard.tsx`, `MetricBentoCard.tsx`, `FilterPill.tsx`, `SegmentedTabs.tsx`, `Switch.tsx`, `ThemeToggle.tsx`, `CommandPalette.tsx`, `KeyboardShortcutsModal.tsx`, `MessagingDrawer.tsx`.
 
 ---
 

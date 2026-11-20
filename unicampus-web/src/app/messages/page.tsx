@@ -444,7 +444,7 @@ export default function MessagesPage() {
           }
         }}
         title="Drag to resize panel (Double-click to reset)"
-        className={`hidden md:flex w-2 -mx-1 shrink-0 cursor-col-resize group relative items-center justify-center transition-colors select-none z-20 outline-none focus-visible:bg-brand/20 ${
+        className={`hidden md:flex w-2 -mx-1 shrink-0 cursor-col-resize group relative items-center justify-center transition-colors select-none z-20 outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:bg-brand/20 ${
           isDraggingLeft ? "bg-brand/30" : "hover:bg-brand/20"
         }`}
       >

@@ -268,7 +268,7 @@ export default function AttendanceScannerModal({
 
       {isSuccess && verifiedStudent ? (
         <div className="py-4 flex flex-col items-center text-center space-y-4">
-          <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+          <div className="w-16 h-16 rounded-full bg-success-light border border-success/20 flex items-center justify-center text-success">
             <CheckCircle2 className="w-10 h-10" />
           </div>
 
@@ -286,18 +286,18 @@ export default function AttendanceScannerModal({
             <div className="flex items-center justify-between gap-3 border-b border-line pb-2">
               <span className="text-fg-muted font-medium shrink-0">Student</span>
               <span className="font-semibold text-fg text-right">
-                {verifiedStudent.name} ({verifiedStudent.studentId})
+                {verifiedStudent.name} (<span className="font-mono">{verifiedStudent.studentId}</span>)
               </span>
             </div>
             <div className="flex items-center justify-between gap-3 border-b border-line pb-2">
               <span className="text-fg-muted font-medium shrink-0">Course</span>
               <span className="font-semibold text-fg text-right">
-                {session.courseCode} · {session.section}
+                <span className="font-mono">{session.courseCode}</span> · {session.section}
               </span>
             </div>
             <div className="flex items-center justify-between gap-3 border-b border-line pb-2">
               <span className="text-fg-muted font-medium shrink-0">Recorded At</span>
-              <span className="font-semibold text-emerald-600 dark:text-emerald-400 text-right">
+              <span className="font-semibold text-success tabular-nums text-right">
                 {verifiedStudent.checkInTime}
               </span>
             </div>
@@ -350,7 +350,7 @@ export default function AttendanceScannerModal({
                   : "text-fg-muted hover:text-fg"
               }`}
             >
-              <Zap className="w-3.5 h-3.5 text-amber-500" />
+              <Zap className="w-3.5 h-3.5 text-warning" />
               <span>1-Click Sync</span>
             </button>
 
@@ -372,7 +372,7 @@ export default function AttendanceScannerModal({
           </div>
 
           {errorMessage && (
-            <div className="flex items-center gap-2 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs">
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-danger-light border border-danger/20 text-danger text-xs">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMessage}</span>
             </div>
@@ -397,8 +397,8 @@ export default function AttendanceScannerModal({
                         <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 border-b-2 border-r-2 border-brand rounded-br" />
                       </div>
                     </div>
-                    <div className="absolute bottom-3 px-3 py-1 rounded-full bg-surface/90 backdrop-blur-xs text-fg text-xs font-medium flex items-center gap-1.5 border border-line">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                    <div className="absolute bottom-3 px-3 py-1 rounded-full bg-surface/95 text-fg text-xs font-medium flex items-center gap-1.5 border border-line">
+                      <span className="w-2 h-2 rounded-full bg-success" />
                       <span>Scanning for classroom QR...</span>
                     </div>
                   </>
@@ -438,7 +438,7 @@ export default function AttendanceScannerModal({
           {activeTab === "sync" && (
             <div className="p-4 rounded-2xl bg-canvas border border-line space-y-4">
               <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-warning-light text-warning flex items-center justify-center shrink-0">
                   <Zap className="w-4 h-4" />
                 </div>
                 <div>
@@ -509,11 +509,13 @@ export default function AttendanceScannerModal({
                       pinInputRefs.current[idx] = el;
                     }}
                     type="text"
+                    inputMode="numeric"
+                    aria-label={`PIN digit ${idx + 1}`}
                     maxLength={1}
                     value={digit}
                     onChange={(e) => handlePinChange(idx, e.target.value)}
                     onKeyDown={(e) => handlePinKeyDown(idx, e)}
-                    className="w-10 h-12 text-center text-lg font-mono font-bold rounded-xl bg-surface border border-line focus:border-brand text-fg outline-hidden transition-colors shadow-2xs"
+                    className="w-10 h-12 text-center text-lg font-mono font-bold rounded-xl bg-surface border border-line focus:border-brand text-fg outline-hidden focus-visible:ring-2 focus-visible:ring-brand transition-colors shadow-2xs"
                     autoFocus={idx === 0}
                   />
                 ))}
@@ -527,9 +529,9 @@ export default function AttendanceScannerModal({
                     setPinDigits(session.currentPin.split(""));
                     executeVerification({ pin: session.currentPin, method: "PIN" });
                   }}
-                  className="text-brand font-mono font-semibold hover:underline cursor-pointer"
+                  className="text-brand font-semibold hover:underline cursor-pointer"
                 >
-                  Auto-fill ({session.currentPin})
+                  Auto-fill (<span className="font-mono">{session.currentPin}</span>)
                 </button>
               </div>
             </div>

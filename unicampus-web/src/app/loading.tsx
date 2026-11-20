@@ -16,19 +16,19 @@ export default function RootLoading() {
       </div>
 
       {/* Hero / banner skeleton */}
-      <Skeleton variant="rect" className="w-full h-36 rounded-[20px]" />
+      <Skeleton variant="rect" className="w-full h-36 rounded-2xl" />
 
       {/* Metrics grid skeleton */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[1, 2, 3, 4].map((i) => (
-          <Skeleton key={i} variant="rect" className="h-28 rounded-[20px]" />
+          <Skeleton key={i} variant="rect" className="h-28 rounded-2xl" />
         ))}
       </div>
 
       {/* Content grid skeleton */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2">
-        <Skeleton variant="rect" className="lg:col-span-2 h-80 rounded-[20px]" />
-        <Skeleton variant="rect" className="h-80 rounded-[20px]" />
+        <Skeleton variant="rect" className="lg:col-span-2 h-80 rounded-2xl" />
+        <Skeleton variant="rect" className="h-80 rounded-2xl" />
       </div>
     </div>
   );

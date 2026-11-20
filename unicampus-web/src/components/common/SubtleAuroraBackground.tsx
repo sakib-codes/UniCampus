@@ -5,7 +5,7 @@ import React from "react";
 /**
  * SubtleAuroraBackground
  * Studio-grade neutral canvas with subtle brand indigo glow.
- * Zero hardcoded hex colors, zero transition-all, GPU-only opacity transitions.
+ * Zero hardcoded hex colors, GPU-only opacity transitions.
  */
 export function SubtleAuroraBackground() {
   return (

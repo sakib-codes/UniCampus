@@ -4,7 +4,6 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { GraduationCap, Building2, ShieldCheck, ArrowRight } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
-import { Card } from "@/components/ui/Card";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 
 export interface DemoModalProps {
@@ -40,11 +39,10 @@ export function DemoModal({ open, onClose }: DemoModalProps) {
     >
       <div className="space-y-3 py-1">
         {/* Student Option */}
-        <Card
-          interactive
-          padding="md"
+        <button
+          type="button"
           onClick={() => handleSelectRole("student")}
-          className="flex items-center justify-between group cursor-pointer transition-colors hover:border-brand/50 hover:bg-brand-soft/20"
+          className="w-full text-left rounded-2xl bg-surface border border-line p-5 sm:p-6 flex items-center justify-between group cursor-pointer transition-colors duration-150 hover:border-brand/50 hover:bg-brand-soft/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
         >
           <div className="flex items-center gap-3.5">
             <div className="w-11 h-11 rounded-xl bg-brand-soft text-brand flex items-center justify-center shrink-0">
@@ -60,21 +58,20 @@ export function DemoModal({ open, onClose }: DemoModalProps) {
             </div>
           </div>
           <ArrowRight className="w-4 h-4 text-fg-muted group-hover:text-brand group-hover:translate-x-0.5 transition-transform duration-150 motion-reduce:group-hover:translate-x-0 shrink-0 ml-2" />
-        </Card>
+        </button>
 
         {/* Faculty Option */}
-        <Card
-          interactive
-          padding="md"
+        <button
+          type="button"
           onClick={() => handleSelectRole("faculty")}
-          className="flex items-center justify-between group cursor-pointer transition-colors hover:border-emerald-500/50 hover:bg-emerald-500/5"
+          className="w-full text-left rounded-2xl bg-surface border border-line p-5 sm:p-6 flex items-center justify-between group cursor-pointer transition-colors duration-150 hover:border-success/50 hover:bg-success-light/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
         >
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+            <div className="w-11 h-11 rounded-xl bg-success-light text-success flex items-center justify-center shrink-0">
               <Building2 className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="font-semibold text-fg text-sm group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+              <h4 className="font-semibold text-fg text-sm group-hover:text-success transition-colors">
                 Faculty Command Center
               </h4>
               <p className="text-xs text-fg-muted mt-0.5">
@@ -82,22 +79,21 @@ export function DemoModal({ open, onClose }: DemoModalProps) {
               </p>
             </div>
           </div>
-          <ArrowRight className="w-4 h-4 text-fg-muted group-hover:text-emerald-600 group-hover:translate-x-0.5 transition-transform duration-150 motion-reduce:group-hover:translate-x-0 shrink-0 ml-2" />
-        </Card>
+          <ArrowRight className="w-4 h-4 text-fg-muted group-hover:text-success group-hover:translate-x-0.5 transition-transform duration-150 motion-reduce:group-hover:translate-x-0 shrink-0 ml-2" />
+        </button>
 
         {/* Admin Option */}
-        <Card
-          interactive
-          padding="md"
+        <button
+          type="button"
           onClick={() => handleSelectRole("admin")}
-          className="flex items-center justify-between group cursor-pointer transition-colors hover:border-amber-500/50 hover:bg-amber-500/5"
+          className="w-full text-left rounded-2xl bg-surface border border-line p-5 sm:p-6 flex items-center justify-between group cursor-pointer transition-colors duration-150 hover:border-warning/50 hover:bg-warning-light/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
         >
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+            <div className="w-11 h-11 rounded-xl bg-warning-light text-warning flex items-center justify-center shrink-0">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="font-semibold text-fg text-sm group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+              <h4 className="font-semibold text-fg text-sm group-hover:text-warning transition-colors">
                 University Administration
               </h4>
               <p className="text-xs text-fg-muted mt-0.5">
@@ -105,8 +101,8 @@ export function DemoModal({ open, onClose }: DemoModalProps) {
               </p>
             </div>
           </div>
-          <ArrowRight className="w-4 h-4 text-fg-muted group-hover:text-amber-600 group-hover:translate-x-0.5 transition-transform duration-150 motion-reduce:group-hover:translate-x-0 shrink-0 ml-2" />
-        </Card>
+          <ArrowRight className="w-4 h-4 text-fg-muted group-hover:text-warning group-hover:translate-x-0.5 transition-transform duration-150 motion-reduce:group-hover:translate-x-0 shrink-0 ml-2" />
+        </button>
       </div>
     </Modal>
   );

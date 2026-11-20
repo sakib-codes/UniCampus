@@ -51,12 +51,12 @@ export function ThemeToggle({ className = "", size = "md" }: ThemeToggleProps) {
       <span className="sr-only">Toggle theme</span>
       {/* Sun icon visible in dark mode */}
       <Sun
-        className={`${iconSize} hidden dark:block text-amber-400 group-hover:rotate-45 transition-transform duration-200`}
+        className={`${iconSize} hidden dark:block text-warning group-hover:rotate-45 transition-transform duration-200`}
         aria-hidden="true"
       />
       {/* Moon icon visible in light mode */}
       <Moon
-        className={`${iconSize} block dark:hidden text-slate-700 group-hover:-rotate-12 transition-transform duration-200`}
+        className={`${iconSize} block dark:hidden text-fg-muted group-hover:-rotate-12 transition-transform duration-200`}
         aria-hidden="true"
       />
     </button>

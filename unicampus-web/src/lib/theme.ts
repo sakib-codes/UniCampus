@@ -56,18 +56,18 @@ export const themeTokens = {
   borderAccent: 'border-line',
 
   // Cards & Containers
-  card: 'bg-surface border border-line rounded-[20px]',
-  cardInteractive: 'bg-surface border border-line hover:border-brand/40 rounded-[20px] transition-colors duration-150',
-  card3xl: 'bg-surface border border-line rounded-[20px]',
-  card3xlInteractive: 'bg-surface border border-line hover:border-brand/40 rounded-[20px] transition-colors duration-150',
+  card: 'bg-surface border border-line rounded-2xl',
+  cardInteractive: 'bg-surface border border-line hover:border-brand/40 rounded-2xl transition-colors duration-150',
+  card3xl: 'bg-surface border border-line rounded-2xl',
+  card3xlInteractive: 'bg-surface border border-line hover:border-brand/40 rounded-2xl transition-colors duration-150',
   cardFlat: 'bg-surface border border-line rounded-2xl',
   cardRecessed: 'bg-surface-2 border border-line rounded-xl',
   cardRecessed2xl: 'bg-surface-2 border border-line rounded-2xl',
-  cardElevated: 'bg-surface border border-line rounded-[20px]',
-  cardSolid: 'bg-surface border border-line rounded-[20px]',
+  cardElevated: 'bg-surface border border-line rounded-2xl',
+  cardSolid: 'bg-surface border border-line rounded-2xl',
   cardInset: 'bg-surface-2 border border-line rounded-xl',
   cardInsetSolid: 'bg-surface-2 border border-line rounded-xl',
-  drawer: 'bg-surface border border-line rounded-[20px] shadow-xl',
+  drawer: 'bg-surface border border-line rounded-2xl shadow-xl',
   panel: 'bg-surface border border-line',
 
   // Typography
@@ -90,10 +90,10 @@ export const themeTokens = {
   btnDangerSecondary: 'bg-danger-light hover:bg-danger/15 text-danger border border-danger/25 text-xs font-medium rounded-xl transition-colors cursor-pointer',
 
   // Inputs, Selects & Forms
-  input: 'bg-surface border border-line text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 rounded-xl text-sm transition-colors',
-  inputSolid: 'bg-surface border border-line text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 rounded-xl text-sm transition-colors',
-  select: 'bg-surface border border-line text-fg focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 rounded-xl text-sm transition-colors',
-  selectSolid: 'bg-surface border border-line text-fg focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 rounded-xl text-sm transition-colors cursor-pointer',
+  input: 'bg-surface border border-line text-fg placeholder:text-fg-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand rounded-xl text-sm transition-colors',
+  inputSolid: 'bg-surface border border-line text-fg placeholder:text-fg-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand rounded-xl text-sm transition-colors',
+  select: 'bg-surface border border-line text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand rounded-xl text-sm transition-colors',
+  selectSolid: 'bg-surface border border-line text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand rounded-xl text-sm transition-colors cursor-pointer',
 
   // Segmented Tabs / Navigation Tracks
   tabTrack: 'bg-surface-2 p-1 border border-line rounded-xl',
@@ -106,12 +106,12 @@ export const themeTokens = {
   tableHeaderSolid: 'bg-surface-2 border-b border-line text-fg-muted text-xs font-semibold',
   tableRow: 'border-b border-line hover:bg-surface-2/60 transition-colors',
   tableRowSolid: 'border-b border-line hover:bg-surface-2/60 transition-colors',
-  tableFooter: 'bg-surface-2 border-t border-line text-fg-muted text-xs font-mono tabular-nums',
+  tableFooter: 'bg-surface-2 border-t border-line text-fg-muted text-xs font-sans tabular-nums',
 
   // Modals & Overlays
   modalOverlay: 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 dark:bg-black/70',
-  modalBox: 'bg-surface border border-line rounded-[20px] shadow-xl relative overflow-hidden',
-  dropdown: 'bg-surface border border-line rounded-[20px] p-5 shadow-lg z-50 text-fg',
+  modalBox: 'bg-surface border border-line rounded-2xl shadow-xl relative overflow-hidden',
+  dropdown: 'bg-surface border border-line rounded-2xl p-5 shadow-lg z-50 text-fg',
   popover: 'bg-surface border border-line rounded-2xl p-2 shadow-lg z-50 text-fg',
   toast: 'fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-surface border border-line text-fg shadow-lg',
 
@@ -121,13 +121,13 @@ export const themeTokens = {
   badgeTeacher: 'bg-brand-soft text-brand border border-brand/20 font-medium',
   badgeStudent: 'bg-brand-soft text-brand border border-brand/20 font-medium',
   badgeSuccess: 'bg-success-light text-success border border-success/20 font-medium',
-  badgeWarning: 'bg-warning-light text-amber-800 dark:text-warning border border-warning/25 font-medium',
+  badgeWarning: 'bg-warning-light text-warning border border-warning/25 font-medium',
   badgeError: 'bg-danger-light text-danger border border-danger/20 font-medium',
   badgeInfo: 'bg-brand-soft text-brand border border-brand/20 font-medium',
 
   // Chat message bubbles
-  chatBubbleMe: 'bg-brand text-on-brand rounded-[20px] rounded-br-[4px]',
-  chatBubbleThem: 'bg-surface-2 text-fg rounded-[20px] rounded-bl-[4px] border border-line',
+  chatBubbleMe: 'bg-brand text-on-brand rounded-2xl rounded-br-xs',
+  chatBubbleThem: 'bg-surface-2 text-fg rounded-2xl rounded-bl-xs border border-line',
 } as const;
 
 export type ThemeTokens = typeof themeTokens;

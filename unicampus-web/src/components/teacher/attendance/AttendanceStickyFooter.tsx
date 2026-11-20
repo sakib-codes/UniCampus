@@ -62,7 +62,7 @@ export const AttendanceStickyFooter = memo(function AttendanceStickyFooter({
         <button
           type="button"
           onClick={onSaveFinalize}
-          className="px-5 py-2.5 rounded-xl bg-brand hover:bg-brand-hover text-white font-semibold text-xs sm:text-[13px] flex items-center gap-2 shadow-xs transition-colors duration-150 cursor-pointer active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand min-h-[44px] sm:min-h-[38px]"
+          className="px-5 py-2.5 rounded-xl bg-brand hover:bg-brand-hover text-on-brand font-semibold text-xs sm:text-[13px] flex items-center gap-2 shadow-xs transition-colors duration-150 cursor-pointer active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand min-h-[44px] sm:min-h-[38px]"
         >
           {saveSuccess ? (
             <>

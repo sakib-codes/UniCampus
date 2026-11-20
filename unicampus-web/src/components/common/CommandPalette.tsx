@@ -479,15 +479,20 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 dark:bg-black/70 select-none"
-      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 select-none"
       role="dialog"
       aria-modal="true"
       aria-label="Command palette"
     >
+      <button
+        type="button"
+        aria-label="Close"
+        tabIndex={-1}
+        onClick={onClose}
+        className="fixed inset-0 bg-black/45 dark:bg-black/70 cursor-default"
+      />
       <div
-        className="w-full max-w-xl max-h-[85vh] bg-surface border border-line rounded-[20px] shadow-lg overflow-hidden flex flex-col"
-        onClick={(e) => e.stopPropagation()}
+        className="relative z-10 w-full max-w-xl max-h-[85vh] bg-surface border border-line rounded-2xl shadow-lg overflow-hidden flex flex-col"
       >
         {/* Search Input Bar */}
         <div className="flex items-center px-4 py-3.5 border-b border-line gap-3 bg-surface-2">
@@ -502,7 +507,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
             }}
             placeholder="Type a command or jump to a destination..."
             aria-label="Type a command or jump to a destination"
-            className="flex-1 bg-transparent text-sm font-medium text-fg placeholder:text-fg-muted outline-none rounded px-1"
+            className="flex-1 bg-transparent text-sm font-medium text-fg placeholder:text-fg-muted outline-none focus-visible:ring-2 focus-visible:ring-brand rounded px-1"
           />
           {query ? (
             <button

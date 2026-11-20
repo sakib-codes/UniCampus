@@ -56,23 +56,23 @@ export interface Conversation {
 
 export const THEME_GRADIENTS: Record<MessengerTheme, { bubble: string; ring: string; label: string }> = {
   classic: {
-    bubble: "bg-brand text-white",
+    bubble: "bg-brand text-on-brand",
     ring: "from-brand to-brand",
     label: "Brand Indigo"
   },
   violet: {
-    bubble: "bg-brand text-white",
+    bubble: "bg-brand text-on-brand",
     ring: "from-brand to-brand/70",
     label: "Cyber Violet"
   },
   sunset: {
-    bubble: "bg-amber-600 text-white",
-    ring: "from-amber-500 to-amber-700",
+    bubble: "bg-warning text-on-brand",
+    ring: "from-warning to-warning",
     label: "Sunset Flare"
   },
   emerald: {
-    bubble: "bg-emerald-600 text-white",
-    ring: "from-emerald-500 to-emerald-700",
+    bubble: "bg-success text-on-brand",
+    ring: "from-success to-success",
     label: "Emerald Campus"
   }
 };

@@ -14,17 +14,75 @@ import {
   CheckCircle2
 } from "lucide-react";
 import ProfileAvatar from "@/components/common/ProfileAvatar";
-import StatCard from "@/components/common/StatCard";
 import LectureScheduleCard from "@/components/common/LectureScheduleCard";
 import NoticeSnippetCard from "@/components/common/NoticeSnippetCard";
 import AttendanceScannerModal from "@/components/attendance/AttendanceScannerModal";
 import { Button } from "@/components/ui/Button";
+import { Stat } from "@/components/ui/Stat";
 import { getRoster, subscribeToAttendance, StudentRosterRecord } from "@/lib/attendanceService";
 import { ACTIVE_TERM, CANONICAL_STUDENT } from "@/lib/canonicalCampus";
+
+interface DashboardScheduleSlot {
+  courseCode: string;
+  courseTitle: string;
+  timeRange: string;
+  room: string;
+  instructorName: string;
+  status: "ongoing" | "upcoming" | "scheduled" | "completed";
+  statusText?: string;
+  secondaryNote?: string;
+  isLab?: boolean;
+}
+
+const MONDAY_SCHEDULE: DashboardScheduleSlot[] = [
+  {
+    courseCode: "CSE-3101",
+    courseTitle: "Design & Analysis of Algorithms",
+    timeRange: "10:15 AM - 11:45 AM",
+    room: "Room 402",
+    instructorName: "Dr. Asif Rahman",
+    status: "ongoing",
+    statusText: "Ongoing",
+  },
+  {
+    courseCode: "CSE-3205",
+    courseTitle: "Software Engineering",
+    timeRange: "01:00 PM - 02:30 PM",
+    room: "Room 604-B",
+    instructorName: "Dr. Farhana Khan",
+    status: "upcoming",
+    statusText: "Upcoming",
+    secondaryNote: "Starts in 1h 15m",
+  },
+  {
+    courseCode: "CSE-3102",
+    courseTitle: "Algorithms Sessional Lab",
+    timeRange: "02:45 PM - 04:45 PM",
+    room: "Lab 4A",
+    instructorName: "Tanvir Hasan",
+    status: "scheduled",
+    statusText: "Scheduled",
+    secondaryNote: "Lab Workstation #14",
+    isLab: true,
+  },
+];
 
 export default function DashboardPage() {
   const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
   const [attendanceRecord, setAttendanceRecord] = useState<StudentRosterRecord | null>(null);
+
+  const ongoingClass = useMemo(
+    () => MONDAY_SCHEDULE.find((s) => s.status === "ongoing"),
+    []
+  );
+
+  const nextUpcomingClass = useMemo(
+    () =>
+      MONDAY_SCHEDULE.find(
+        (s) => s.status === "upcoming" || (s.status === "scheduled" && s !== ongoingClass)
+      ),
+    [ongoingClass]
+  );
 
   const greeting = useMemo(() => {
     const hour = new Date().getHours();
@@ -76,40 +134,64 @@ export default function DashboardPage() {
   return (
     <div className="w-full space-y-6 pb-6">
       {/* 1. Welcome Banner Card */}
-      <section className="rounded-[20px] bg-surface border border-line p-6 md:p-8 transition-colors">
+      <section className="rounded-2xl bg-surface border border-line p-6 md:p-8 transition-colors">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-3 max-w-2xl">
             {attendanceRecord && (
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-medium text-emerald-600 dark:text-emerald-400">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-success-light border border-success/20 text-xs font-medium text-success">
+                <span className="w-2 h-2 rounded-full bg-success" />
                 <span>
-                  Attendance recorded: CSE-3101 · {attendanceRecord.checkInTime} ({attendanceRecord.checkInMethod === "QR" ? "QR Scan" : "PIN"})
+                  Attendance recorded: <span className="font-mono">CSE-3101</span> · <span className="tabular-nums">{attendanceRecord.checkInTime}</span> ({attendanceRecord.checkInMethod === "QR" ? "QR Scan" : "PIN"})
                 </span>
               </div>
             )}
 
-            <div className="flex items-center gap-2 text-xs font-semibold text-brand">
+            <div className="flex items-center gap-2 text-xs font-semibold text-brand font-sans">
               <span>{ACTIVE_TERM}</span>
               <span>•</span>
               <span>{CANONICAL_STUDENT.semester}</span>
               <span>•</span>
-              <span className="font-mono">{CANONICAL_STUDENT.id}</span>
+              <span className="font-mono">{CANONICAL_STUDENT.studentId}</span>
             </div>
 
-            <h1 className="font-bold text-2xl md:text-3xl tracking-tight text-fg">
+            <h1 className="font-semibold text-2xl md:text-3xl tracking-tight text-fg">
               {greeting}, {CANONICAL_STUDENT.name}
             </h1>
 
             {attendanceRecord ? (
               <p className="text-sm text-fg-muted leading-relaxed">
-                Your attendance for <span className="text-emerald-600 dark:text-emerald-400 font-semibold font-mono">CSE-3101 (Room 402)</span> is recorded. Next class starts in{" "}
-                <span className="text-fg font-medium">18 minutes</span>.
+                Your attendance for{" "}
+                <span className="text-success font-semibold">
+                  <span className="font-mono">{ongoingClass?.courseCode || "CSE-3101"}</span> ({ongoingClass?.room || "Room 402"})
+                </span>{" "}
+                is recorded • Next:{" "}
+                <span className="text-fg font-medium">
+                  {nextUpcomingClass
+                    ? `${nextUpcomingClass.courseTitle} at ${nextUpcomingClass.timeRange.split(" - ")[0]}`
+                    : "No more classes today"}
+                </span>
+              </p>
+            ) : ongoingClass ? (
+              <p className="text-sm text-fg-muted leading-relaxed">
+                Currently in{" "}
+                <span className="text-fg font-medium">
+                  {ongoingClass.courseTitle} ({ongoingClass.room})
+                </span>{" "}
+                • Next:{" "}
+                <span className="text-brand font-medium">
+                  {nextUpcomingClass
+                    ? `${nextUpcomingClass.courseTitle} at ${nextUpcomingClass.timeRange.split(" - ")[0]}`
+                    : "None"}
+                </span>
               </p>
             ) : (
               <p className="text-sm text-fg-muted leading-relaxed">
-                You have <span className="text-fg font-medium">2 lectures</span> and{" "}
-                <span className="text-fg font-medium">1 lab session</span> scheduled today. Next class starts in{" "}
-                <span className="text-brand font-medium">18 minutes</span> in Room 402.
+                Next class:{" "}
+                <span className="text-brand font-medium">
+                  {nextUpcomingClass
+                    ? `${nextUpcomingClass.courseTitle} at ${nextUpcomingClass.timeRange.split(" - ")[0]}`
+                    : "No scheduled classes"}
+                </span>
               </p>
             )}
           </div>
@@ -121,7 +203,7 @@ export default function DashboardPage() {
                 variant="primary"
                 size="md"
                 onClick={() => setIsAttendanceModalOpen(true)}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white"
+                className="bg-success hover:bg-success/90 text-on-brand"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 <span>Verified Pass</span>
@@ -142,35 +224,89 @@ export default function DashboardPage() {
 
       {/* 2. Top Metric Stats */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <StatCard
-          label="Current CGPA"
-          value="3.78"
-          suffix="/ 4.00"
-          icon={GraduationCap}
-        />
-        <StatCard
-          label="Attendance Rate"
-          value="92.4%"
-          icon={ShieldCheck}
-        />
-        <StatCard
-          label="Credits Completed"
-          value="96"
-          suffix="/ 144"
-          icon={Layers}
-        />
-        <StatCard
-          label="Active Courses"
-          value="5"
-          suffix="Enrolled"
-          icon={BookOpen}
-        />
+        <Link
+          href="/dashboard/progress"
+          className="group block rounded-2xl bg-surface border border-line p-5 hover:border-fg-subtle/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+        >
+          <Stat
+            label="Current CGPA"
+            value={
+              <>
+                <span>3.78</span>
+                <span className="text-base font-medium ml-1 text-fg-muted">
+                  / 4.00
+                </span>
+              </>
+            }
+            icon={
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border border-line bg-brand-soft text-brand">
+                <GraduationCap className="w-5 h-5" aria-hidden="true" />
+              </div>
+            }
+          />
+        </Link>
+
+        <div className="rounded-2xl bg-surface border border-line p-5">
+          <Stat
+            label="Attendance Rate"
+            value="92.4%"
+            icon={
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border border-line bg-brand-soft text-brand">
+                <ShieldCheck className="w-5 h-5" aria-hidden="true" />
+              </div>
+            }
+          />
+        </div>
+
+        <Link
+          href="/dashboard/progress"
+          className="group block rounded-2xl bg-surface border border-line p-5 hover:border-fg-subtle/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+        >
+          <Stat
+            label="Credits Completed"
+            value={
+              <>
+                <span>96</span>
+                <span className="text-base font-medium ml-1 text-fg-muted">
+                  / 144
+                </span>
+              </>
+            }
+            icon={
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border border-line bg-brand-soft text-brand">
+                <Layers className="w-5 h-5" aria-hidden="true" />
+              </div>
+            }
+          />
+        </Link>
+
+        <Link
+          href="/routine"
+          className="group block rounded-2xl bg-surface border border-line p-5 hover:border-fg-subtle/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+        >
+          <Stat
+            label="Active Courses"
+            value={
+              <>
+                <span>5</span>
+                <span className="text-sm text-fg-muted ml-1.5 font-normal">
+                  Enrolled
+                </span>
+              </>
+            }
+            icon={
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border border-line bg-brand-soft text-brand">
+                <BookOpen className="w-5 h-5" aria-hidden="true" />
+              </div>
+            }
+          />
+        </Link>
       </section>
 
       {/* 3. Main Split Grid (8-col Routine / 4-col Sidebar) */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Today's Routine */}
-        <div className="lg:col-span-8 rounded-[20px] bg-surface border border-line p-6 space-y-6 transition-colors">
+        <div className="lg:col-span-8 rounded-2xl bg-surface border border-line p-6 space-y-6 transition-colors">
           <div className="flex items-center justify-between pb-4 border-b border-line">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-brand/10 text-brand flex items-center justify-center shrink-0">
@@ -190,7 +326,7 @@ export default function DashboardPage() {
 
             <Link
               href="/routine"
-              className="text-xs font-semibold text-brand hover:underline inline-flex items-center gap-1 transition-colors cursor-pointer"
+              className="text-xs font-semibold text-brand hover:underline inline-flex items-center gap-1 transition-colors cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
             >
               <span>Full Timetable</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -199,45 +335,27 @@ export default function DashboardPage() {
 
           {/* Routine List */}
           <div className="space-y-3.5">
-            <LectureScheduleCard
-              courseCode="CSE-3101"
-              courseTitle="Design & Analysis of Algorithms"
-              timeRange="10:00 AM - 11:30 AM"
-              room="Room 402"
-              instructorName="Dr. Asif Rahman"
-              status="ongoing"
-              statusText="Ongoing"
-            />
-
-            <LectureScheduleCard
-              courseCode="CSE-3205"
-              courseTitle="Software Engineering & System Design"
-              timeRange="11:45 AM - 01:15 PM"
-              room="Room 604-B"
-              instructorName="Dr. Farhana Khan"
-              status="upcoming"
-              statusText="Upcoming"
-              secondaryNote="Starts in 1h 15m"
-            />
-
-            <LectureScheduleCard
-              courseCode="CSE-3102"
-              courseTitle="Algorithms Sessional Lab"
-              timeRange="02:00 PM - 04:30 PM"
-              room="Lab 4A (Software Wing)"
-              instructorName="Tanvir Hasan"
-              status="scheduled"
-              statusText="Scheduled"
-              secondaryNote="Lab Workstation #14"
-              isLab={true}
-            />
+            {MONDAY_SCHEDULE.map((slot) => (
+              <LectureScheduleCard
+                key={slot.courseCode}
+                courseCode={slot.courseCode}
+                courseTitle={slot.courseTitle}
+                timeRange={slot.timeRange}
+                room={slot.room}
+                instructorName={slot.instructorName}
+                status={slot.status}
+                statusText={slot.statusText}
+                secondaryNote={slot.secondaryNote}
+                isLab={slot.isLab}
+              />
+            ))}
           </div>
         </div>
 
         {/* Right Column: Notices & Messages */}
         <div className="lg:col-span-4 space-y-6">
           {/* Notices */}
-          <div className="rounded-[20px] bg-surface border border-line p-5 space-y-4 transition-colors">
+          <div className="rounded-2xl bg-surface border border-line p-5 space-y-4 transition-colors">
             <div className="flex items-center justify-between pb-3 border-b border-line">
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-brand" />
@@ -247,7 +365,7 @@ export default function DashboardPage() {
               </div>
               <Link
                 href="/notices"
-                className="text-xs text-fg-muted hover:text-brand transition-colors cursor-pointer"
+                className="text-xs text-fg-muted hover:text-brand transition-colors cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
               >
                 View all
               </Link>
@@ -279,59 +397,61 @@ export default function DashboardPage() {
           </div>
 
           {/* Quick Messages */}
-          <div className="rounded-[20px] bg-surface border border-line p-5 space-y-4 transition-colors">
+          <div className="rounded-2xl bg-surface border border-line p-5 space-y-4 transition-colors">
             <div className="flex items-center justify-between pb-3 border-b border-line">
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                <span className="w-2 h-2 rounded-full bg-success" />
                 <h2 className="font-semibold text-sm text-fg">
                   Direct Messages
                 </h2>
               </div>
-              <span className="text-xs text-fg-muted">2 unread</span>
+              <span className="text-xs text-fg-muted tabular-nums">2 unread</span>
             </div>
 
             <div className="space-y-2.5">
-              <div
+              <button
+                type="button"
                 onClick={() => openDirectMessage("Dr. Asif Rahman")}
-                className="p-3 rounded-xl bg-canvas hover:bg-surface-2 border border-line transition-colors flex items-start gap-3 cursor-pointer group"
+                className="w-full text-left p-3 rounded-xl bg-canvas hover:bg-surface-2 border border-line transition-colors flex items-start gap-3 cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
               >
                 <div className="relative shrink-0 mt-0.5">
                   <ProfileAvatar alt="Dr. Asif Rahman" size="sm" className="rounded-xl" />
-                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-surface" />
+                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-success rounded-full border-2 border-surface" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-1">
                     <span className="font-semibold text-xs text-fg group-hover:text-brand transition-colors truncate">
                       Dr. Asif Rahman
                     </span>
-                    <span className="text-xs text-fg-muted shrink-0">12m ago</span>
+                    <span className="text-xs text-fg-muted tabular-nums shrink-0">12m ago</span>
                   </div>
                   <p className="text-xs text-fg-muted mt-0.5 line-clamp-1">
                     Please upload your lab group roster by 5 PM.
                   </p>
                 </div>
-              </div>
+              </button>
 
-              <div
+              <button
+                type="button"
                 onClick={() => openDirectMessage("Nusrat Jahan")}
-                className="p-3 rounded-xl bg-canvas hover:bg-surface-2 border border-line transition-colors flex items-start gap-3 cursor-pointer group"
+                className="w-full text-left p-3 rounded-xl bg-canvas hover:bg-surface-2 border border-line transition-colors flex items-start gap-3 cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
               >
                 <div className="relative shrink-0 mt-0.5">
                   <ProfileAvatar alt="Nusrat Jahan" size="sm" className="rounded-xl" />
-                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-surface" />
+                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-success rounded-full border-2 border-surface" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-1">
                     <span className="font-semibold text-xs text-fg group-hover:text-brand transition-colors truncate">
                       Nusrat Jahan
                     </span>
-                    <span className="text-xs text-fg-muted shrink-0">1h ago</span>
+                    <span className="text-xs text-fg-muted tabular-nums shrink-0">1h ago</span>
                   </div>
                   <p className="text-xs text-fg-muted mt-0.5 line-clamp-1">
                     Shared the CSE-3101 DP notes in Google Drive.
                   </p>
                 </div>
-              </div>
+              </button>
             </div>
 
             <Button

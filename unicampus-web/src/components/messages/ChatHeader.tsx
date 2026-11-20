@@ -55,23 +55,23 @@ export const ChatHeader = memo(function ChatHeader({
               className="border border-line"
             />
             {activeConv.isOnline && (
-              <span className="w-3 h-3 rounded-full bg-emerald-500 border-2 border-surface absolute bottom-0 right-0 shadow-xs" />
+              <span className="w-3 h-3 rounded-full bg-success border-2 border-surface absolute bottom-0 right-0 shadow-xs" />
             )}
           </div>
 
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <h2 className="text-sm sm:text-base font-extrabold text-fg truncate">
+              <h2 className="text-sm sm:text-base font-semibold text-fg truncate">
                 {activeConv.nickname || activeConv.name}
               </h2>
               {activeConv.isMuted && (
-                <BellOff className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                <BellOff className="w-3.5 h-3.5 text-warning shrink-0" />
               )}
             </div>
             <p className="text-xs text-fg-muted flex items-center gap-1.5 truncate">
               <span
                 className={`w-1.5 h-1.5 rounded-full ${
-                  activeConv.isOnline ? "bg-emerald-500" : "bg-fg-muted/60"
+                  activeConv.isOnline ? "bg-success" : "bg-fg-muted/60"
                 }`}
               />
               <span>{activeConv.lastActive}</span>
@@ -143,11 +143,11 @@ export const ChatHeader = memo(function ChatHeader({
             onChange={(e) => onSearchTermChange(e.target.value)}
             placeholder="Search in this conversation..."
             aria-label="Search in this conversation"
-            className="flex-1 text-xs bg-transparent text-fg outline-none focus:ring-1 focus:ring-brand rounded px-1"
+            className="flex-1 text-xs bg-transparent text-fg outline-none focus-visible:ring-2 focus-visible:ring-brand rounded px-1"
             autoFocus
           />
           {inChatSearchTerm && (
-            <span className="text-xs text-fg-muted font-mono">
+            <span className="text-xs text-fg-muted font-sans tabular-nums">
               {matchCount} matches
             </span>
           )}

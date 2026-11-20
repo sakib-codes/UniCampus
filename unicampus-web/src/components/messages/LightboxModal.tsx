@@ -20,7 +20,7 @@ export const LightboxModal = memo(function LightboxModal({
       <button
         type="button"
         onClick={onClose}
-        className="absolute top-5 right-5 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white cursor-pointer"
+        className="absolute top-5 right-5 p-2 rounded-full bg-surface/20 hover:bg-surface/30 text-on-brand cursor-pointer"
         title="Close full-screen image"
         aria-label="Close full-screen image"
       >
@@ -41,7 +41,7 @@ export const LightboxModal = memo(function LightboxModal({
         <button
           type="button"
           onClick={() => alert("Downloading photo...")}
-          className="px-4 py-2 rounded-full bg-white/20 hover:bg-white/30 text-white font-bold text-xs flex items-center gap-2 cursor-pointer backdrop-blur-xs"
+          className="px-4 py-2 rounded-full bg-surface/20 hover:bg-surface/30 text-on-brand font-semibold text-xs flex items-center gap-2 cursor-pointer backdrop-blur-xs"
         >
           <Download className="w-4 h-4" />
           <span>Save Photo</span>

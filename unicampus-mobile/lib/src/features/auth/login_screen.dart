@@ -28,14 +28,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _handleSignIn() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Signing in to UniCampus...'),
-        backgroundColor: const Color(0xFF605BFF),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      ),
-    );
+    Navigator.of(context).pushReplacementNamed('/portal');
   }
 
   @override

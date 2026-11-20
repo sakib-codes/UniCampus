@@ -41,11 +41,11 @@ export const ActiveCallModal = memo(function ActiveCallModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-      <div className="w-full max-w-xl rounded-3xl bg-surface border border-line overflow-hidden text-center relative shadow-2xl flex flex-col">
+      <div className="w-full max-w-xl rounded-2xl bg-surface border border-line overflow-hidden text-center relative shadow-2xl flex flex-col">
         {/* Top Bar */}
         <div className="p-4 flex items-center justify-between z-10">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-mono font-bold">
-            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-success-light text-success text-xs font-sans font-semibold tabular-nums">
+            <span className="w-2 h-2 rounded-full bg-success" />
             <span>
               Messenger {activeCallType === "video" ? "Video Call" : "Audio Call"} •{" "}
               {formatTimer(callDuration)}
@@ -72,7 +72,7 @@ export const ActiveCallModal = memo(function ActiveCallModal({
                   className="w-28 h-28 border-4 border-brand/50 shadow-lg"
                   iconClassName="w-14 h-14"
                 />
-                <div className="absolute bottom-3 left-3 bg-black/60 px-2.5 py-1 rounded-lg text-xs font-semibold backdrop-blur-xs text-white">
+                <div className="absolute bottom-3 left-3 bg-black/60 px-2.5 py-1 rounded-lg text-xs font-semibold backdrop-blur-xs text-on-brand">
                   {activeConv.name}
                 </div>
               </div>
@@ -89,7 +89,7 @@ export const ActiveCallModal = memo(function ActiveCallModal({
             {/* Picture in Picture Self-View */}
             <div className="absolute top-3 right-3 w-28 h-20 rounded-2xl overflow-hidden border-2 border-line shadow-lg bg-surface flex items-center justify-center">
               <ProfileAvatar className="w-12 h-12" iconClassName="w-6 h-6" />
-              <span className="absolute bottom-1 right-1 text-xs bg-black/70 px-1 rounded text-white font-mono">
+              <span className="absolute bottom-1 right-1 text-xs bg-black/70 px-1 rounded text-on-brand font-sans">
                 You
               </span>
             </div>
@@ -103,10 +103,10 @@ export const ActiveCallModal = memo(function ActiveCallModal({
               />
             </div>
 
-            <h3 className="text-xl font-black mb-1 text-fg">
+            <h3 className="text-xl font-semibold mb-1 text-fg">
               {activeConv.name}
             </h3>
-            <p className="text-xs text-fg-muted font-mono">
+            <p className="text-xs text-fg-muted font-sans">
               Connected • VoIP 256-bit Encrypted
             </p>
           </div>
@@ -119,7 +119,7 @@ export const ActiveCallModal = memo(function ActiveCallModal({
             onClick={() => setIsCallMuted(!isCallMuted)}
             className={`w-12 h-12 rounded-full flex items-center justify-center cursor-pointer transition-colors ${
               isCallMuted
-                ? "bg-red-500/20 text-red-500"
+                ? "bg-danger-light text-danger"
                 : "bg-surface hover:bg-surface-2 text-fg border border-line"
             }`}
             title={isCallMuted ? "Unmute mic" : "Mute mic"}
@@ -139,7 +139,7 @@ export const ActiveCallModal = memo(function ActiveCallModal({
                 onClick={() => setIsCameraOff(!isCameraOff)}
                 className={`w-12 h-12 rounded-full flex items-center justify-center cursor-pointer transition-colors ${
                   isCameraOff
-                    ? "bg-red-500/20 text-red-500"
+                    ? "bg-danger-light text-danger"
                     : "bg-surface hover:bg-surface-2 text-fg border border-line"
                 }`}
                 title={isCameraOff ? "Turn camera on" : "Turn camera off"}
@@ -157,7 +157,7 @@ export const ActiveCallModal = memo(function ActiveCallModal({
                 onClick={() => setIsScreenSharing(!isScreenSharing)}
                 className={`w-12 h-12 rounded-full flex items-center justify-center cursor-pointer transition-colors ${
                   isScreenSharing
-                    ? "bg-brand text-white"
+                    ? "bg-brand text-on-brand"
                     : "bg-surface hover:bg-surface-2 text-fg border border-line"
                 }`}
                 title="Share screen"
@@ -171,7 +171,7 @@ export const ActiveCallModal = memo(function ActiveCallModal({
           <button
             type="button"
             onClick={onClose}
-            className="w-14 h-14 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-transform motion-reduce:hover:scale-100 cursor-pointer"
+            className="w-14 h-14 rounded-full bg-danger hover:bg-danger/90 text-on-brand flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-transform motion-reduce:hover:scale-100 cursor-pointer"
             title="End call"
             aria-label="End call"
           >

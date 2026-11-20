@@ -60,7 +60,7 @@ export function DataTable<T>({
     return (
       <div
         className={cn(
-          "rounded-[20px] border border-line bg-surface overflow-hidden",
+          "rounded-2xl border border-line bg-surface overflow-hidden",
           className
         )}
       >
@@ -78,7 +78,7 @@ export function DataTable<T>({
     <div
       className={cn(
         overflowClass,
-        "rounded-[20px] border border-line bg-surface",
+        "rounded-2xl border border-line bg-surface",
         className
       )}
     >

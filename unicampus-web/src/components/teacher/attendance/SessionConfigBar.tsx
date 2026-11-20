@@ -27,11 +27,7 @@ export const SessionConfigBar = memo(function SessionConfigBar({
       {/* Interactive Selector Dropdowns/Inputs */}
       <div className="flex items-center gap-3 flex-wrap flex-1 min-w-0">
         {/* Course Selector */}
-        <div
-          role="button"
-          tabIndex={0}
-          className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-surface-2 border border-line hover:border-brand/60 transition-colors duration-150 cursor-pointer group shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-        >
+        <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-surface-2 border border-line shadow-xs">
           <BookOpen className="w-4 h-4 text-fg-muted shrink-0" aria-hidden="true" />
           <div className="text-left">
             <span className="text-xs font-semibold text-fg-muted leading-none block">
@@ -43,17 +39,13 @@ export const SessionConfigBar = memo(function SessionConfigBar({
               <span className="font-normal text-fg-muted truncate max-w-[140px] sm:max-w-none">
                 {courseName}
               </span>
-              <ChevronDown className="w-3.5 h-3.5 text-fg-muted group-hover:text-fg transition-colors duration-150 shrink-0" />
+              <ChevronDown className="w-3.5 h-3.5 text-fg-muted shrink-0" aria-hidden="true" />
             </div>
           </div>
         </div>
 
         {/* Section Selector */}
-        <div
-          role="button"
-          tabIndex={0}
-          className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-surface-2 border border-line hover:border-brand/60 transition-colors duration-150 cursor-pointer group shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-        >
+        <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-surface-2 border border-line shadow-xs">
           <Users className="w-4 h-4 text-fg-muted shrink-0" aria-hidden="true" />
           <div className="text-left">
             <span className="text-xs font-semibold text-fg-muted leading-none block">
@@ -61,17 +53,13 @@ export const SessionConfigBar = memo(function SessionConfigBar({
             </span>
             <div className="font-semibold text-xs sm:text-[13px] text-fg flex items-center gap-1.5 mt-0.5">
               <span>{selectedSection}</span>
-              <ChevronDown className="w-3.5 h-3.5 text-fg-muted group-hover:text-fg transition-colors duration-150 shrink-0" />
+              <ChevronDown className="w-3.5 h-3.5 text-fg-muted shrink-0" aria-hidden="true" />
             </div>
           </div>
         </div>
 
         {/* Date Selector */}
-        <div
-          role="button"
-          tabIndex={0}
-          className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-surface-2 border border-line hover:border-brand/60 transition-colors duration-150 cursor-pointer group shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-        >
+        <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-surface-2 border border-line shadow-xs">
           <Calendar className="w-4 h-4 text-fg-muted shrink-0" aria-hidden="true" />
           <div className="text-left">
             <span className="text-xs font-semibold text-fg-muted leading-none block">
@@ -79,17 +67,13 @@ export const SessionConfigBar = memo(function SessionConfigBar({
             </span>
             <div className="font-semibold text-xs sm:text-[13px] text-fg flex items-center gap-1.5 mt-0.5">
               <span>{sessionDate}</span>
-              <ChevronDown className="w-3.5 h-3.5 text-fg-muted group-hover:text-fg transition-colors duration-150 shrink-0" />
+              <ChevronDown className="w-3.5 h-3.5 text-fg-muted shrink-0" aria-hidden="true" />
             </div>
           </div>
         </div>
 
         {/* Lecture Topic */}
-        <div
-          role="button"
-          tabIndex={0}
-          className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-surface-2 border border-line hover:border-brand/60 transition-colors duration-150 cursor-pointer group flex-1 min-w-0 md:min-w-[260px] shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-        >
+        <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-surface-2 border border-line flex-1 min-w-0 md:min-w-[260px] shadow-xs">
           <Edit3 className="w-4 h-4 text-fg-muted shrink-0" aria-hidden="true" />
           <div className="text-left min-w-0 flex-1">
             <span className="text-xs font-semibold text-fg-muted leading-none block">

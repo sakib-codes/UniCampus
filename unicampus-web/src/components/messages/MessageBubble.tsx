@@ -53,7 +53,7 @@ export const MessageBubble = memo(function MessageBubble({
       onMouseLeave={() => onHoverReaction(null)}
       className={`relative group flex items-end gap-2 ${
         isMe ? "justify-end" : "justify-start"
-      } ${isHighlighted ? "bg-amber-500/10 p-1 rounded-xl" : ""}`}
+      } ${isHighlighted ? "bg-warning-light p-1 rounded-xl" : ""}`}
     >
       {/* Contact Avatar for Incoming Messages */}
       {!isMe && (
@@ -98,7 +98,7 @@ export const MessageBubble = memo(function MessageBubble({
           <button
             type="button"
             onClick={() => onTogglePin(msg.id)}
-            className="p-1 hover:bg-surface-2 rounded-full text-fg-muted hover:text-amber-500 cursor-pointer"
+            className="p-1 hover:bg-surface-2 rounded-full text-fg-muted hover:text-warning cursor-pointer"
             title="Pin message"
             aria-label="Pin message"
           >
@@ -133,7 +133,7 @@ export const MessageBubble = memo(function MessageBubble({
           <button
             type="button"
             onClick={() => onOpenLightbox(msg.imageAttachment!)}
-            className="relative w-64 h-48 rounded-2xl overflow-hidden mb-1.5 cursor-pointer border border-line group/img shadow-2xs block text-left"
+            className="relative w-64 max-w-full h-48 rounded-2xl overflow-hidden mb-1.5 cursor-pointer border border-line group/img shadow-2xs block text-left"
             aria-label="View attached image full screen"
           >
             <Image
@@ -144,7 +144,7 @@ export const MessageBubble = memo(function MessageBubble({
               className="object-cover group-hover/img:scale-105 transition-transform duration-200"
             />
             <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/20 transition-colors flex items-center justify-center">
-              <Maximize2 className="w-6 h-6 text-white opacity-0 group-hover/img:opacity-100 transition-opacity drop-shadow-md" />
+              <Maximize2 className="w-6 h-6 text-on-brand opacity-0 group-hover/img:opacity-100 transition-opacity drop-shadow-md" />
             </div>
           </button>
         )}
@@ -152,7 +152,7 @@ export const MessageBubble = memo(function MessageBubble({
         {/* Bubble Content: Voice Note */}
         {msg.isVoiceNote ? (
           <div
-            className={`px-4 py-3 rounded-[20px] shadow-2xs flex items-center gap-3 ${
+            className={`px-4 py-3 rounded-2xl shadow-2xs flex items-center gap-3 ${
               isMe
                 ? `${activeTheme.bubble} rounded-br-[4px]`
                 : "bg-surface-2 text-fg rounded-bl-[4px] border border-line"
@@ -164,7 +164,7 @@ export const MessageBubble = memo(function MessageBubble({
                 onPlayVoice(playingVoiceId === msg.id ? null : msg.id)
               }
               className={`w-9 h-9 rounded-full flex items-center justify-center cursor-pointer transition-transform hover:scale-105 ${
-                isMe ? "bg-white text-brand" : "bg-brand text-white"
+                isMe ? "bg-surface text-brand" : "bg-brand text-on-brand"
               }`}
               title={playingVoiceId === msg.id ? "Pause voice note" : "Play voice note"}
               aria-label={
@@ -186,14 +186,14 @@ export const MessageBubble = memo(function MessageBubble({
                     key={i}
                     className={`w-1 rounded-full transition-opacity duration-150 ${
                       playingVoiceId === msg.id ? "animate-pulse" : ""
-                    } ${isMe ? "bg-white/80" : "bg-fg-muted"}`}
+                    } ${isMe ? "bg-on-brand/80" : "bg-fg-muted"}`}
                     style={{ height: `${h}%` }}
                   />
                 )
               )}
             </div>
 
-            <span className="text-xs font-mono font-bold shrink-0 opacity-90">
+            <span className="text-xs font-sans font-semibold tabular-nums shrink-0 opacity-90">
               {msg.voiceDuration || "0:14"}
             </span>
           </div>
@@ -209,8 +209,8 @@ export const MessageBubble = memo(function MessageBubble({
           <div
             className={`px-4 py-2.5 text-sm leading-relaxed shadow-2xs font-normal ${
               isMe
-                ? "bg-brand text-white rounded-[20px] rounded-br-[4px]"
-                : "bg-surface-2 text-fg rounded-[20px] rounded-bl-[4px] border border-line"
+                ? "bg-brand text-on-brand rounded-2xl rounded-br-[4px]"
+                : "bg-surface-2 text-fg rounded-2xl rounded-bl-[4px] border border-line"
             }`}
           >
             {msg.text}

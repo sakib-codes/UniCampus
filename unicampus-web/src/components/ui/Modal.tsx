@@ -93,9 +93,15 @@ export function Modal({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={transition}
-          onClick={closeOnBackdrop ? onClose : undefined}
-          className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/45 dark:bg-black/70"
+          className="fixed inset-0 z-[60] flex items-center justify-center p-4"
         >
+          <button
+            type="button"
+            aria-label="Close"
+            tabIndex={-1}
+            onClick={closeOnBackdrop ? onClose : undefined}
+            className="fixed inset-0 bg-black/45 dark:bg-black/70 cursor-default"
+          />
           <motion.div
             key="modal-dialog"
             ref={dialogRef}
@@ -108,9 +114,8 @@ export function Modal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.98, y: 4 }}
             transition={transition}
-            onClick={(e) => e.stopPropagation()}
             className={cn(
-              "w-full bg-surface border border-line rounded-[20px] shadow-xl overflow-hidden flex flex-col max-h-[90vh] focus:outline-none",
+              "relative z-10 w-full bg-surface border border-line rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand",
               sizeClasses[size],
               className
             )}

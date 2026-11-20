@@ -2,7 +2,7 @@
 
 import { Suspense } from "react";
 import { useParams } from "next/navigation";
-import { NoticeboardContent } from "@/components/notices/NoticeboardContent";
+import { NoticeboardContent } from "@/components/notices";
 
 export default function NoticeDetailPage() {
   const params = useParams();
@@ -11,7 +11,7 @@ export default function NoticeDetailPage() {
   return (
     <Suspense
       fallback={
-        <div className="w-full py-16 text-center text-slate-400 dark:text-fg-muted font-mono text-sm">
+        <div className="w-full py-16 text-center text-fg-muted font-sans text-sm">
           Loading UniCampus Noticeboard...
         </div>
       }

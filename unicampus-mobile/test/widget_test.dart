@@ -1,30 +1,41 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:unicampus_mobile/main.dart';
+import 'package:unicampus_mobile/src/core/theme.dart';
+import 'package:unicampus_mobile/src/widgets/common/uc_avatar.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+  setUpAll(() {
+    UcAvatar.isTestMode = true;
+  });
+
+  testWidgets('UniCampusApp boots directly into portal', (WidgetTester tester) async {
     await tester.pumpWidget(const UniCampusApp());
+    await tester.pumpAndSettle();
 
-    // Verify that UniCampus brand loads
-    expect(find.text('UniCampus'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // Verify Student Portal loads
+    expect(find.text('Student Portal'), findsOneWidget);
+    expect(find.text('STUDENT'), findsOneWidget);
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+  test('Calm Campus Design System tokens adhere strictly to Calm Campus Option A', () {
+    expect(AppColors.light.canvas, const Color(0xFFF5F5FA));
+    expect(AppColors.dark.canvas, const Color(0xFF0B0B10));
+    expect(AppColors.light.brand, const Color(0xFF605BFF));
+    expect(AppColors.dark.brand, const Color(0xFF7C78FF));
+    expect(AppColors.light.surface, const Color(0xFFFFFFFF));
+    expect(AppColors.dark.surface, const Color(0xFF15151D));
+    expect(AppColors.light.line, const Color(0xFFE7E7F0));
+    expect(AppColors.dark.line, const Color(0xFF262630));
+  });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+  test('AppTheme loads AppColors extension in both Light and Dark themes', () {
+    final lightColors = AppTheme.lightTheme.extension<AppColors>();
+    final darkColors = AppTheme.darkTheme.extension<AppColors>();
+
+    expect(lightColors, isNotNull);
+    expect(darkColors, isNotNull);
+    expect(lightColors!.brand, AppColors.light.brand);
+    expect(darkColors!.brand, AppColors.dark.brand);
   });
 }

@@ -148,7 +148,7 @@ export function TopBar({
                         reduceMotion ? { opacity: 0 } : { opacity: 0, y: 4, scale: 0.98 }
                       }
                       transition={{ duration: 0.16, ease: "easeOut" }}
-                      className="absolute right-0 top-full mt-2 w-64 rounded-[20px] border border-line bg-surface shadow-lg p-2 z-50"
+                      className="absolute right-0 top-full mt-2 w-64 rounded-2xl border border-line bg-surface shadow-lg p-2 z-50"
                     >
                       <button
                         type="button"

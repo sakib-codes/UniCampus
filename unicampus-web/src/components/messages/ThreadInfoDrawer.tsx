@@ -73,10 +73,12 @@ export const ThreadInfoDrawer = memo(function ThreadInfoDrawer({
 
   return (
     <>
-      <div
+      <button
+        type="button"
+        aria-label="Close thread details"
+        tabIndex={-1}
         className="fixed inset-0 bg-black/40 z-30 xl:hidden backdrop-blur-2xs"
         onClick={onClose}
-        aria-hidden="true"
       />
 
       {/* Resizer Handle: Column 2 <-> Column 3 (Desktop XL) */}
@@ -100,7 +102,7 @@ export const ThreadInfoDrawer = memo(function ThreadInfoDrawer({
           }
         }}
         title="Drag to resize panel (Double-click to reset)"
-        className={`hidden xl:flex w-2 -mx-1 shrink-0 cursor-col-resize group relative items-center justify-center transition-colors select-none z-20 outline-none focus-visible:bg-brand/20 ${
+        className={`hidden xl:flex w-2 -mx-1 shrink-0 cursor-col-resize group relative items-center justify-center transition-colors select-none z-20 outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:bg-brand/20 ${
           isDraggingRight ? "bg-brand/30" : "hover:bg-brand/20"
         }`}
       >
@@ -111,10 +113,10 @@ export const ThreadInfoDrawer = memo(function ThreadInfoDrawer({
         />
       </div>
 
-      <aside className="fixed inset-y-0 right-0 z-40 w-80 sm:w-[340px] xl:static xl:w-[var(--right-panel-width)] xl:z-auto shadow-2xl xl:shadow-none border-l border-line bg-surface flex flex-col shrink-0 overflow-y-auto">
+      <aside className="fixed inset-y-0 right-0 z-40 w-[min(20rem,100vw)] sm:w-[340px] max-w-full xl:static xl:w-[var(--right-panel-width)] xl:z-auto shadow-2xl xl:shadow-none border-l border-line bg-surface flex flex-col shrink-0 overflow-y-auto">
         {/* Header */}
         <div className="h-16 px-4 border-b border-line flex items-center justify-between shrink-0">
-          <h3 className="text-sm font-extrabold text-fg">Chat Details</h3>
+          <h3 className="text-sm font-semibold text-fg">Chat Details</h3>
           <button
             type="button"
             onClick={onClose}
@@ -142,7 +144,7 @@ export const ThreadInfoDrawer = memo(function ThreadInfoDrawer({
                   onChange={(e) => setNicknameInput(e.target.value)}
                   placeholder="Nickname..."
                   aria-label="Edit nickname"
-                  className="px-2 py-1 text-xs rounded-lg border border-brand bg-surface text-fg outline-none"
+                  className="px-2 py-1 text-xs rounded-lg border border-brand bg-surface text-fg outline-none focus-visible:ring-2 focus-visible:ring-brand"
                   autoFocus
                 />
                 <button
@@ -150,14 +152,14 @@ export const ThreadInfoDrawer = memo(function ThreadInfoDrawer({
                   onClick={handleSaveNicknameClick}
                   title="Save nickname"
                   aria-label="Save nickname"
-                  className="p-1 bg-brand text-white rounded-lg text-xs"
+                  className="p-1 bg-brand text-on-brand rounded-lg text-xs"
                 >
                   <Check className="w-3.5 h-3.5" />
                 </button>
               </div>
             ) : (
               <div className="flex items-center gap-1.5">
-                <h4 className="text-base font-black text-fg">
+                <h4 className="text-base font-semibold text-fg">
                   {activeConv.nickname || activeConv.name}
                 </h4>
                 <button
@@ -178,8 +180,8 @@ export const ThreadInfoDrawer = memo(function ThreadInfoDrawer({
             <p className="text-xs text-fg-muted mt-0.5 max-w-[240px]">
               {activeConv.role}
             </p>
-            <span className="inline-flex items-center gap-1.5 mt-2 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            <span className="inline-flex items-center gap-1.5 mt-2 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-success-light text-success">
+              <span className="w-1.5 h-1.5 rounded-full bg-success" />
               {activeConv.isOnline ? "Active Now" : "Offline"}
             </span>
           </div>
@@ -212,7 +214,7 @@ export const ThreadInfoDrawer = memo(function ThreadInfoDrawer({
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
                   activeConv.isMuted
-                    ? "bg-amber-500/15 text-amber-500"
+                    ? "bg-warning-light text-warning"
                     : "bg-surface-2 group-hover:bg-brand/10 text-fg group-hover:text-brand"
                 }`}
               >
@@ -327,10 +329,17 @@ export const ThreadInfoDrawer = memo(function ThreadInfoDrawer({
               <div className="p-3.5 space-y-4 bg-surface">
                 {/* Theme Selector */}
                 <div>
-                  <label className="text-xs font-bold text-fg-muted mb-2 block">
+                  <span
+                    id="chat-theme-label"
+                    className="text-xs font-semibold text-fg-muted mb-2 block"
+                  >
                     Chat Theme
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
+                  </span>
+                  <div
+                    role="group"
+                    aria-labelledby="chat-theme-label"
+                    className="grid grid-cols-2 gap-2"
+                  >
                     {(Object.keys(THEME_GRADIENTS) as MessengerTheme[]).map(
                       (themeKey) => {
                         const t = THEME_GRADIENTS[themeKey];
@@ -349,7 +358,7 @@ export const ThreadInfoDrawer = memo(function ThreadInfoDrawer({
                             <span
                               className={`w-4 h-4 rounded-full bg-gradient-to-tr ${t.ring} shadow-xs shrink-0`}
                             />
-                            <span className="text-xs font-bold truncate text-fg">
+                            <span className="text-xs font-semibold truncate text-fg">
                               {t.label}
                             </span>
                           </button>
@@ -361,10 +370,17 @@ export const ThreadInfoDrawer = memo(function ThreadInfoDrawer({
 
                 {/* Change Quick Emoji */}
                 <div>
-                  <label className="text-xs font-bold text-fg-muted mb-2 block">
+                  <span
+                    id="quick-emoji-label"
+                    className="text-xs font-semibold text-fg-muted mb-2 block"
+                  >
                     Quick Reaction Emoji
-                  </label>
-                  <div className="flex items-center gap-2">
+                  </span>
+                  <div
+                    role="group"
+                    aria-labelledby="quick-emoji-label"
+                    className="flex items-center gap-2"
+                  >
                     {["👍", "❤️", "🔥", "💡", "👏", "🎓"].map((emoji) => (
                       <button
                         key={emoji}
@@ -418,14 +434,14 @@ export const ThreadInfoDrawer = memo(function ThreadInfoDrawer({
                       className="p-2 rounded-xl bg-surface-2 border border-line flex items-center justify-between gap-2"
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <div className="w-8 h-8 rounded-lg bg-red-500/10 text-red-500 flex items-center justify-center shrink-0">
+                        <div className="w-8 h-8 rounded-lg bg-danger-light text-danger flex items-center justify-center shrink-0">
                           <FileText className="w-4 h-4" />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-xs font-bold text-fg truncate">
+                          <p className="text-xs font-semibold text-fg truncate">
                             {file.name}
                           </p>
-                          <p className="text-xs text-fg-muted font-mono">
+                          <p className="text-xs text-fg-muted font-sans tabular-nums">
                             {file.size} • {file.date}
                           </p>
                         </div>
@@ -520,7 +536,7 @@ export const ThreadInfoDrawer = memo(function ThreadInfoDrawer({
             {expandedSection === "privacy" && (
               <div className="p-3.5 space-y-3 bg-surface text-xs">
                 <div className="flex items-start gap-2.5 text-fg-muted">
-                  <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                  <ShieldCheck className="w-4 h-4 text-success shrink-0 mt-0.5" />
                   <span>
                     Messages and calls are end-to-end encrypted with UniCampus 256-bit
                     Security.
@@ -536,7 +552,7 @@ export const ThreadInfoDrawer = memo(function ThreadInfoDrawer({
                     onClick={() =>
                       alert("Report submitted to Campus Integrity Desk.")
                     }
-                    className="text-xs text-red-500 hover:underline font-bold cursor-pointer"
+                    className="text-xs text-danger hover:underline font-semibold cursor-pointer"
                   >
                     Report
                   </button>

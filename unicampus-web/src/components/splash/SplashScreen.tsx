@@ -39,7 +39,7 @@ export function SplashScreen({ autoRedirect = false }: SplashScreenProps) {
     <div className="min-h-dvh w-full flex flex-col items-center justify-between py-6 px-4 bg-canvas text-fg">
       {/* Floating Center Splash Card */}
       <main className="w-full flex-1 flex items-center justify-center">
-        <div className="w-full max-w-[420px] bg-surface rounded-[20px] p-6 sm:p-10 border border-line shadow-sm flex flex-col items-center text-center">
+        <div className="w-full max-w-[420px] bg-surface rounded-2xl p-6 sm:p-10 border border-line shadow-sm flex flex-col items-center text-center">
           {/* Brand Icon Squircle */}
           <div className="w-16 h-16 rounded-2xl bg-brand flex items-center justify-center shadow-sm mb-6">
             <span className="text-3xl font-bold text-on-brand leading-none">

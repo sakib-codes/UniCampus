@@ -328,11 +328,11 @@ async function run() {
     await teacherMoreBtn.click();
     await page.waitForTimeout(300);
 
-    const facultyProfileLink = page.locator("div[role='dialog'] a[href='/teachers/1']");
+    const facultyProfileLink = page.locator("div[role='dialog'] a[href='/teacher/profile']");
     assert("Faculty More drawer contains Faculty Profile link", (await facultyProfileLink.count()) > 0);
     await facultyProfileLink.click();
-    await page.waitForURL("**/teachers/1", { timeout: 3000 });
-    assert("Tapping Faculty Profile navigated to /teachers/1", page.url().endsWith("/teachers/1"));
+    await page.waitForURL("**/teacher/profile", { timeout: 3000 });
+    assert("Tapping Faculty Profile navigated to /teacher/profile", page.url().endsWith("/teacher/profile"));
 
     // 5C: Admin Mobile Tabs & More Drawer
     await page.goto(`${BASE_URL}/admin/dashboard`);

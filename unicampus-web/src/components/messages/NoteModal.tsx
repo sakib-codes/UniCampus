@@ -28,9 +28,9 @@ export const NoteModal = memo(function NoteModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-      <div className="w-full max-w-sm rounded-3xl bg-surface border border-line p-5 shadow-2xl">
+      <div className="w-full max-w-sm rounded-2xl bg-surface border border-line p-5 shadow-2xl">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-black text-fg">Share a note</h3>
+          <h3 className="text-sm font-semibold text-fg">Share a note</h3>
           <button
             type="button"
             onClick={onClose}
@@ -59,7 +59,7 @@ export const NoteModal = memo(function NoteModal({
           onChange={(e) => setNoteText(e.target.value)}
           placeholder="Share what's on your mind..."
           aria-label="Share what's on your mind"
-          className="w-full px-4 py-2.5 rounded-2xl bg-surface-2 text-xs text-fg outline-none border border-transparent focus:border-brand focus:ring-2 focus:ring-brand/40 mb-3"
+          className="w-full px-4 py-2.5 rounded-2xl bg-surface-2 text-xs text-fg outline-none border border-transparent focus:border-brand focus-visible:ring-2 focus-visible:ring-brand mb-3"
         />
 
         <div className="flex items-center gap-1.5 flex-wrap mb-4">
@@ -83,7 +83,7 @@ export const NoteModal = memo(function NoteModal({
         <button
           type="button"
           onClick={handleSave}
-          className="w-full py-2.5 bg-brand text-white hover:bg-brand-hover text-xs font-bold rounded-xl cursor-pointer transition-colors"
+          className="w-full py-2.5 bg-brand text-on-brand hover:bg-brand-hover text-xs font-semibold rounded-xl cursor-pointer transition-colors"
         >
           Share Note
         </button>

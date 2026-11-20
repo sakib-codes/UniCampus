@@ -30,9 +30,9 @@ export const NewChatModal = memo(function NewChatModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-      <div className="w-full max-w-md rounded-3xl bg-surface border border-line p-5 shadow-2xl">
+      <div className="w-full max-w-md rounded-2xl bg-surface border border-line p-5 shadow-2xl">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-black text-fg">New Message</h3>
+          <h3 className="text-sm font-semibold text-fg">New Message</h3>
           <button
             type="button"
             onClick={onClose}
@@ -52,7 +52,7 @@ export const NewChatModal = memo(function NewChatModal({
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="To: Type a student, teacher, or department..."
             aria-label="To: Type a student, teacher, or department"
-            className="w-full pl-9 pr-3 py-2 text-xs rounded-full bg-surface-2 text-fg outline-none focus:ring-2 focus:ring-brand/40"
+            className="w-full pl-9 pr-3 py-2 text-xs rounded-full bg-surface-2 text-fg outline-none focus-visible:ring-2 focus-visible:ring-brand"
           />
         </div>
 

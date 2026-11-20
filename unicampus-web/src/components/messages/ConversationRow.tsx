@@ -42,7 +42,7 @@ export const ConversationRow = memo(function ConversationRow({
             iconClassName="w-6 h-6"
           />
           {conv.isOnline && (
-            <span className="w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-surface absolute bottom-0 right-0 shadow-xs" />
+            <span className="w-3.5 h-3.5 rounded-full bg-success border-2 border-surface absolute bottom-0 right-0 shadow-xs" />
           )}
         </div>
 
@@ -52,13 +52,13 @@ export const ConversationRow = memo(function ConversationRow({
             <h3
               className={`text-sm truncate ${
                 conv.unreadCount > 0
-                  ? "font-black text-fg"
-                  : "font-semibold text-fg"
+                  ? "font-semibold text-fg"
+                  : "font-medium text-fg"
               }`}
             >
               {conv.nickname || conv.name}
             </h3>
-            <span className="text-xs text-fg-muted shrink-0 font-medium">
+            <span className="text-xs text-fg-muted shrink-0 font-medium tabular-nums">
               {conv.lastTime}
             </span>
           </div>
@@ -77,7 +77,7 @@ export const ConversationRow = memo(function ConversationRow({
               <p
                 className={`text-xs truncate ${
                   conv.unreadCount > 0
-                    ? "font-bold text-fg"
+                    ? "font-semibold text-fg"
                     : "text-fg-muted"
                 }`}
               >
@@ -93,7 +93,7 @@ export const ConversationRow = memo(function ConversationRow({
       </button>
 
       {/* Quick Action Button on Hover (Messenger Style) - Sibling, NOT nested in button */}
-      <div className="hidden group-hover:flex items-center gap-1 absolute right-2.5 bg-surface-2/90 backdrop-blur-xs px-1 py-0.5 rounded-full shadow-xs z-10">
+      <div className="hidden group-hover:flex items-center gap-1 absolute right-2.5 bg-surface-2 px-1 py-0.5 rounded-full shadow-xs z-10">
         <button
           type="button"
           onClick={() => onToggleMute(conv.id)}
@@ -104,7 +104,7 @@ export const ConversationRow = memo(function ConversationRow({
           }
         >
           {conv.isMuted ? (
-            <BellOff className="w-3.5 h-3.5 text-amber-500" />
+            <BellOff className="w-3.5 h-3.5 text-warning" />
           ) : (
             <Bell className="w-3.5 h-3.5" />
           )}

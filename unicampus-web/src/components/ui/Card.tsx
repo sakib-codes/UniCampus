@@ -44,7 +44,7 @@ export function Card({
   return (
     <Component
       className={cn(
-        "rounded-[20px] border",
+        "rounded-2xl border",
         !hasBgOverride && "bg-surface",
         !hasBorderColorOverride && "border-line",
         !hasPaddingOverride && paddingClasses[padding],

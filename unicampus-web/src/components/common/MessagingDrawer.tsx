@@ -313,15 +313,20 @@ export function MessagingDrawer({
 
   return (
     <div
-      className="fixed inset-0 z-50 overflow-hidden bg-black/45 dark:bg-black/70 flex justify-end"
-      onClick={onClose}
+      className="fixed inset-0 z-50 overflow-hidden flex justify-end"
       role="dialog"
       aria-modal="true"
       aria-label="Campus Messenger"
     >
+      <button
+        type="button"
+        aria-label="Close"
+        tabIndex={-1}
+        onClick={onClose}
+        className="fixed inset-0 bg-black/45 dark:bg-black/70 cursor-default"
+      />
       <div
-        onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-2xl h-full bg-surface border-l border-line shadow-lg flex flex-col md:flex-row min-h-0"
+        className="relative z-10 w-full max-w-2xl h-full bg-surface border-l border-line shadow-lg flex flex-col md:flex-row min-h-0"
       >
         {/* Left Side: Conversation Contacts List */}
         <div
@@ -361,7 +366,7 @@ export function MessagingDrawer({
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search chats, faculty..."
                 aria-label="Search chats, faculty"
-                className="w-full pl-9 pr-3 py-2 text-sm bg-surface border border-line rounded-xl text-fg placeholder:text-fg-muted focus:outline-none focus:ring-2 focus:ring-brand/30"
+                className="w-full pl-9 pr-3 py-2 text-sm bg-surface border border-line rounded-xl text-fg placeholder:text-fg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
               />
             </div>
           </div>
@@ -532,10 +537,11 @@ export function MessagingDrawer({
           >
             <input
               type="text"
+              aria-label={`Message ${activeConv?.name ?? "conversation"}`}
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               placeholder={`Message ${activeConv?.name ?? ""}...`}
-              className="flex-1 min-h-[44px] px-3.5 py-2 text-sm bg-surface-2 border border-line rounded-xl text-fg placeholder:text-fg-muted focus:outline-none focus:ring-2 focus:ring-brand/30"
+              className="flex-1 min-h-[44px] px-3.5 py-2 text-sm bg-surface-2 border border-line rounded-xl text-fg placeholder:text-fg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
             />
             <button
               type="submit"

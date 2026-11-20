@@ -34,7 +34,7 @@ export default function ProfilePage() {
   return (
     <div className="w-full space-y-6 pb-10">
       {/* 1. Profile Header Hero */}
-      <section className="rounded-[20px] bg-surface border border-line p-6 md:p-8 transition-colors">
+      <section className="rounded-2xl bg-surface border border-line p-6 md:p-8 transition-colors">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="flex items-center gap-4 sm:gap-5 min-w-0">
             <ProfileAvatar
@@ -45,7 +45,7 @@ export default function ProfilePage() {
 
             <div className="space-y-1.5 min-w-0">
               <div className="flex items-center gap-3 flex-wrap">
-                <h1 className="text-xl md:text-2xl font-bold tracking-tight text-fg">
+                <h1 className="text-xl md:text-2xl font-semibold tracking-tight text-fg">
                   {displayName}
                 </h1>
                 <Badge variant="brand">
@@ -65,10 +65,12 @@ export default function ProfilePage() {
                   : `B.Sc. in ${departmentName}`}
               </p>
 
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-fg-muted font-mono pt-0.5">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-fg-muted font-sans pt-0.5">
                 {isTeacher ? (
                   <>
-                    <span>Code: {facultyCode}</span>
+                    <span>
+                      Code: <span className="font-mono">{facultyCode}</span>
+                    </span>
                     <span>·</span>
                     <span>{CANONICAL_FACULTY.office}</span>
                     <span>·</span>
@@ -82,7 +84,9 @@ export default function ProfilePage() {
                   </>
                 ) : (
                   <>
-                    <span>ID: {studentId}</span>
+                    <span>
+                      ID: <span className="font-mono">{studentId}</span>
+                    </span>
                     <span>·</span>
                     <span>{CANONICAL_STUDENT.batch}</span>
                     <span>·</span>
@@ -106,7 +110,7 @@ export default function ProfilePage() {
       {/* 2. Grid Information Sections */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Personal Details */}
-        <div className="rounded-[20px] bg-surface border border-line p-6 space-y-4">
+        <div className="rounded-2xl bg-surface border border-line p-6 space-y-4">
           <div className="flex items-center gap-2 pb-3 border-b border-line">
             <User className="w-4 h-4 text-brand" />
             <h2 className="font-semibold text-base text-fg">Personal Details</h2>
@@ -132,7 +136,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Academic Registry */}
-        <div className="rounded-[20px] bg-surface border border-line p-6 space-y-4">
+        <div className="rounded-2xl bg-surface border border-line p-6 space-y-4">
           <div className="flex items-center gap-2 pb-3 border-b border-line">
             <GraduationCap className="w-4 h-4 text-brand" />
             <h2 className="font-semibold text-base text-fg">Academic Registry</h2>
@@ -150,14 +154,14 @@ export default function ProfilePage() {
                 </div>
                 <div className="flex justify-between items-center gap-3 flex-wrap py-3">
                   <span className="text-fg-muted font-medium">Office Hours</span>
-                  <span className="font-semibold text-fg">{CANONICAL_FACULTY.officeHours}</span>
+                  <span className="font-semibold text-fg tabular-nums">{CANONICAL_FACULTY.officeHours}</span>
                 </div>
               </>
             ) : (
               <>
                 <div className="flex justify-between items-center gap-3 flex-wrap py-3">
                   <span className="text-fg-muted font-medium">CGPA &amp; Class Rank</span>
-                  <span className="font-semibold text-fg font-mono">
+                  <span className="font-semibold text-fg font-sans tabular-nums">
                     CGPA {CANONICAL_STUDENT.cgpa.toFixed(2)} · Rank #{CANONICAL_STUDENT.rank}
                   </span>
                 </div>
@@ -169,13 +173,13 @@ export default function ProfilePage() {
             )}
             <div className="flex justify-between items-center gap-3 flex-wrap py-3">
               <span className="text-fg-muted font-medium">Enrollment Status</span>
-              <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Regular / Good Standing</span>
+              <span className="text-success font-semibold">Regular / Good Standing</span>
             </div>
           </div>
         </div>
 
         {/* Contact Info */}
-        <div className="rounded-[20px] bg-surface border border-line p-6 space-y-4">
+        <div className="rounded-2xl bg-surface border border-line p-6 space-y-4">
           <div className="flex items-center gap-2 pb-3 border-b border-line">
             <Mail className="w-4 h-4 text-brand" />
             <h2 className="font-semibold text-base text-fg">Contact Information</h2>
@@ -183,15 +187,15 @@ export default function ProfilePage() {
           <div className="divide-y divide-line text-xs">
             <div className="flex justify-between items-center gap-3 flex-wrap py-3">
               <span className="text-fg-muted font-medium">Institutional Email</span>
-              <span className="font-mono font-medium text-fg min-w-0 break-all">{email}</span>
+              <span className="font-sans font-medium text-fg min-w-0 break-all">{email}</span>
             </div>
             <div className="flex justify-between items-center gap-3 flex-wrap py-3">
               <span className="text-fg-muted font-medium">Phone Number</span>
-              <span className="font-mono font-medium text-fg">{phone}</span>
+              <span className="font-sans tabular-nums font-medium text-fg">{phone}</span>
             </div>
             <div className="flex justify-between items-center gap-3 flex-wrap py-3">
               <span className="text-fg-muted font-medium">Emergency Contact</span>
-              <span className="font-mono font-medium text-fg">{emergencyPhone}</span>
+              <span className="font-sans tabular-nums font-medium text-fg">{emergencyPhone}</span>
             </div>
             <div className="flex justify-between items-center gap-3 flex-wrap py-3">
               <span className="text-fg-muted font-medium">Present Address</span>
@@ -201,14 +205,14 @@ export default function ProfilePage() {
         </div>
 
         {/* Campus Activities */}
-        <div className="rounded-[20px] bg-surface border border-line p-6 space-y-4">
+        <div className="rounded-2xl bg-surface border border-line p-6 space-y-4">
           <div className="flex items-center gap-2 pb-3 border-b border-line">
             <Award className="w-4 h-4 text-brand" />
             <h2 className="font-semibold text-base text-fg">Campus Affiliations</h2>
           </div>
           <div className="space-y-3 pt-1">
             <div className="p-3.5 rounded-xl bg-canvas border border-line flex items-center gap-3.5">
-              <div className="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold shrink-0">
+              <div className="w-9 h-9 rounded-lg bg-success-light text-success flex items-center justify-center font-semibold shrink-0">
                 ★
               </div>
               <div className="flex-1 min-w-0">

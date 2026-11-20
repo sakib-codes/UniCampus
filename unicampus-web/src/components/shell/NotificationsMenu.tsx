@@ -157,7 +157,7 @@ export function NotificationsMenu({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 4, scale: 0.98 }}
             transition={{ duration: 0.16, ease: "easeOut" }}
-            className="fixed inset-x-4 top-[4.5rem] sm:inset-x-auto sm:absolute sm:right-0 sm:top-full sm:mt-2 w-auto sm:w-96 sm:max-w-[384px] rounded-[20px] border border-line bg-surface shadow-lg p-4 text-fg z-50"
+            className="fixed inset-x-4 top-[4.5rem] sm:inset-x-auto sm:absolute sm:right-0 sm:top-full sm:mt-2 w-auto sm:w-96 sm:max-w-[384px] rounded-2xl border border-line bg-surface shadow-lg p-4 text-fg z-50"
           >
             <div className="flex items-center justify-between pb-3 border-b border-line">
               <div className="flex items-center gap-2 min-w-0">

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { memo } from "react";
-import { Search, UserX, Sparkles } from "lucide-react";
+import { Search, UserX, CheckCircle2 } from "lucide-react";
 import { StudentRosterRecord } from "@/lib/attendanceService";
 import { AttendanceRosterRow } from "./AttendanceRosterRow";
 
@@ -75,8 +75,8 @@ export const AttendanceRosterPanel = memo(function AttendanceRosterPanel({
       {recentCheckIn && (
         <div className="mt-4 p-3.5 rounded-xl bg-success-light border border-success/30 text-fg flex items-center justify-between gap-3 shadow-xs">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-success text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
-              <Sparkles className="w-4 h-4" aria-hidden="true" />
+            <div className="w-8 h-8 rounded-lg bg-success text-on-brand flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+              <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
             </div>
             <div>
               <div className="font-semibold text-xs sm:text-[13.5px] text-fg">
@@ -87,7 +87,7 @@ export const AttendanceRosterPanel = memo(function AttendanceRosterPanel({
               </div>
             </div>
           </div>
-          <span className="px-2.5 py-0.5 rounded-full bg-success text-white text-xs font-semibold shrink-0">
+          <span className="px-2.5 py-0.5 rounded-full bg-success text-on-brand text-xs font-semibold shrink-0">
             Live Synced
           </span>
         </div>
@@ -99,6 +99,7 @@ export const AttendanceRosterPanel = memo(function AttendanceRosterPanel({
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-muted" aria-hidden="true" />
           <input
             type="text"
+            aria-label="Filter student name or ID"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Filter student name or ID..."

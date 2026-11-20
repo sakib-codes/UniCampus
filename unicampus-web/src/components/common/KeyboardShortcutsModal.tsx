@@ -53,15 +53,20 @@ export function KeyboardShortcutsModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/45 dark:bg-black/70 select-none"
-      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 select-none"
       role="dialog"
       aria-modal="true"
       aria-label="Keyboard shortcuts"
     >
+      <button
+        type="button"
+        aria-label="Close"
+        tabIndex={-1}
+        onClick={onClose}
+        className="fixed inset-0 bg-black/45 dark:bg-black/70 cursor-default"
+      />
       <div
-        className="w-full max-w-lg max-h-[85vh] bg-surface border border-line rounded-[20px] shadow-lg overflow-hidden flex flex-col"
-        onClick={(e) => e.stopPropagation()}
+        className="relative z-10 w-full max-w-lg max-h-[85vh] bg-surface border border-line rounded-2xl shadow-lg overflow-hidden flex flex-col"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-line bg-surface-2 shrink-0">

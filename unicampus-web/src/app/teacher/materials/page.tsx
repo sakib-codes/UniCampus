@@ -668,10 +668,14 @@ export default function TeacherMaterialsPage() {
 
           {/* Optional File Attachment Dropzone */}
           <div className="space-y-1.5">
-            <span className="block text-xs font-sans font-medium text-fg">
+            <label
+              htmlFor="teacher-material-file-upload"
+              className="block text-xs font-sans font-medium text-fg"
+            >
               File Attachment <span className="text-fg-muted font-normal">(optional)</span>
-            </span>
+            </label>
             <input
+              id="teacher-material-file-upload"
               ref={fileInputRef}
               type="file"
               accept=".pdf,.pptx,.docx,.zip"

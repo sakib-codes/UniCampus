@@ -62,7 +62,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     pathname.startsWith("/teachers/");
 
   const isTeacher = isTeacherPath || (isTeacherUser && isSharedRoute && !isAdmin);
-  const isMessages = pathname === "/messages";
+  const isMessages = pathname?.replace(/\/$/, "") === "/messages";
 
   const role: PortalRole = isAdmin ? "admin" : isTeacher ? "teacher" : "student";
 

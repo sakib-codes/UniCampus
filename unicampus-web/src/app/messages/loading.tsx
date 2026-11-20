@@ -4,7 +4,7 @@ export default function MessagesLoading() {
   return (
     <div className="h-full w-full flex min-h-0 bg-surface rounded-2xl border border-line overflow-hidden">
       {/* Left panel skeleton */}
-      <div className="w-full md:w-80 lg:w-96 border-r border-line p-3.5 space-y-4 shrink-0">
+      <div className="w-full md:w-[min(20rem,100%)] lg:w-[min(24rem,100%)] max-w-full border-r border-line p-3.5 space-y-4 shrink-0">
         <div className="flex items-center justify-between">
           <Skeleton variant="text" className="w-24 h-7" />
           <Skeleton variant="circle" className="w-9 h-9" />

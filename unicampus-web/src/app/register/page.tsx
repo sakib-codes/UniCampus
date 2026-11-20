@@ -16,7 +16,7 @@ import { adminService } from "@/lib/services/adminService";
 import { Department, OrdinalSemesterName, UserRoleType } from "@/types/admin";
 import { INITIAL_DEPARTMENTS, ORDINAL_SEMESTERS } from "@/lib/mockData";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonVariants } from "@/components/ui/Button";
 
 const emptySubscribe = () => () => {};
 
@@ -196,12 +196,12 @@ export default function RegisterPage() {
           {submitted ? (
             /* Confirmation State */
             <div className="space-y-6 text-center">
-              <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto">
+              <div className="w-16 h-16 rounded-2xl bg-success-light text-success border border-success/30 flex items-center justify-center mx-auto">
                 <CheckCircle2 className="w-8 h-8" />
               </div>
 
               <div className="space-y-2">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-success-light text-success text-xs font-semibold">
                   <Clock className="w-3.5 h-3.5" /> Pending Verification
                 </div>
                 <h2 className="text-2xl font-semibold text-fg tracking-tight">
@@ -219,7 +219,7 @@ export default function RegisterPage() {
                 </div>
                 <div className="flex justify-between gap-3 items-start">
                   <span className="text-fg-muted shrink-0">Email</span>
-                  <span className="font-mono text-fg font-medium text-right break-all">{email}</span>
+                  <span className="font-sans text-fg font-medium text-right break-all">{email}</span>
                 </div>
                 <div className="flex justify-between gap-3 items-start">
                   <span className="text-fg-muted shrink-0">Department</span>
@@ -229,15 +229,17 @@ export default function RegisterPage() {
                 </div>
                 <div className="flex justify-between gap-3 items-start">
                   <span className="text-fg-muted shrink-0">Status</span>
-                  <span className="font-semibold text-amber-600 dark:text-amber-400 text-right">Awaiting Admin Approval</span>
+                  <span className="font-semibold text-warning text-right">Awaiting Admin Approval</span>
                 </div>
               </div>
 
               <div className="space-y-3 pt-2">
-                <Link href="/login" className="block">
-                  <Button variant="primary" size="lg" fullWidth rightIcon={<ArrowRight className="w-4 h-4" />}>
-                    Proceed to Sign In
-                  </Button>
+                <Link
+                  href="/login"
+                  className={buttonVariants({ variant: "primary", size: "lg", fullWidth: true })}
+                >
+                  Proceed to Sign In
+                  <ArrowRight className="w-4 h-4 shrink-0" aria-hidden="true" />
                 </Link>
 
                 <button
@@ -313,32 +315,34 @@ export default function RegisterPage() {
                           : "text-fg-muted hover:text-fg"
                       }`}
                     >
-                      <Building2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                      <Building2 className="w-4 h-4 text-success" />
                       <span>Faculty</span>
                     </button>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-fg block">Full Legal Name</label>
+                    <label htmlFor="register-fullname" className="text-xs font-semibold text-fg block">Full Legal Name</label>
                     <input
+                      id="register-fullname"
                       type="text"
                       required
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder="e.g. Sakib Ahmed"
-                      className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-colors"
+                      className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand transition-colors"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-fg block">Institutional Email</label>
+                    <label htmlFor="register-email" className="text-xs font-semibold text-fg block">Institutional Email</label>
                     <input
+                      id="register-email"
                       type="email"
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder={role === "student" ? "student@unicampus.edu" : "faculty@unicampus.edu"}
-                      className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-colors font-mono"
+                      className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand transition-colors font-sans"
                     />
                   </div>
 
@@ -358,11 +362,12 @@ export default function RegisterPage() {
               {step === 2 && (
                 <div className="space-y-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-fg block">Department</label>
+                    <label htmlFor="register-department" className="text-xs font-semibold text-fg block">Department</label>
                     <select
+                      id="register-department"
                       value={deptId}
                       onChange={(e) => setDeptId(e.target.value)}
-                      className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-colors cursor-pointer"
+                      className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand transition-colors cursor-pointer"
                     >
                       {departments.map((d) => (
                         <option key={d.id} value={d.id}>
@@ -373,26 +378,28 @@ export default function RegisterPage() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-fg block">
+                    <label htmlFor="register-identifier" className="text-xs font-semibold text-fg block">
                       {role === "student" ? "Student ID Number" : "Faculty Code / Identifier"}
                     </label>
                     <input
+                      id="register-identifier"
                       type="text"
                       required
                       value={identifier}
                       onChange={(e) => setIdentifier(e.target.value)}
                       placeholder={role === "student" ? "e.g. 211-15-4424" : "e.g. FAC-1042"}
-                      className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-colors font-mono"
+                      className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand transition-colors font-sans"
                     />
                   </div>
 
                   {role === "student" && (
                     <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-fg block">Current Semester</label>
+                      <label htmlFor="register-semester" className="text-xs font-semibold text-fg block">Current Semester</label>
                       <select
+                        id="register-semester"
                         value={semesterName}
                         onChange={(e) => setSemesterName(e.target.value as OrdinalSemesterName)}
-                        className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-colors cursor-pointer"
+                        className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand transition-colors cursor-pointer"
                       >
                         {ORDINAL_SEMESTERS.map((s) => (
                           <option key={s} value={s}>
@@ -429,14 +436,15 @@ export default function RegisterPage() {
               {step === 3 && (
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-fg block">Choose Password</label>
+                    <label htmlFor="register-password" className="text-xs font-semibold text-fg block">Choose Password</label>
                     <input
+                      id="register-password"
                       type="password"
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Minimum 6 characters"
-                      className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-colors font-mono"
+                      className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand transition-colors font-sans"
                     />
                   </div>
 

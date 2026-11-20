@@ -125,7 +125,7 @@ export const MessageStream = memo(function MessageStream({
               iconClassName="w-3.5 h-3.5"
             />
 
-            <div className="px-4 py-3 rounded-[20px] rounded-bl-[4px] bg-surface-2 flex items-center gap-1.5 shadow-2xs border border-line">
+            <div className="px-4 py-3 rounded-2xl rounded-bl-[4px] bg-surface-2 flex items-center gap-1.5 shadow-2xs border border-line">
               <span className="w-2 h-2 rounded-full bg-fg-muted animate-bounce [animation-delay:0ms]" />
               <span className="w-2 h-2 rounded-full bg-fg-muted animate-bounce [animation-delay:150ms]" />
               <span className="w-2 h-2 rounded-full bg-fg-muted animate-bounce [animation-delay:300ms]" />

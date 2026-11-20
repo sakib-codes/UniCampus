@@ -31,6 +31,28 @@ const sizeClasses: Record<ButtonSize, string> = {
   lg: "min-h-[44px] px-5 py-3 text-base",
 };
 
+export interface ButtonVariantsOptions {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  fullWidth?: boolean;
+  className?: string;
+}
+
+export function buttonVariants({
+  variant = "primary",
+  size = "md",
+  fullWidth = false,
+  className,
+}: ButtonVariantsOptions = {}) {
+  return cn(
+    "inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-colors duration-150 cursor-pointer select-none whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed",
+    variantClasses[variant],
+    sizeClasses[size],
+    fullWidth && "w-full",
+    className
+  );
+}
+
 export function Button({
   variant = "primary",
   size = "md",
@@ -51,13 +73,7 @@ export function Button({
       type={type}
       disabled={isDisabled}
       aria-busy={loading || undefined}
-      className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-colors duration-150 cursor-pointer select-none whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed",
-        variantClasses[variant],
-        sizeClasses[size],
-        fullWidth && "w-full",
-        className
-      )}
+      className={buttonVariants({ variant, size, fullWidth, className })}
       {...props}
     >
       {loading ? (

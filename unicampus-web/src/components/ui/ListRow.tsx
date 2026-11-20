@@ -86,33 +86,30 @@ export function ListRow({
     );
   }
 
-  const handleKeyDown: React.KeyboardEventHandler<HTMLDivElement> | undefined =
-    isButtonLike
-      ? (event) => {
-          onKeyDown?.(event);
-          if (event.defaultPrevented) return;
-          if (event.key !== "Enter" && event.key !== " ") return;
-          const target = event.target as HTMLElement | null;
-          if (
-            target &&
-            target !== event.currentTarget &&
-            target.closest(
-              'button, a, input, select, textarea, [role="button"], [role="link"]'
-            )
-          ) {
-            return;
-          }
-          event.preventDefault();
-          event.currentTarget.click();
-        }
-      : onKeyDown;
+  if (isButtonLike) {
+    return (
+      <button
+        type="button"
+        onClick={onClick as unknown as React.MouseEventHandler<HTMLButtonElement>}
+        onKeyDown={onKeyDown as unknown as React.KeyboardEventHandler<HTMLButtonElement>}
+        role={role}
+        tabIndex={tabIndex}
+        className={cn("w-full text-left", rowClasses)}
+        {...(props as Omit<
+          React.ButtonHTMLAttributes<HTMLButtonElement>,
+          "title" | "type"
+        >)}
+      >
+        {content}
+      </button>
+    );
+  }
 
   return (
     <div
-      onClick={onClick}
-      onKeyDown={handleKeyDown}
-      role={isButtonLike ? role ?? "button" : role}
-      tabIndex={isButtonLike ? tabIndex ?? 0 : tabIndex}
+      onKeyDown={onKeyDown}
+      role={role}
+      tabIndex={tabIndex}
       className={rowClasses}
       {...props}
     >

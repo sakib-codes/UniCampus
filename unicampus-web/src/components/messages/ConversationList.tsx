@@ -51,10 +51,10 @@ export const ConversationList = memo(function ConversationList({
       <div className="p-3.5 pb-2 border-b border-line">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-black tracking-tight text-fg">
+            <h1 className="text-2xl font-semibold tracking-tight text-fg">
               Chats
             </h1>
-            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            <span className="w-2 h-2 rounded-full bg-success" />
           </div>
 
           <div className="flex items-center gap-1">
@@ -87,7 +87,7 @@ export const ConversationList = memo(function ConversationList({
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search Messenger"
             aria-label="Search Messenger"
-            className="w-full pl-10 pr-3.5 py-2 text-xs sm:text-sm rounded-full bg-surface-2 border border-transparent focus:border-brand focus:ring-2 focus:ring-brand/40 text-fg placeholder:text-fg-muted outline-none transition-colors"
+            className="w-full pl-10 pr-3.5 py-2 text-xs sm:text-sm rounded-full bg-surface-2 border border-transparent focus:border-brand focus-visible:ring-2 focus-visible:ring-brand text-fg placeholder:text-fg-muted outline-none transition-colors"
           />
         </div>
 
@@ -111,9 +111,9 @@ export const ConversationList = memo(function ConversationList({
               onClick={() =>
                 onCategoryChange(tab.id as typeof activeCategory)
               }
-              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors cursor-pointer whitespace-nowrap focus-visible:ring-2 focus-visible:ring-brand ${
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap focus-visible:ring-2 focus-visible:ring-brand ${
                 activeCategory === tab.id
-                  ? "bg-brand text-white shadow-2xs"
+                  ? "bg-brand text-on-brand shadow-2xs"
                   : "bg-surface-2 text-fg-muted hover:text-fg"
               }`}
             >
@@ -126,11 +126,11 @@ export const ConversationList = memo(function ConversationList({
       {/* ACTIVE NOW CONTACT STORIES TRAY */}
       <div className="px-3 pt-2 pb-2.5 border-b border-line bg-surface/50">
         <div className="flex items-center justify-between mb-1 px-1">
-          <span className="text-xs font-bold text-fg-muted uppercase tracking-wider">
+          <span className="text-xs font-semibold text-fg-muted uppercase tracking-wider">
             Active Now
           </span>
-          <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+          <span className="text-xs font-sans font-semibold tabular-nums text-success flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-success" />
             {onlineCount} Online
           </span>
         </div>
@@ -146,7 +146,7 @@ export const ConversationList = memo(function ConversationList({
           >
             <div className="relative w-12 h-12 rounded-full border-2 border-dashed border-brand/50 flex items-center justify-center group-hover:border-brand transition-colors bg-surface-2">
               <Plus className="w-5 h-5 text-brand group-hover:scale-110 transition-transform" />
-              <span className="absolute -bottom-1 -right-0.5 w-4 h-4 rounded-full bg-brand text-white text-xs font-bold flex items-center justify-center shadow-xs">
+              <span className="absolute -bottom-1 -right-0.5 w-4 h-4 rounded-full bg-brand text-on-brand text-xs font-semibold flex items-center justify-center shadow-xs">
                 +
               </span>
             </div>
@@ -185,10 +185,10 @@ export const ConversationList = memo(function ConversationList({
                       className="w-full h-full"
                       iconClassName="w-6 h-6"
                     />
-                    <span className="w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-surface absolute bottom-0 right-0 shadow-xs" />
+                    <span className="w-3.5 h-3.5 rounded-full bg-success border-2 border-surface absolute bottom-0 right-0 shadow-xs" />
                   </div>
                   <span
-                    className={`text-xs font-bold max-w-[58px] truncate text-center ${
+                    className={`text-xs font-semibold max-w-[58px] truncate text-center ${
                       isSelected ? "text-brand" : "text-fg"
                     }`}
                   >

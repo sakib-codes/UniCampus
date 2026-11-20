@@ -135,7 +135,7 @@ export default function LoginPage() {
 
       {/* Centered Sign-In Card */}
       <main className="w-full max-w-md mx-auto my-auto py-6">
-        <div className="p-6 sm:p-9 rounded-[20px] bg-surface border border-line shadow-sm space-y-6">
+        <div className="p-6 sm:p-9 rounded-2xl bg-surface border border-line shadow-sm space-y-6">
           <div className="space-y-1.5 text-center">
             <h1 className="text-2xl font-semibold text-fg tracking-tight">
               Sign in to your portal
@@ -176,22 +176,23 @@ export default function LoginPage() {
           {/* Sign In Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-fg block">
+              <label htmlFor="login-identifier" className="text-xs font-semibold text-fg block">
                 University ID or Institutional Email
               </label>
               <input
+                id="login-identifier"
                 type="text"
                 required
                 value={emailOrId}
                 onChange={(e) => setEmailOrId(e.target.value)}
                 placeholder="211-15-4424 or name@unicampus.edu"
-                className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-colors"
+                className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand transition-colors"
               />
             </div>
 
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs">
-                <label className="font-semibold text-fg">Password</label>
+                <label htmlFor="login-password" className="font-semibold text-fg">Password</label>
                 <button
                   type="button"
                   onClick={() => setForgotModalOpen(true)}
@@ -202,12 +203,13 @@ export default function LoginPage() {
               </div>
               <div className="relative">
                 <input
+                  id="login-password"
                   type={showPassword ? "text" : "password"}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
-                  className="w-full min-h-[44px] pl-3.5 pr-11 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-colors font-mono"
+                  className="w-full min-h-[44px] pl-3.5 pr-11 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand transition-colors font-sans"
                 />
                 <button
                   type="button"
@@ -222,8 +224,9 @@ export default function LoginPage() {
 
             {/* Remember Me */}
             <div className="flex items-center justify-between pt-1">
-              <label className="flex items-center gap-2 text-xs text-fg-muted cursor-pointer select-none">
+              <label htmlFor="login-remember" className="flex items-center gap-2 text-xs text-fg-muted cursor-pointer select-none">
                 <input
+                  id="login-remember"
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
@@ -397,11 +400,11 @@ export default function LoginPage() {
           <div className="p-4 rounded-xl bg-surface-2 border border-line space-y-2.5">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5 sm:gap-2">
               <span className="font-semibold text-fg">Academic Registrar:</span>
-              <span className="font-mono text-brand font-semibold break-all">registrar@unicampus.edu</span>
+              <span className="font-sans text-brand font-semibold break-all">registrar@unicampus.edu</span>
             </div>
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5 sm:gap-2">
               <span className="font-semibold text-fg">IT Support Desk:</span>
-              <span className="font-mono text-brand font-semibold break-all">it-helpdesk@unicampus.edu</span>
+              <span className="font-sans text-brand font-semibold break-all">it-helpdesk@unicampus.edu</span>
             </div>
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5 sm:gap-2 pt-2 border-t border-line text-fg-subtle">
               <span>Physical Helpdesk:</span>
@@ -439,11 +442,11 @@ export default function LoginPage() {
           <div className="space-y-2 text-xs">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5 sm:gap-2 py-1.5 border-b border-line">
               <span className="text-fg-muted">Direct Hotline</span>
-              <span className="font-mono font-semibold text-fg">+880 (2) 9834-5500</span>
+              <span className="font-sans tabular-nums font-semibold text-fg">+880 (2) 9834-5500</span>
             </div>
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5 sm:gap-2 py-1.5 border-b border-line">
               <span className="text-fg-muted">Emergency Escalation</span>
-              <span className="font-mono font-semibold text-fg break-all">security@unicampus.edu</span>
+              <span className="font-sans font-semibold text-fg break-all">security@unicampus.edu</span>
             </div>
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5 sm:gap-2 py-1.5">
               <span className="text-fg-muted">IT Operations Office</span>

@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonVariants } from "@/components/ui/Button";
 import { Tabs } from "@/components/ui/Tabs";
 import {
   ACTIVE_TERM,
@@ -34,14 +34,12 @@ export default function ProductHero({ onOpenDemoModal }: ProductHeroProps) {
 
           {/* Action Cluster - Clean non-duplicate hierarchy */}
           <div className="flex flex-wrap items-center justify-center gap-3.5 pt-2">
-            <Link href="/login">
-              <Button
-                variant="primary"
-                size="lg"
-                rightIcon={<ArrowRight className="w-4 h-4" />}
-              >
-                Sign in to portal
-              </Button>
+            <Link
+              href="/login"
+              className={buttonVariants({ variant: "primary", size: "lg" })}
+            >
+              Sign in to portal
+              <ArrowRight className="w-4 h-4 shrink-0" aria-hidden="true" />
             </Link>
 
             <Button
@@ -74,7 +72,7 @@ export default function ProductHero({ onOpenDemoModal }: ProductHeroProps) {
           </div>
 
           {/* Clean Browser Frame */}
-          <div className="rounded-[20px] bg-surface border border-line shadow-lg overflow-hidden">
+          <div className="rounded-2xl bg-surface border border-line overflow-hidden">
             {/* Window Bar */}
             <div className="px-4 sm:px-5 py-3 border-b border-line bg-surface-2 flex items-center justify-between gap-3">
               <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -83,7 +81,7 @@ export default function ProductHero({ onOpenDemoModal }: ProductHeroProps) {
                   <span className="w-2.5 h-2.5 rounded-full bg-line" />
                   <span className="w-2.5 h-2.5 rounded-full bg-line" />
                 </div>
-                <span className="text-xs font-mono text-fg-muted ml-1 sm:ml-2 truncate">
+                <span className="text-xs font-sans text-fg-muted ml-1 sm:ml-2 truncate">
                   unicampus.edu/{activeTab === "student" ? "dashboard" : activeTab === "faculty" ? "teacher/dashboard" : "admin/dashboard"}
                 </span>
               </div>
@@ -146,7 +144,7 @@ export default function ProductHero({ onOpenDemoModal }: ProductHeroProps) {
                       </div>
                       <div className="divide-y divide-line text-xs">
                         <div className="py-2.5">
-                          <span className="text-amber-600 dark:text-amber-400 font-medium">Urgent</span>
+                          <span className="text-warning font-medium">Urgent</span>
                           <p className="font-medium text-fg mt-0.5">
                             Final Examination Schedule ({ACTIVE_TERM}) released
                           </p>
@@ -165,7 +163,7 @@ export default function ProductHero({ onOpenDemoModal }: ProductHeroProps) {
                 <div className="space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 rounded-2xl bg-surface border border-line">
                     <div>
-                      <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">Class starts in 25 min</span>
+                      <span className="text-xs font-medium text-success">Class starts in 25 min</span>
                       <h3 className="text-lg font-semibold text-fg mt-0.5">
                         {CANONICAL_COURSES["CSE-3101"].code} · {CANONICAL_COURSES["CSE-3101"].title}
                       </h3>
@@ -181,20 +179,20 @@ export default function ProductHero({ onOpenDemoModal }: ProductHeroProps) {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="p-4 rounded-2xl bg-surface border border-line">
                       <p className="text-xs text-fg-muted">Assigned students</p>
-                      <p className="text-2xl font-semibold text-fg mt-1">129</p>
-                      <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">
+                      <p className="text-2xl font-semibold text-fg mt-1 tabular-nums">129</p>
+                      <p className="text-xs text-success mt-0.5">
                         {CANONICAL_FACULTY.courses.join(", ")}
                       </p>
                     </div>
                     <div className="p-4 rounded-2xl bg-surface border border-line">
                       <p className="text-xs text-fg-muted">Average attendance</p>
-                      <p className="text-2xl font-semibold text-fg mt-1">89.0%</p>
-                      <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">+3.2% vs dept avg</p>
+                      <p className="text-2xl font-semibold text-fg mt-1 tabular-nums">89.0%</p>
+                      <p className="text-xs text-success mt-0.5">+3.2% vs dept avg</p>
                     </div>
                     <div className="p-4 rounded-2xl bg-surface border border-line">
                       <p className="text-xs text-fg-muted">Pending grading</p>
                       <p className="text-2xl font-semibold text-fg mt-1">2 tasks</p>
-                      <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">Quiz 2 &amp; Lab 4</p>
+                      <p className="text-xs text-warning mt-0.5">Quiz 2 &amp; Lab 4</p>
                     </div>
                   </div>
                 </div>
@@ -208,7 +206,7 @@ export default function ProductHero({ onOpenDemoModal }: ProductHeroProps) {
                       <p className="text-xl font-semibold text-fg mt-1 tabular-nums">
                         {CAMPUS_METRICS.students.toLocaleString("en-US")}
                       </p>
-                      <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">+6.4% enrollment</p>
+                      <p className="text-xs text-success mt-0.5">+6.4% enrollment</p>
                     </div>
                     <div className="p-4 rounded-2xl bg-surface border border-line">
                       <p className="text-xs text-fg-muted">Active faculty</p>
@@ -224,14 +222,14 @@ export default function ProductHero({ onOpenDemoModal }: ProductHeroProps) {
                       <p className="text-xl font-semibold text-fg mt-1 tabular-nums">
                         {CAMPUS_METRICS.totalUsers.toLocaleString("en-US")}
                       </p>
-                      <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">
+                      <p className="text-xs text-success mt-0.5">
                         {CAMPUS_METRICS.admins} admins • {ACTIVE_TERM}
                       </p>
                     </div>
                     <div className="p-4 rounded-2xl bg-surface border border-line">
                       <p className="text-xs text-fg-muted">Tuition collected</p>
                       <p className="text-xl font-semibold text-fg mt-1 tabular-nums">৳143,500</p>
-                      <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">
+                      <p className="text-xs text-success mt-0.5">
                         {ACTIVE_TERM} ledger
                       </p>
                     </div>

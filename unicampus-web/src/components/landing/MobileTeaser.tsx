@@ -42,9 +42,9 @@ export function MobileTeaser() {
             </div>
 
             <div className="md:col-span-4 flex justify-center">
-              <div className="w-48 max-w-full h-80 rounded-[28px] border-4 border-line bg-surface p-3 shadow-xl flex flex-col justify-between">
+              <div className="w-48 max-w-full h-80 rounded-2xl border-4 border-line bg-surface p-3 flex flex-col justify-between">
                 <div className="flex justify-between items-center px-1">
-                  <span className="text-xs font-mono text-fg-muted">9:41</span>
+                  <span className="text-xs font-sans tabular-nums text-fg-muted">9:41</span>
                   <div className="w-12 h-3 rounded-full bg-line" />
                   <span className="text-xs text-fg-muted font-medium">5G</span>
                 </div>
@@ -55,7 +55,7 @@ export function MobileTeaser() {
                     <div className="h-2 w-3/4 rounded bg-line mt-2" />
                   </div>
                   <div className="h-16 rounded-xl bg-surface-2 border border-line p-2">
-                    <div className="h-3 w-1/2 rounded bg-emerald-500/30" />
+                    <div className="h-3 w-1/2 rounded bg-success/30" />
                     <div className="h-2 w-3/4 rounded bg-line mt-2" />
                   </div>
                 </div>

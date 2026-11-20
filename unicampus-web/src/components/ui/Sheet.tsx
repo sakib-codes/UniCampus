@@ -86,10 +86,10 @@ export function Sheet({
 
   const panelShape =
     side === "right"
-      ? "w-full max-w-md h-full rounded-l-[20px] border-l border-line"
+      ? "w-full max-w-md h-full rounded-l-2xl border-l border-line"
       : side === "bottom"
-      ? "w-full max-h-[85vh] rounded-t-[20px] border-t border-line"
-      : "w-full md:max-w-md max-h-[85vh] md:max-h-none md:h-full rounded-t-[20px] md:rounded-t-none md:rounded-l-[20px] border-t md:border-t-0 md:border-l border-line";
+      ? "w-full max-h-[85vh] rounded-t-2xl border-t border-line"
+      : "w-full md:max-w-md max-h-[85vh] md:max-h-none md:h-full rounded-t-2xl md:rounded-t-none md:rounded-l-2xl border-t md:border-t-0 md:border-l border-line";
 
   const initialMotion = shouldReduceMotion
     ? false
@@ -114,12 +114,18 @@ export function Sheet({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={transition}
-          onClick={closeOnBackdrop ? onClose : undefined}
           className={cn(
-            "fixed inset-0 z-[60] flex bg-black/45 dark:bg-black/70",
+            "fixed inset-0 z-[60] flex",
             containerAlign
           )}
         >
+          <button
+            type="button"
+            aria-label="Close"
+            tabIndex={-1}
+            onClick={closeOnBackdrop ? onClose : undefined}
+            className="fixed inset-0 bg-black/45 dark:bg-black/70 cursor-default"
+          />
           <motion.div
             key="sheet-panel"
             ref={panelRef}
@@ -132,9 +138,8 @@ export function Sheet({
             animate={animateMotion}
             exit={exitMotion}
             transition={transition}
-            onClick={(e) => e.stopPropagation()}
             className={cn(
-              "bg-surface shadow-xl flex flex-col overflow-hidden focus:outline-none",
+              "relative z-10 bg-surface shadow-xl flex flex-col overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-brand",
               panelShape,
               className
             )}

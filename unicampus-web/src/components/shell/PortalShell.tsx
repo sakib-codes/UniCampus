@@ -16,13 +16,14 @@ const emptySubscribe = () => () => {};
 const WIDE_WORKSPACE_ROUTES = new Set([
   "/teacher/attendance",
   "/teacher/grades",
-  "/teacher/routine",
+  "/teacher/dashboard",
   "/routine",
-  "/admin/users",
+  "/dashboard/progress",
   "/admin/finance",
   "/admin/routine",
-  "/admin/departments",
+  "/admin/users",
   "/admin/analytics",
+  "/admin/departments",
   "/admin/notices",
 ]);
 
@@ -172,13 +173,17 @@ export function PortalShell({
         />
 
         {isMessages ? (
-          <div className="flex-1 min-h-0 overflow-hidden p-0 pb-16 md:pb-0">
+          <div className="flex-1 w-full min-h-0 overflow-hidden p-0 pb-16 md:pb-0">
             <PageTransition key={pathname} className="h-full">
               {children}
             </PageTransition>
           </div>
         ) : (
-          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-4 sm:px-6 xl:px-10 py-6 pb-24 md:pb-10">
+          <div
+            className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-4 sm:px-6 ${
+              isWideWorkspace ? "xl:px-8" : "xl:px-10"
+            } py-6 pb-24 md:pb-10`}
+          >
             <div
               className={`${
                 isWideWorkspace ? "max-w-[1600px]" : "max-w-[1240px]"

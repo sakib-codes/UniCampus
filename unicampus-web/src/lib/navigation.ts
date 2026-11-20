@@ -160,7 +160,7 @@ export const PORTAL_NAV: Record<PortalRole, PortalNavConfig> = {
       { id: "routine", label: "Routine", href: "/teacher/routine", icon: Calendar },
       { id: "materials", label: "Materials", href: "/teacher/materials", icon: FolderGit2 },
       { id: "notices", label: "Notices", href: "/teacher/notices", icon: Megaphone },
-      { id: "faculty-profile", label: "Faculty Profile", href: "/teachers/1", icon: User },
+      { id: "faculty-profile", label: "Faculty Profile", href: "/teacher/profile", icon: User },
       { id: "faculty-directory", label: "Faculty Directory", href: "/teachers", icon: Users },
       { id: "settings", label: "Settings", href: "/settings", icon: Settings },
     ],
@@ -311,6 +311,9 @@ export function getPortalTitle(
     }
     if (pathname.startsWith("/teacher/notices")) {
       return { section: "Faculty", title: "Notices", homeHref };
+    }
+    if (pathname.startsWith("/teacher/profile")) {
+      return { section: "Faculty", title: "Profile", homeHref };
     }
     if (pathname === "/messages") {
       return { section: "Faculty", title: "Messages", homeHref };

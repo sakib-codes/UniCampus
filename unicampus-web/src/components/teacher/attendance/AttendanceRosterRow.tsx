@@ -104,7 +104,7 @@ export const AttendanceRosterRow = memo(function AttendanceRosterRow({
             onClick={() => onSetStatus(student.id, "present")}
             className={`flex-1 py-1 px-2 rounded-md font-semibold text-xs flex items-center justify-center gap-1 transition-colors duration-150 cursor-pointer min-h-[30px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
               isPresent
-                ? "bg-success text-white shadow-xs"
+                ? "bg-success text-on-brand shadow-xs"
                 : "text-fg-muted hover:text-fg"
             }`}
           >
@@ -119,7 +119,7 @@ export const AttendanceRosterRow = memo(function AttendanceRosterRow({
             onClick={() => onSetStatus(student.id, "late")}
             className={`flex-1 py-1 px-2 rounded-md font-semibold text-xs flex items-center justify-center gap-1 transition-colors duration-150 cursor-pointer min-h-[30px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
               isLate
-                ? "bg-warning text-white shadow-xs"
+                ? "bg-warning text-on-brand shadow-xs"
                 : "text-fg-muted hover:text-fg"
             }`}
           >
@@ -134,7 +134,7 @@ export const AttendanceRosterRow = memo(function AttendanceRosterRow({
             onClick={() => onSetStatus(student.id, "absent")}
             className={`flex-1 py-1 px-2 rounded-md font-semibold text-xs flex items-center justify-center gap-1 transition-colors duration-150 cursor-pointer min-h-[30px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
               isAbsent
-                ? "bg-danger text-white shadow-xs"
+                ? "bg-danger text-on-brand shadow-xs"
                 : "text-fg-muted hover:text-fg"
             }`}
           >

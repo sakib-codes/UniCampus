@@ -96,15 +96,15 @@ export const MessageComposer = memo(function MessageComposer({
           /* Live Audio Recording State */
           <div className="flex items-center justify-between gap-3 max-w-5xl mx-auto p-1">
             <div className="flex items-center gap-3">
-              <span className="w-3 h-3 rounded-full bg-red-500 animate-ping" />
-              <span className="text-xs font-mono font-bold text-red-500">
+              <span className="w-3 h-3 rounded-full bg-danger" />
+              <span className="text-xs font-sans font-semibold tabular-nums text-danger">
                 Recording {formatTimer(recordingSeconds)}
               </span>
               <div className="hidden sm:flex items-center gap-1 h-4">
                 {[20, 60, 100, 40, 80, 50, 90, 30].map((h, i) => (
                   <span
                     key={i}
-                    className="w-1 bg-red-500 rounded-full animate-pulse"
+                    className="w-1 bg-danger rounded-full animate-pulse"
                     style={{ height: `${h}%` }}
                   />
                 ))}
@@ -115,14 +115,14 @@ export const MessageComposer = memo(function MessageComposer({
               <button
                 type="button"
                 onClick={() => setIsRecordingVoice(false)}
-                className="px-3 py-1.5 rounded-full text-xs font-bold text-fg-muted hover:bg-surface-2 transition-colors cursor-pointer"
+                className="px-3 py-1.5 rounded-full text-xs font-semibold text-fg-muted hover:bg-surface-2 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleSendVoiceNote}
-                className="px-4 py-2 rounded-full bg-red-600 hover:bg-red-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md cursor-pointer"
+                className="px-4 py-2 rounded-full bg-danger hover:bg-danger/90 text-on-brand font-semibold text-xs flex items-center gap-1.5 shadow-md cursor-pointer"
               >
                 <span>Send Voice</span>
                 <Send className="w-3.5 h-3.5" />
@@ -160,7 +160,7 @@ export const MessageComposer = memo(function MessageComposer({
                 aria-label={`Message ${
                   activeConv.nickname || activeConv.name.split(" ")[0]
                 }`}
-                className="w-full h-11 pl-4.5 pr-11 text-xs sm:text-sm font-medium rounded-full bg-surface-2 text-fg placeholder:text-fg-muted outline-none border border-line hover:border-fg-muted/40 focus:border-brand focus:ring-2 focus:ring-brand/30 shadow-2xs transition-colors"
+                className="w-full h-11 pl-4.5 pr-11 text-xs sm:text-sm font-medium rounded-full bg-surface-2 text-fg placeholder:text-fg-muted outline-none border border-line hover:border-fg-muted/40 focus:border-brand focus-visible:ring-2 focus-visible:ring-brand shadow-2xs transition-colors"
               />
               <button
                 type="button"
