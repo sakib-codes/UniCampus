@@ -63,6 +63,7 @@ export const PORTAL_NAV: Record<PortalRole, PortalNavConfig> = {
       { id: "home", label: "Home", href: "/dashboard", icon: Home, exact: true },
       { id: "routine", label: "Routine", href: "/routine", icon: Calendar },
       { id: "progress", label: "Progress", href: "/dashboard/progress", icon: TrendingUp },
+      { id: "payments", label: "Payments", href: "/payments", icon: CreditCard },
       {
         id: "notices",
         label: "Notices",
@@ -98,6 +99,7 @@ export const PORTAL_NAV: Record<PortalRole, PortalNavConfig> = {
     ],
     mobileOverflow: [
       { id: "profile", label: "Profile", href: "/profile", icon: User },
+      { id: "payments", label: "Payments", href: "/payments", icon: CreditCard },
       { id: "progress", label: "Progress", href: "/dashboard/progress", icon: TrendingUp },
       { id: "classmates", label: "Classmates", href: "/students", icon: GraduationCap },
       { id: "faculty", label: "Faculty", href: "/teachers", icon: Users },
@@ -128,6 +130,7 @@ export const PORTAL_NAV: Record<PortalRole, PortalNavConfig> = {
       { id: "routine", label: "Routine", href: "/teacher/routine", icon: Calendar },
       { id: "materials", label: "Materials", href: "/teacher/materials", icon: FolderGit2 },
       { id: "notices", label: "Notices", href: "/teacher/notices", icon: Megaphone },
+      { id: "payroll", label: "Payroll", href: "/teacher/payroll", icon: CreditCard },
       {
         id: "messages",
         label: "Messages",
@@ -160,6 +163,7 @@ export const PORTAL_NAV: Record<PortalRole, PortalNavConfig> = {
       { id: "routine", label: "Routine", href: "/teacher/routine", icon: Calendar },
       { id: "materials", label: "Materials", href: "/teacher/materials", icon: FolderGit2 },
       { id: "notices", label: "Notices", href: "/teacher/notices", icon: Megaphone },
+      { id: "payroll", label: "Payroll", href: "/teacher/payroll", icon: CreditCard },
       { id: "faculty-profile", label: "Faculty Profile", href: "/teacher/profile", icon: User },
       { id: "faculty-directory", label: "Faculty Directory", href: "/teachers", icon: Users },
       { id: "settings", label: "Settings", href: "/settings", icon: Settings },
@@ -312,6 +316,9 @@ export function getPortalTitle(
     if (pathname.startsWith("/teacher/notices")) {
       return { section: "Faculty", title: "Notices", homeHref };
     }
+    if (pathname.startsWith("/teacher/payroll")) {
+      return { section: "Faculty", title: "Payroll & Slips", homeHref: "/teacher/dashboard" };
+    }
     if (pathname.startsWith("/teacher/profile")) {
       return { section: "Faculty", title: "Profile", homeHref };
     }
@@ -342,6 +349,9 @@ export function getPortalTitle(
   }
   if (pathname === "/dashboard/progress") {
     return { section: "Student", title: "Progress", homeHref };
+  }
+  if (pathname === "/payments") {
+    return { section: "Student", title: "Payments & Fees", homeHref };
   }
   if (pathname === "/routine") {
     return { section: "Student", title: "Routine", homeHref };

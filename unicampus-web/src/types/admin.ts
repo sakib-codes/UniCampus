@@ -105,8 +105,58 @@ export interface Notice {
 }
 
 export type TransactionType = 'student_fee' | 'teacher_wage' | 'late_fine';
-export type PaymentMethod = 'bKash' | 'Nagad' | 'Bank Transfer' | 'Card';
+export type PaymentMethod = 'bKash' | 'SSLCommerz' | 'Nagad' | 'Bank Transfer' | 'Card';
 export type PaymentStatus = 'Paid' | 'Pending' | 'Overdue';
+
+export type FeeCategory = 'Tuition' | 'Lab' | 'Library' | 'Exam' | 'Late Fine' | 'Transport';
+
+export interface FeeLineItem {
+  id: string;
+  label: string;
+  category: FeeCategory;
+  amount: number;
+}
+
+export interface SemesterInvoice {
+  id: string;
+  invoice_no: string;
+  student_id: string;
+  student_name: string;
+  department_name: string;
+  semester_name: OrdinalSemesterName;
+  term_label: string;
+  due_date: string;
+  line_items: FeeLineItem[];
+  total_amount: number;
+  paid_amount: number;
+  due_amount: number;
+  status: PaymentStatus;
+  last_paid_at: string | null;
+}
+
+export interface GatewaySessionRequest {
+  gateway: 'bkash' | 'sslcommerz';
+  mode?: 'live_sandbox' | 'interactive_demo';
+  paymentId?: string;
+  amount: number;
+  invoiceId: string;
+  studentId?: string;
+  studentName?: string;
+  payerReference?: string;
+}
+
+export interface GatewaySessionResponse {
+  gateway: 'bkash' | 'sslcommerz';
+  mode: 'live_sandbox' | 'interactive_demo';
+  paymentId: string;
+  redirectUrl?: string;
+  amount: number;
+  invoiceId: string;
+  sessionKey?: string;
+  bkashURL?: string;
+  gatewayPageURL?: string;
+  tran_id?: string;
+}
 
 export interface PaymentTransaction {
   id: string;
