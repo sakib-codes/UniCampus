@@ -388,6 +388,9 @@ class AdminService {
     };
     const updated = [newTxn, ...txns];
     setStoredItem(STORAGE_KEYS.TRANSACTIONS, updated);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('unicampus:finance-updated'));
+    }
     return newTxn;
   }
 
