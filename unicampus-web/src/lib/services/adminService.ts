@@ -473,6 +473,10 @@ class AdminService {
       status: 'Paid',
     });
 
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('unicampus:finance-updated'));
+    }
+
     return { updatedWages: updated, newTransaction: newTxn };
   }
 
@@ -513,6 +517,9 @@ class AdminService {
     });
 
     setStoredItem(STORAGE_KEYS.WAGES, updated);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('unicampus:finance-updated'));
+    }
     return { updatedWages: updated, count };
   }
 

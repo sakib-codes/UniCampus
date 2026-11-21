@@ -17,6 +17,7 @@ const WIDE_WORKSPACE_ROUTES = new Set([
   "/teacher/attendance",
   "/teacher/grades",
   "/teacher/dashboard",
+  "/teacher/payroll",
   "/routine",
   "/dashboard/progress",
   "/payments",

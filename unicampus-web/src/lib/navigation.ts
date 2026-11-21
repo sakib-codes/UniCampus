@@ -130,6 +130,7 @@ export const PORTAL_NAV: Record<PortalRole, PortalNavConfig> = {
       { id: "routine", label: "Routine", href: "/teacher/routine", icon: Calendar },
       { id: "materials", label: "Materials", href: "/teacher/materials", icon: FolderGit2 },
       { id: "notices", label: "Notices", href: "/teacher/notices", icon: Megaphone },
+      { id: "payroll", label: "Payroll", href: "/teacher/payroll", icon: CreditCard },
       {
         id: "messages",
         label: "Messages",
@@ -162,6 +163,7 @@ export const PORTAL_NAV: Record<PortalRole, PortalNavConfig> = {
       { id: "routine", label: "Routine", href: "/teacher/routine", icon: Calendar },
       { id: "materials", label: "Materials", href: "/teacher/materials", icon: FolderGit2 },
       { id: "notices", label: "Notices", href: "/teacher/notices", icon: Megaphone },
+      { id: "payroll", label: "Payroll", href: "/teacher/payroll", icon: CreditCard },
       { id: "faculty-profile", label: "Faculty Profile", href: "/teacher/profile", icon: User },
       { id: "faculty-directory", label: "Faculty Directory", href: "/teachers", icon: Users },
       { id: "settings", label: "Settings", href: "/settings", icon: Settings },
@@ -313,6 +315,9 @@ export function getPortalTitle(
     }
     if (pathname.startsWith("/teacher/notices")) {
       return { section: "Faculty", title: "Notices", homeHref };
+    }
+    if (pathname.startsWith("/teacher/payroll")) {
+      return { section: "Faculty", title: "Payroll & Slips", homeHref: "/teacher/dashboard" };
     }
     if (pathname.startsWith("/teacher/profile")) {
       return { section: "Faculty", title: "Profile", homeHref };
