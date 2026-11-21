@@ -1,3 +1,9 @@
 export { NoticeboardContent } from "./NoticeboardContent";
-export { NoticeFeedRow, NoticeFeedRow as NoticeFeedCard } from "./NoticeFeedRow";
-export { NoticeReaderPane } from "./NoticeReaderPane";
+export { NoticeInboxRow } from "./NoticeInboxRow";
+export { NoticeCircularCanvas } from "./NoticeCircularCanvas";
+export {
+  OFFICIAL_NOTICES,
+  resolveNoticeById,
+  buildCircularTextExport,
+  type NoticeItem,
+} from "./noticeData";

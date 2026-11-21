@@ -92,6 +92,14 @@ export default function AdminFinancePage() {
         else if (tabParam === "departments") setActiveTab("departments");
       }
     });
+
+    const handleFinanceUpdated = () => {
+      loadData();
+    };
+    window.addEventListener("unicampus:finance-updated", handleFinanceUpdated);
+    return () => {
+      window.removeEventListener("unicampus:finance-updated", handleFinanceUpdated);
+    };
   }, [loadData]);
 
   const showToast = useCallback((msg: string) => {

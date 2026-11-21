@@ -1,356 +1,316 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect, useCallback } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
-import { Search, FileText, ArrowRight, AlertTriangle, X } from "lucide-react";
-import { OFFICIAL_NOTICES } from "@/lib/noticeData";
-import { NoticeFeedRow } from "./NoticeFeedRow";
-import { NoticeReaderPane } from "./NoticeReaderPane";
+import { Search, X } from "lucide-react";
+import { EmptyState } from "@/components/ui/EmptyState";
+import {
+  OFFICIAL_NOTICES,
+  resolveNoticeById,
+  type NoticeItem,
+} from "./noticeData";
+import { NoticeInboxRow } from "./NoticeInboxRow";
+import { NoticeCircularCanvas } from "./NoticeCircularCanvas";
 
-export function NoticeboardContent({ initialNoticeId }: { initialNoticeId?: string }) {
+interface NoticeboardContentProps {
+  initialNoticeId?: string;
+}
+
+type CategoryTab =
+  | "ALL"
+  | "ACADEMIC"
+  | "EXAM"
+  | "EVENTS"
+  | "ADMIN"
+  | "URGENT"
+  | "SAVED";
+
+export function NoticeboardContent({
+  initialNoticeId,
+}: NoticeboardContentProps) {
   const searchParams = useSearchParams();
-  const readerRef = useRef<HTMLDivElement>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
+  const rawId = initialNoticeId || searchParams.get("id") || undefined;
 
-  const [userSelectedId, setUserSelectedId] = useState<string | null>(null);
-  const selectedNoticeId =
-    userSelectedId || searchParams.get("id") || initialNoticeId || "not-exam-108";
+  const defaultResolved = useMemo(
+    () => resolveNoticeById(rawId),
+    [rawId]
+  );
 
-  const [activeCategory, setActiveCategory] = useState<string>("All");
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [bookmarkedIds, setBookmarkedIds] = useState<string[]>(["not-exam-108"]);
-  const [isDownloading, setIsDownloading] = useState(false);
-  const [downloadSuccess, setDownloadSuccess] = useState(false);
-  const [copiedShare, setCopiedShare] = useState(false);
+  const [selectedId, setSelectedId] = useState<string>(defaultResolved.id);
+  const [mobileView, setMobileView] = useState<"list" | "reader">(
+    rawId ? "reader" : "list"
+  );
+  const [selectedCategory, setSelectedCategory] = useState<CategoryTab>("ALL");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
 
-  // Keyboard shortcut listener: "/" to focus search
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "/" && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
-        e.preventDefault();
-        searchInputRef.current?.focus();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  // Update selected notice if initialNoticeId prop changes
+  React.useEffect(() => {
+    if (initialNoticeId) {
+      queueMicrotask(() => {
+        const resolved = resolveNoticeById(initialNoticeId);
+        setSelectedId(resolved.id);
+        setMobileView("reader");
+      });
+    }
+  }, [initialNoticeId]);
 
-  // Filter notices based on category and search query
+  // Active notice item
+  const activeNotice: NoticeItem = useMemo(() => {
+    return (
+      OFFICIAL_NOTICES.find((n) => n.id === selectedId) ||
+      resolveNoticeById(selectedId)
+    );
+  }, [selectedId]);
+
+  const isBookmarked = useMemo(() => {
+    return bookmarkedIds.includes(activeNotice.id);
+  }, [bookmarkedIds, activeNotice.id]);
+
+  const toggleBookmark = useCallback(() => {
+    setBookmarkedIds((prev) =>
+      prev.includes(activeNotice.id)
+        ? prev.filter((id) => id !== activeNotice.id)
+        : [...prev, activeNotice.id]
+    );
+  }, [activeNotice.id]);
+
+  // Filter and sort notices
   const filteredNotices = useMemo(() => {
     return OFFICIAL_NOTICES.filter((notice) => {
-      if (activeCategory === "Urgent") {
+      // Category filter
+      if (selectedCategory === "SAVED") {
+        if (!bookmarkedIds.includes(notice.id)) return false;
+      } else if (selectedCategory === "URGENT") {
         if (!notice.pinnedUrgent) return false;
-      } else if (activeCategory === "Academic") {
-        if (notice.categoryKey !== "academic") return false;
-      } else if (activeCategory === "Exam Schedule") {
+      } else if (selectedCategory === "EXAM") {
         if (notice.categoryKey !== "exam") return false;
-      } else if (activeCategory === "Events") {
+      } else if (selectedCategory === "ACADEMIC") {
+        if (notice.categoryKey !== "academic") return false;
+      } else if (selectedCategory === "EVENTS") {
         if (notice.categoryKey !== "events") return false;
-      } else if (activeCategory === "Administration") {
+      } else if (selectedCategory === "ADMIN") {
         if (notice.categoryKey !== "admin") return false;
       }
 
+      // Search query filter
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
-        const inTitle = notice.title.toLowerCase().includes(q);
-        const inRef = notice.refNo.toLowerCase().includes(q);
-        const inAuthor = notice.author.toLowerCase().includes(q);
-        const inDept = notice.department.toLowerCase().includes(q);
-        const inBody = notice.body.some((p) => p.toLowerCase().includes(q));
-        return inTitle || inRef || inAuthor || inDept || inBody;
+        const matchesTitle = notice.title.toLowerCase().includes(q);
+        const matchesRef = notice.refNo.toLowerCase().includes(q);
+        const matchesDept = notice.department.toLowerCase().includes(q);
+        const matchesSummary = notice.summary.toLowerCase().includes(q);
+        if (!matchesTitle && !matchesRef && !matchesDept && !matchesSummary) {
+          return false;
+        }
       }
 
       return true;
+    }).sort((a, b) => {
+      // Pinned notices first
+      if (a.pinnedUrgent && !b.pinnedUrgent) return -1;
+      if (!a.pinnedUrgent && b.pinnedUrgent) return 1;
+      return 0;
     });
-  }, [activeCategory, searchQuery]);
-
-  // Selected Notice Object
-  const activeNotice = useMemo(() => {
-    return (
-      OFFICIAL_NOTICES.find((n) => n.id === selectedNoticeId) ||
-      (Number(selectedNoticeId) > 0 && OFFICIAL_NOTICES[Number(selectedNoticeId) - 1]) ||
-      OFFICIAL_NOTICES[0]
-    );
-  }, [selectedNoticeId]);
-
-  // Pinned urgent notice & conditional banner display
-  const pinnedUrgentNotice = useMemo(
-    () => OFFICIAL_NOTICES.find((n) => n.pinnedUrgent),
-    []
-  );
-
-  const showUrgentBanner = Boolean(
-    pinnedUrgentNotice &&
-    activeNotice.id !== pinnedUrgentNotice.id &&
-    activeNotice.id !== "not-exam-108"
-  );
+  }, [selectedCategory, searchQuery, bookmarkedIds]);
 
   const handleSelectNotice = useCallback((id: string) => {
-    setUserSelectedId(id);
+    setSelectedId(id);
+    setMobileView("reader");
     if (typeof window !== "undefined") {
-      const url = new URL(window.location.href);
-      url.searchParams.set("id", id);
-      window.history.replaceState({}, "", url.toString());
+      window.history.replaceState(null, "", `/notices/${id}`);
     }
   }, []);
 
-  const handleReadOfficialCircular = useCallback(() => {
-    handleSelectNotice("not-exam-108");
-    if (readerRef.current) {
-      readerRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  }, [handleSelectNotice]);
-
-  const toggleBookmark = useCallback((id: string) => {
-    setBookmarkedIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
+  const handleResetFilters = useCallback(() => {
+    setSelectedCategory("ALL");
+    setSearchQuery("");
   }, []);
-
-  const handlePrint = useCallback(() => {
-    if (typeof window !== "undefined") {
-      window.print();
-    }
-  }, []);
-
-  const handleDownloadPDF = useCallback(() => {
-    setIsDownloading(true);
-    setTimeout(() => {
-      setIsDownloading(false);
-      setDownloadSuccess(true);
-
-      const content = `=======================================================
-OFFICE OF THE CONTROLLER OF EXAMINATIONS • UNICAMPUS
-Official Institutional Circular
-=======================================================
-Reference Number: ${activeNotice.refNo}
-Date of Release : ${activeNotice.dateStr}
-Academic Term   : ${activeNotice.academicSession}
-Issued By       : ${activeNotice.author} (${activeNotice.authorDesignation})
-Department      : ${activeNotice.department}
-Verification    : Verified Official Institutional Circular
-Reference No    : ${activeNotice.refNo}
-=======================================================
-
-TITLE: ${activeNotice.title}
-
-STATEMENT OF CIRCULAR:
-${activeNotice.body.join("\n\n")}
-
-${activeNotice.protocols ? `\n${activeNotice.protocols.title}:\n` + activeNotice.protocols.items.map((i, idx) => `  ${idx + 1}. ${i}`).join("\n") : ""}
-
-${activeNotice.scheduleTable ? `\n${activeNotice.scheduleTable.title.toUpperCase()}:\n` + activeNotice.scheduleTable.rows.map(r => `  - [${r.code}] ${r.title} | Date: ${r.col1} | Slot: ${r.col2} | Venue: ${r.col3}`).join("\n") : ""}
-
-=======================================================
-Digitally Signed by:
-${activeNotice.author}
-${activeNotice.authorDesignation}
-${activeNotice.authorCouncil}
-=======================================================`;
-
-      const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `${activeNotice.refNo.replace(/\//g, "_")}_Official_Circular.txt`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      setTimeout(() => setDownloadSuccess(false), 3000);
-    }, 900);
-  }, [activeNotice]);
-
-  const handleShare = useCallback(() => {
-    if (typeof navigator !== "undefined" && navigator.clipboard) {
-      navigator.clipboard.writeText(window.location.href);
-      setCopiedShare(true);
-      setTimeout(() => setCopiedShare(false), 2000);
-    }
-  }, []);
-
-  const categories = [
-    { label: "All Notices", key: "All" },
-    { label: "Academic", key: "Academic" },
-    { label: "Exam Schedule", key: "Exam Schedule" },
-    { label: "Events", key: "Events" },
-    { label: "Administration", key: "Administration" },
-    { label: "Urgent Notices", key: "Urgent", isUrgent: true },
-  ];
 
   return (
-    <div className="w-full space-y-6 pb-20">
-      {/* 1. TOP HEADER & FILTER BAR */}
-      <section className="flex flex-col gap-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="min-w-0">
-            <h1 className="text-2xl md:text-3xl font-semibold text-fg tracking-tight leading-tight">
-              Campus Noticeboard
-            </h1>
-            <p className="text-xs sm:text-sm text-fg-muted mt-1 font-sans">
-              Official academic notifications, circulars, and departmental announcements.
-            </p>
-          </div>
-
-          {/* Dynamic Search Bar */}
-          <div className="w-full md:max-w-96 relative shrink-0">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-muted pointer-events-none" aria-hidden="true" />
-            <input
-              ref={searchInputRef}
-              type="text"
-              aria-label="Search notices"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search notices, ref no, or dept..."
-              className="w-full min-h-[44px] pl-10 pr-12 bg-surface-2 border border-line rounded-xl text-xs sm:text-sm text-fg placeholder:text-fg-muted focus-visible:outline-none focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand transition-colors"
-            />
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-              {searchQuery ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSearchQuery("");
-                    searchInputRef.current?.focus();
-                  }}
-                  aria-label="Clear search"
-                  className="p-1 rounded-md text-fg-muted hover:text-fg hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand transition-colors cursor-pointer"
-                >
-                  <X className="w-3.5 h-3.5" aria-hidden="true" />
-                </button>
-              ) : (
-                <kbd className="px-1.5 py-0.5 rounded bg-surface border border-line text-xs font-mono text-fg-muted pointer-events-none select-none">
-                  /
-                </kbd>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Filter Pills Row */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-line">
-          {categories.map((cat) => {
-            const isActive = activeCategory === cat.key;
-            return (
-              <button
-                key={cat.key}
-                type="button"
-                onClick={() => setActiveCategory(cat.key)}
-                className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
-                  isActive
-                    ? cat.isUrgent
-                      ? "bg-danger text-on-brand"
-                      : "bg-brand text-on-brand"
-                    : "bg-surface text-fg-muted hover:text-fg hover:bg-surface-2 border border-line"
-                }`}
-              >
-                {cat.isUrgent && (
-                  <span
-                    className={`w-1.5 h-1.5 rounded-full ${isActive ? "bg-on-brand" : "bg-danger"}`}
-                    aria-hidden="true"
-                  />
-                )}
-                {cat.label}
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* 2. PINNED URGENT NOTICE BANNER */}
-      {showUrgentBanner && pinnedUrgentNotice && (
-        <section className="relative overflow-hidden rounded-2xl bg-danger-light/60 border border-danger/25 p-4 sm:p-5 px-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-start gap-4 min-w-0">
-            <div className="mt-0.5 w-9 h-9 rounded-xl bg-danger-light border border-danger/25 flex items-center justify-center text-danger shrink-0">
-              <AlertTriangle className="w-5 h-5" aria-hidden="true" />
-            </div>
-            <div className="flex flex-col gap-1 min-w-0">
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <span className="px-2 py-0.5 rounded bg-danger-light text-danger text-xs font-sans font-semibold border border-danger/30">
-                  PINNED URGENT
-                </span>
-                <span className="text-xs font-sans tabular-nums text-fg-muted">
-                  Published Oct 22, 2026 • Ref: <span className="font-mono">{pinnedUrgentNotice.refNo}</span>
-                </span>
-              </div>
-              <h2 className="text-sm sm:text-base font-semibold text-fg leading-snug">
-                {pinnedUrgentNotice.title} — Verify Exam Hall &amp; Seat Allocation
-              </h2>
-            </div>
-          </div>
+    <div className="h-full w-full flex flex-col overflow-hidden bg-canvas">
+      {/* Zone 1 — Sleek Full-Width Command & Filter Bar */}
+      <nav
+        aria-label="Noticeboard filter and search bar"
+        className="h-auto lg:h-14 px-4 sm:px-6 py-2.5 lg:py-0 bg-surface border-b border-line flex flex-wrap lg:flex-nowrap items-center justify-between gap-3 shrink-0"
+      >
+        {/* Left Cluster: Category Filter Rail */}
+        <div className="overflow-x-auto flex items-center gap-1.5 py-1">
+          <button
+            type="button"
+            onClick={() => setSelectedCategory("ALL")}
+            className={`h-8 px-3 rounded-lg text-xs transition-colors shrink-0 ${
+              selectedCategory === "ALL"
+                ? "bg-brand-soft text-brand font-semibold"
+                : "font-medium text-fg-muted hover:text-fg hover:bg-surface-2"
+            }`}
+          >
+            All ({OFFICIAL_NOTICES.length})
+          </button>
 
           <button
             type="button"
-            onClick={handleReadOfficialCircular}
-            className="self-start md:self-center min-h-[44px] flex items-center gap-2 px-4 py-2 rounded-xl bg-surface text-fg border border-danger/30 hover:bg-surface-2 transition-colors shrink-0 text-xs sm:text-sm font-semibold cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+            onClick={() => setSelectedCategory("ACADEMIC")}
+            className={`h-8 px-3 rounded-lg text-xs transition-colors shrink-0 ${
+              selectedCategory === "ACADEMIC"
+                ? "bg-brand-soft text-brand font-semibold"
+                : "font-medium text-fg-muted hover:text-fg hover:bg-surface-2"
+            }`}
           >
-            <span>Read Official Circular</span>
-            <ArrowRight className="w-4 h-4 text-danger group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
+            Academic
           </button>
-        </section>
-      )}
 
-      {/* 3. MASTER-DETAIL SPLIT WORKSPACE (Feed 42% / Reader 58%) */}
-      <div className="grid grid-cols-12 gap-6 items-start">
-        {/* LEFT COLUMN: SCROLLABLE FEED LIST */}
-        <div className="col-span-12 lg:col-span-5 flex flex-col gap-3">
-          <div className="flex items-center justify-between px-1">
-            <span className="text-xs font-sans tabular-nums text-fg-muted font-semibold">
-              Feed Archive ({filteredNotices.length} Available)
-            </span>
-            <span className="text-xs font-sans text-fg-muted">
-              Official Bulletin
-            </span>
-          </div>
+          <button
+            type="button"
+            onClick={() => setSelectedCategory("EXAM")}
+            className={`h-8 px-3 rounded-lg text-xs transition-colors shrink-0 ${
+              selectedCategory === "EXAM"
+                ? "bg-brand-soft text-brand font-semibold"
+                : "font-medium text-fg-muted hover:text-fg hover:bg-surface-2"
+            }`}
+          >
+            Exam Schedule
+          </button>
 
-          {filteredNotices.length === 0 ? (
-            <div className="p-8 text-center bg-surface rounded-2xl border border-line">
-              <FileText className="w-10 h-10 text-fg-muted mx-auto mb-2" aria-hidden="true" />
-              <p className="text-sm font-semibold text-fg">
-                No announcements match this filter
-              </p>
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveCategory("All");
-                  setSearchQuery("");
-                }}
-                className="mt-3 min-h-[44px] px-4 py-2 rounded-xl text-xs text-brand hover:bg-brand-soft font-semibold cursor-pointer"
-              >
-                Reset filters
-              </button>
-            </div>
-          ) : (
-            filteredNotices.map((notice) => {
-              const isSelected =
-                selectedNoticeId === notice.id ||
-                (Number(selectedNoticeId) > 0 &&
-                  OFFICIAL_NOTICES[Number(selectedNoticeId) - 1]?.id === notice.id);
+          <button
+            type="button"
+            onClick={() => setSelectedCategory("EVENTS")}
+            className={`h-8 px-3 rounded-lg text-xs transition-colors shrink-0 ${
+              selectedCategory === "EVENTS"
+                ? "bg-brand-soft text-brand font-semibold"
+                : "font-medium text-fg-muted hover:text-fg hover:bg-surface-2"
+            }`}
+          >
+            Events
+          </button>
 
-              return (
-                <NoticeFeedRow
-                  key={notice.id}
-                  notice={notice}
-                  isSelected={isSelected}
-                  onSelect={handleSelectNotice}
-                />
-              );
-            })
-          )}
+          <button
+            type="button"
+            onClick={() => setSelectedCategory("ADMIN")}
+            className={`h-8 px-3 rounded-lg text-xs transition-colors shrink-0 ${
+              selectedCategory === "ADMIN"
+                ? "bg-brand-soft text-brand font-semibold"
+                : "font-medium text-fg-muted hover:text-fg hover:bg-surface-2"
+            }`}
+          >
+            Administration
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSelectedCategory("URGENT")}
+            className={`h-8 px-3 rounded-lg text-xs transition-colors shrink-0 inline-flex items-center gap-1.5 ${
+              selectedCategory === "URGENT"
+                ? "bg-danger-light text-danger font-semibold"
+                : "font-medium text-fg-muted hover:text-fg hover:bg-surface-2"
+            }`}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-danger shrink-0" />
+            <span>Urgent</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSelectedCategory("SAVED")}
+            className={`h-8 px-3 rounded-lg text-xs transition-colors shrink-0 ${
+              selectedCategory === "SAVED"
+                ? "bg-brand-soft text-brand font-semibold"
+                : "font-medium text-fg-muted hover:text-fg hover:bg-surface-2"
+            }`}
+          >
+            Saved ({bookmarkedIds.length})
+          </button>
         </div>
 
-        {/* RIGHT COLUMN: STICKY OFFICIAL CIRCULAR READER */}
-        <NoticeReaderPane
-          readerRef={readerRef}
-          activeNotice={activeNotice}
-          isBookmarked={bookmarkedIds.includes(activeNotice.id)}
-          copiedShare={copiedShare}
-          isDownloading={isDownloading}
-          downloadSuccess={downloadSuccess}
-          onToggleBookmark={toggleBookmark}
-          onPrint={handlePrint}
-          onShare={handleShare}
-          onDownloadPDF={handleDownloadPDF}
-        />
+        {/* Right Cluster: Search Input */}
+        <div className="w-full sm:w-72 xl:w-80 relative shrink-0">
+          <Search className="w-4 h-4 text-fg-muted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search notices, ref no, or dept..."
+            className="w-full h-9 pl-9 pr-9 bg-surface-2/70 border border-line rounded-lg text-xs sm:text-sm text-fg placeholder:text-fg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:border-brand transition-colors"
+          />
+          {searchQuery ? (
+            <button
+              type="button"
+              aria-label="Clear search"
+              onClick={() => setSearchQuery("")}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-fg-muted hover:text-fg p-0.5 rounded transition-colors"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          ) : (
+            <kbd className="hidden sm:inline-flex absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[10px] font-mono text-fg-muted bg-surface border border-line rounded">
+              /
+            </kbd>
+          )}
+        </div>
+      </nav>
+
+      {/* Zone 2 — Full-Height Independent 2-Pane Split Workspace */}
+      <div className="flex-1 min-h-0 flex overflow-hidden">
+        {/* Left Pane — Edge-to-Edge Inbox Rail */}
+        <aside
+          aria-label="Notices inbox rail"
+          className={`w-full lg:w-[360px] xl:w-[400px] 2xl:w-[430px] shrink-0 h-full bg-surface border-r border-line flex flex-col overflow-hidden ${
+            mobileView === "reader" ? "hidden lg:flex" : "flex"
+          }`}
+        >
+          {/* Rail Sub-header */}
+          <div className="px-4 py-2.5 border-b border-line/70 flex items-center justify-between text-xs text-fg-muted shrink-0">
+            <span className="font-sans tabular-nums font-medium">
+              {filteredNotices.length} circular
+              {filteredNotices.length === 1 ? "" : "s"}
+            </span>
+            <span className="text-fg-subtle">Spring 2026</span>
+          </div>
+
+          {/* Scrollable List */}
+          <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-line">
+            {filteredNotices.length === 0 ? (
+              <div className="p-6">
+                <EmptyState
+                  title="No notices match"
+                  description="Try adjusting your search criteria or category filter."
+                  action={
+                    <button
+                      type="button"
+                      onClick={handleResetFilters}
+                      className="h-8 px-3 rounded-lg border border-line bg-surface hover:bg-surface-2 text-xs font-medium text-fg transition-colors"
+                    >
+                      Reset filters
+                    </button>
+                  }
+                />
+              </div>
+            ) : (
+              filteredNotices.map((notice) => (
+                <NoticeInboxRow
+                  key={notice.id}
+                  notice={notice}
+                  isSelected={notice.id === activeNotice.id}
+                  onClick={() => handleSelectNotice(notice.id)}
+                />
+              ))
+            )}
+          </div>
+        </aside>
+
+        {/* Right Pane — Spacious Editorial Document Canvas */}
+        <div
+          className={`flex-1 min-w-0 h-full bg-canvas flex flex-col overflow-hidden ${
+            mobileView === "list" ? "hidden lg:flex" : "flex"
+          }`}
+        >
+          <NoticeCircularCanvas
+            activeNotice={activeNotice}
+            isBookmarked={isBookmarked}
+            onToggleBookmark={toggleBookmark}
+            onBackToList={() => setMobileView("list")}
+          />
+        </div>
       </div>
     </div>
   );

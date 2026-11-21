@@ -21,7 +21,7 @@ export function executeThemeTransition({
   event,
   setTheme,
   currentTheme,
-  duration = 480,
+  duration = 750,
 }: ThemeTransitionOptions) {
   // If target theme is already active, no-op
   if (currentTheme && currentTheme === theme) {
@@ -92,7 +92,7 @@ export function executeThemeTransition({
         },
         {
           duration,
-          easing: "cubic-bezier(0.16, 1, 0.3, 1)", // Fluid Apple/Vite deceleration curve
+          easing: "cubic-bezier(0.4, 0, 0.2, 1)", // Smooth ease-in-out expansion curve
           pseudoElement: "::view-transition-new(root)",
         } as KeyframeAnimationOptions
       );

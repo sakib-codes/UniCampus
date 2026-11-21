@@ -19,6 +19,7 @@ const WIDE_WORKSPACE_ROUTES = new Set([
   "/teacher/dashboard",
   "/routine",
   "/dashboard/progress",
+  "/payments",
   "/admin/finance",
   "/admin/routine",
   "/admin/users",
@@ -46,6 +47,7 @@ interface PortalShellProps {
   onOpenMore: () => void;
   onCloseMore: () => void;
   isMessages?: boolean;
+  isFullBleed?: boolean;
 }
 
 export function PortalShell({
@@ -57,6 +59,7 @@ export function PortalShell({
   onOpenMore,
   onCloseMore,
   isMessages = false,
+  isFullBleed = false,
 }: PortalShellProps) {
   const pathname = usePathname();
   const { currentUser, isDeptAdmin, effectiveDeptId } = useAdminAuth();
@@ -172,7 +175,7 @@ export function PortalShell({
           onOpenShortcuts={onOpenShortcuts}
         />
 
-        {isMessages ? (
+        {isFullBleed || isMessages ? (
           <div className="flex-1 w-full min-h-0 overflow-hidden p-0 pb-16 md:pb-0">
             <PageTransition key={pathname} className="h-full">
               {children}

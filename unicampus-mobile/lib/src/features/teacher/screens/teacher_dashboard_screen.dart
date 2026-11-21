@@ -32,29 +32,36 @@ class TeacherDashboardScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Dr. Rafiqul Islam',
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w700,
-                              color: colors.fg,
-                              letterSpacing: -0.4,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Dr. Rafiqul Islam',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w700,
+                                color: colors.fg,
+                                letterSpacing: -0.4,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            'Head of CSE • Associate Professor',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: colors.fgMuted,
+                            const SizedBox(height: 3),
+                            Text(
+                              'Head of CSE • Associate Professor',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: colors.fgMuted,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: AppSpacing.sm),
                       UcBadge(
                         label: 'IN OFFICE',
                         variant: UcBadgeVariant.success,
@@ -101,35 +108,47 @@ class TeacherDashboardScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: colors.success,
-                      shape: BoxShape.circle,
+              Flexible(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: colors.success,
+                        shape: BoxShape.circle,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    'SESSION ACTIVE',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: colors.success,
-                      letterSpacing: 0.4,
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        'SESSION ACTIVE',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: colors.success,
+                          letterSpacing: 0.4,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-              Text(
-                'CSE-3101 • Section A',
-                style: TextStyle(
-                  fontFamily: 'monospace',
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: colors.brand,
+              const SizedBox(width: AppSpacing.sm),
+              Flexible(
+                child: Text(
+                  'CSE-3101 • Section A',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: colors.brand,
+                  ),
                 ),
               ),
             ],
@@ -137,6 +156,8 @@ class TeacherDashboardScreen extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           Text(
             'Distributed Systems & Consensus',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
@@ -146,34 +167,67 @@ class TeacherDashboardScreen extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             'Room 502 • 52 Enrolled Students • 09:00 – 10:30 AM',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(fontSize: 13, color: colors.fgMuted),
           ),
           const SizedBox(height: AppSpacing.lg),
-          Row(
-            children: [
-              Expanded(
-                child: UcButton(
-                  label: 'Launch Attendance QR',
-                  icon: const Icon(Icons.qr_code_2, size: 20),
-                  onPressed: () {
-                    if (onNavigate != null) {
-                      onNavigate!('/teacher/attendance');
-                    }
-                  },
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              UcButton(
-                label: 'Roster (52)',
-                icon: const Icon(Icons.people_outline, size: 18),
-                variant: UcButtonVariant.secondary,
-                onPressed: () {
-                  if (onNavigate != null) {
-                    onNavigate!('/teacher/attendance');
-                  }
-                },
-              ),
-            ],
+          LayoutBuilder(
+            builder: (context, constraints) {
+              if (constraints.maxWidth < 280) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    UcButton(
+                      label: 'Launch Attendance QR',
+                      icon: const Icon(Icons.qr_code_2, size: 20),
+                      onPressed: () {
+                        if (onNavigate != null) {
+                          onNavigate!('/teacher/attendance');
+                        }
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    UcButton(
+                      label: 'Roster (52)',
+                      icon: const Icon(Icons.people_outline, size: 18),
+                      variant: UcButtonVariant.secondary,
+                      onPressed: () {
+                        if (onNavigate != null) {
+                          onNavigate!('/teacher/attendance');
+                        }
+                      },
+                    ),
+                  ],
+                );
+              }
+              return Row(
+                children: [
+                  Expanded(
+                    child: UcButton(
+                      label: 'Launch Attendance QR',
+                      icon: const Icon(Icons.qr_code_2, size: 20),
+                      onPressed: () {
+                        if (onNavigate != null) {
+                          onNavigate!('/teacher/attendance');
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  UcButton(
+                    label: 'Roster (52)',
+                    icon: const Icon(Icons.people_outline, size: 18),
+                    variant: UcButtonVariant.secondary,
+                    onPressed: () {
+                      if (onNavigate != null) {
+                        onNavigate!('/teacher/attendance');
+                      }
+                    },
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),
@@ -242,7 +296,7 @@ class TeacherDashboardScreen extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       crossAxisSpacing: AppSpacing.md,
       mainAxisSpacing: AppSpacing.md,
-      childAspectRatio: 1.25,
+      childAspectRatio: 1.05,
       children: [
         UcCard(
           padding: const EdgeInsets.all(AppSpacing.md),
@@ -251,13 +305,19 @@ class TeacherDashboardScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Classes Today',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 12, color: colors.fgMuted)),
               Text('3 Lectures',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
                       color: colors.fg)),
               Text('1 Completed • 2 Remaining',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 11, color: colors.brand)),
             ],
           ),
@@ -269,19 +329,28 @@ class TeacherDashboardScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Avg Attendance',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 12, color: colors.fgMuted)),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('91.2%',
-                      style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w700,
-                          color: colors.fg)),
+                  Flexible(
+                    child: Text('91.2%',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            color: colors.fg)),
+                  ),
+                  const SizedBox(width: 4),
                   UcBadge(label: '+2.4%', variant: UcBadgeVariant.success),
                 ],
               ),
               Text('Across 3 Course Sections',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 11, color: colors.fgMuted)),
             ],
           ),
@@ -296,6 +365,8 @@ class TeacherDashboardScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Pending Grades',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 12, color: colors.fgMuted)),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -314,6 +385,8 @@ class TeacherDashboardScreen extends StatelessWidget {
                 ],
               ),
               Text('Lab 04 Raft Consensus',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 11, color: colors.fgMuted)),
             ],
           ),
@@ -328,19 +401,28 @@ class TeacherDashboardScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Student Inquiries',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 12, color: colors.fgMuted)),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('4 Unread',
-                      style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                          color: colors.fg)),
+                  Flexible(
+                    child: Text('4 Unread',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: colors.fg)),
+                  ),
+                  const SizedBox(width: 4),
                   UcBadge(label: 'NEW', variant: UcBadgeVariant.brand),
                 ],
               ),
               Text('Thesis & Office Hours',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 11, color: colors.fgMuted)),
             ],
           ),
@@ -396,6 +478,8 @@ class TeacherDashboardScreen extends StatelessWidget {
                       children: [
                         Text(
                           '${slot.courseCode} • ${slot.courseTitle}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -404,6 +488,8 @@ class TeacherDashboardScreen extends StatelessWidget {
                         ),
                         Text(
                           '${slot.room} • Batch 2023',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(fontSize: 12, color: colors.fgMuted),
                         ),
                       ],

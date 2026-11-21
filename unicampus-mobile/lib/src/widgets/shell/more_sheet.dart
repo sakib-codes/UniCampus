@@ -263,6 +263,8 @@ class _MoreSheetState extends State<MoreSheet> {
                           child: Text(
                             r.label,
                             textAlign: TextAlign.center,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: isSelected
@@ -472,13 +474,17 @@ class _ThemeToggleOption extends StatelessWidget {
                 color: isSelected ? colors.brand : colors.fgMuted,
               ),
               const SizedBox(width: 4),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight:
-                      isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected ? colors.brand : colors.fgMuted,
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight:
+                        isSelected ? FontWeight.w700 : FontWeight.w500,
+                    color: isSelected ? colors.brand : colors.fgMuted,
+                  ),
                 ),
               ),
             ],

@@ -120,6 +120,8 @@ class AdminDashboardScreen extends StatelessWidget {
               children: [
                 Text(
                   '7 Pending Account Approvals',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
@@ -128,11 +130,14 @@ class AdminDashboardScreen extends StatelessWidget {
                 ),
                 Text(
                   '5 Students • 2 Faculty awaiting verification',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 12, color: colors.fgMuted),
                 ),
               ],
             ),
           ),
+          const SizedBox(width: AppSpacing.sm),
           UcButton(
             label: 'Review',
             variant: UcButtonVariant.danger,
@@ -208,7 +213,7 @@ class AdminDashboardScreen extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       crossAxisSpacing: AppSpacing.md,
       mainAxisSpacing: AppSpacing.md,
-      childAspectRatio: 1.25,
+      childAspectRatio: 1.05,
       children: [
         UcCard(
           padding: const EdgeInsets.all(AppSpacing.md),
@@ -217,14 +222,20 @@ class AdminDashboardScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Total Students',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 12, color: colors.fgMuted)),
               Text('3,420',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                       fontFamily: 'monospace',
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
                       color: colors.fg)),
               Text('+4.2% YoY Growth',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 11, color: colors.success)),
             ],
           ),
@@ -236,14 +247,20 @@ class AdminDashboardScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Active Faculty',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 12, color: colors.fgMuted)),
               Text('148',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                       fontFamily: 'monospace',
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
                       color: colors.fg)),
               Text('6 Departments',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 11, color: colors.fgMuted)),
             ],
           ),
@@ -258,8 +275,12 @@ class AdminDashboardScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Fee Collection Rate',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 12, color: colors.fgMuted)),
               Text('89.4%',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                       fontFamily: 'monospace',
                       fontSize: 22,
@@ -287,14 +308,20 @@ class AdminDashboardScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Published Notices',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 12, color: colors.fgMuted)),
               Text('18 Active',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                       fontFamily: 'monospace',
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
                       color: colors.fg)),
               Text('3 Pinned Globally',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 11, color: colors.brand)),
             ],
           ),
@@ -317,14 +344,19 @@ class AdminDashboardScreen extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'Department Enrollment & Attendance',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: colors.fg,
+            Expanded(
+              child: Text(
+                'Department Enrollment & Attendance',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: colors.fg,
+                ),
               ),
             ),
+            const SizedBox(width: AppSpacing.sm),
             GestureDetector(
               onTap: () {
                 if (onNavigate != null) onNavigate!('/admin/departments');
@@ -366,6 +398,8 @@ class AdminDashboardScreen extends StatelessWidget {
                 ),
                 title: Text(
                   d['name']!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -374,6 +408,8 @@ class AdminDashboardScreen extends StatelessWidget {
                 ),
                 subtitle: Text(
                   '${d['students']} Enrolled Students',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 12, color: colors.fgMuted),
                 ),
                 trailing: Text(

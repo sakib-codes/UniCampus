@@ -62,7 +62,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     pathname.startsWith("/teachers/");
 
   const isTeacher = isTeacherPath || (isTeacherUser && isSharedRoute && !isAdmin);
-  const isMessages = pathname?.replace(/\/$/, "") === "/messages";
+  const normalizedPath = pathname?.replace(/\/$/, "") || "";
+  const isMessages = normalizedPath === "/messages";
+  const isFullBleed =
+    normalizedPath === "/messages" ||
+    normalizedPath === "/notices" ||
+    normalizedPath.startsWith("/notices/");
 
   const role: PortalRole = isAdmin ? "admin" : isTeacher ? "teacher" : "student";
 
@@ -219,6 +224,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <PortalShell
         role={role}
         isMessages={isMessages}
+        isFullBleed={isFullBleed}
         onOpenShortcuts={() => setIsShortcutsOpen(true)}
         onOpenCommand={() => setIsCommandOpen(true)}
         isMoreOpen={isMoreOpen}

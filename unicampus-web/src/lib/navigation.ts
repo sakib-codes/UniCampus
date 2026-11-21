@@ -63,6 +63,7 @@ export const PORTAL_NAV: Record<PortalRole, PortalNavConfig> = {
       { id: "home", label: "Home", href: "/dashboard", icon: Home, exact: true },
       { id: "routine", label: "Routine", href: "/routine", icon: Calendar },
       { id: "progress", label: "Progress", href: "/dashboard/progress", icon: TrendingUp },
+      { id: "payments", label: "Payments", href: "/payments", icon: CreditCard },
       {
         id: "notices",
         label: "Notices",
@@ -98,6 +99,7 @@ export const PORTAL_NAV: Record<PortalRole, PortalNavConfig> = {
     ],
     mobileOverflow: [
       { id: "profile", label: "Profile", href: "/profile", icon: User },
+      { id: "payments", label: "Payments", href: "/payments", icon: CreditCard },
       { id: "progress", label: "Progress", href: "/dashboard/progress", icon: TrendingUp },
       { id: "classmates", label: "Classmates", href: "/students", icon: GraduationCap },
       { id: "faculty", label: "Faculty", href: "/teachers", icon: Users },
@@ -342,6 +344,9 @@ export function getPortalTitle(
   }
   if (pathname === "/dashboard/progress") {
     return { section: "Student", title: "Progress", homeHref };
+  }
+  if (pathname === "/payments") {
+    return { section: "Student", title: "Payments & Fees", homeHref };
   }
   if (pathname === "/routine") {
     return { section: "Student", title: "Routine", homeHref };
