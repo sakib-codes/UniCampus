@@ -2,7 +2,14 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
-import { CreditCard, Check, Building2, Receipt, DollarSign } from "lucide-react";
+import {
+  CreditCard,
+  Check,
+  Building2,
+  Receipt,
+  DollarSign,
+  Smartphone,
+} from "lucide-react";
 import { adminService } from "@/lib/services/adminService";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import {
@@ -13,10 +20,13 @@ import {
   PaymentMethod,
 } from "@/types/admin";
 import { FinanceOverviewTab } from "@/components/admin/finance/FinanceOverviewTab";
-import { FinanceTransactionsTab } from "@/components/admin/finance/FinanceTransactionsTab";
-import { FinanceDepartmentsTab } from "@/components/admin/finance/FinanceDepartmentsTab";
-import { FinancePayrollTab } from "@/components/admin/finance/FinancePayrollTab";
-import { FinanceModals } from "@/components/admin/finance/FinanceModals";
+import {
+  TransactionsLedgerTab,
+  OfficialReceiptModal,
+} from "@/components/admin/finance/TransactionsLedgerTab";
+import { SemesterDuesTab } from "@/components/admin/finance/SemesterDuesTab";
+import { TeacherPayrollTab } from "@/components/admin/finance/TeacherPayrollTab";
+import { GatewayConfigPanel } from "@/components/admin/finance/GatewayConfigPanel";
 
 const MONTH_CYCLES = ["August 2026", "September 2026", "October 2026", "November 2026"];
 
@@ -36,26 +46,20 @@ const formatTransactionType = (type: string) => {
   }
 };
 
+type FinanceTabId = "overview" | "transactions" | "dues" | "payroll" | "gateways";
+
 export default function AdminFinancePage() {
   const { currentUser, isDeptAdmin, effectiveDeptId, adminDepartmentName } = useAdminAuth();
-  const [activeTab, setActiveTab] = useState<
-    "overview" | "transactions" | "departments" | "payroll"
-  >("overview");
+  const [activeTab, setActiveTab] = useState<FinanceTabId>("overview");
   const [transactions, setTransactions] = useState<PaymentTransaction[]>([]);
   const [wages, setWages] = useState<TeacherWage[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Tab 2: Transactions Filter States
-  const [txnSearch, setTxnSearch] = useState("");
-  const [selectedType, setSelectedType] = useState<string>("all");
-  const [selectedGateway, setSelectedGateway] = useState<string>("all");
-  const [selectedStatus, setSelectedStatus] = useState<string>("all");
-  const [selectedDeptFilter, setSelectedDeptFilter] = useState<string>("all");
-  const [selectedDateRange, setSelectedDateRange] = useState<string>("all");
+  // Global Viewing Receipt Modal
   const [viewingReceipt, setViewingReceipt] = useState<PaymentTransaction | null>(null);
 
-  // Tab 3: Department Breakdown States
+  // Semester Dues Breakdown States
   const [activeDeptTab, setActiveDeptTab] = useState<string>("dept-cse");
   const [expandedSemester, setExpandedSemester] = useState<OrdinalSemesterName | null>(
     "1st Semester"
@@ -63,11 +67,8 @@ export default function AdminFinancePage() {
   const [reminderModalSemester, setReminderModalSemester] =
     useState<OrdinalSemesterName | null>(null);
 
-  // Tab 4: Payroll States
+  // Payroll States
   const [selectedMonth, setSelectedMonth] = useState<string>("October 2026");
-  const [viewingSalarySlip, setViewingSalarySlip] = useState<TeacherWage | null>(null);
-  const [isBulkDisburseOpen, setIsBulkDisburseOpen] = useState(false);
-  const [bulkGateway, setBulkGateway] = useState<PaymentMethod>("Bank Transfer");
 
   const loadData = useCallback(() => {
     setTransactions(adminService.getTransactions());
@@ -89,7 +90,8 @@ export default function AdminFinancePage() {
         const tabParam = params.get("tab");
         if (tabParam === "payroll") setActiveTab("payroll");
         else if (tabParam === "transactions") setActiveTab("transactions");
-        else if (tabParam === "departments") setActiveTab("departments");
+        else if (tabParam === "dues" || tabParam === "departments") setActiveTab("dues");
+        else if (tabParam === "gateways" || tabParam === "gateway") setActiveTab("gateways");
       }
     });
 
@@ -97,14 +99,16 @@ export default function AdminFinancePage() {
       loadData();
     };
     window.addEventListener("unicampus:finance-updated", handleFinanceUpdated);
+    window.addEventListener("storage", handleFinanceUpdated);
     return () => {
       window.removeEventListener("unicampus:finance-updated", handleFinanceUpdated);
+      window.removeEventListener("storage", handleFinanceUpdated);
     };
   }, [loadData]);
 
   const showToast = useCallback((msg: string) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
+    setTimeout(() => setToastMessage(null), 3200);
   }, []);
 
   const copyToClipboard = useCallback(
@@ -149,18 +153,28 @@ export default function AdminFinancePage() {
     [transactions]
   );
 
-  const totalDues = useMemo(
+  const totalPendingDues = useMemo(
     () =>
       transactions
-        .filter((t) => t.type === "student_fee" && (t.status === "Pending" || t.status === "Overdue"))
+        .filter((t) => t.type === "student_fee" && t.status === "Pending")
         .reduce((acc, t) => acc + t.amount, 0),
     [transactions]
   );
 
+  const totalOverdueAmount = useMemo(
+    () =>
+      transactions
+        .filter((t) => t.type === "student_fee" && t.status === "Overdue")
+        .reduce((acc, t) => acc + t.amount, 0),
+    [transactions]
+  );
+
+  const netBalance = useMemo(() => totalInflow - totalOutflow, [totalInflow, totalOutflow]);
+
   const deptProgressList = useMemo(() => {
     return departments.map((d) => {
       const deptTxns = transactions.filter(
-        (t) => t.department_name === d.name && t.type === "student_fee"
+        (t) => t.department_name === d.name && (t.type === "student_fee" || t.type === "late_fine")
       );
       const collected = deptTxns
         .filter((t) => t.status === "Paid")
@@ -168,60 +182,11 @@ export default function AdminFinancePage() {
       const pending = deptTxns
         .filter((t) => t.status !== "Paid")
         .reduce((sum, t) => sum + t.amount, 0);
-      const target = collected + pending > 0 ? (collected + pending) * 1.25 : 120000;
+      const target = collected + pending > 0 ? Math.round((collected + pending) * 1.25) : 120000;
       const percentage = Math.min(100, Math.round((collected / target) * 100));
       return { department: d, collected, target, pending, percentage };
     });
   }, [departments, transactions]);
-
-  // Transactions Filtering
-  const filteredTransactions = useMemo(() => {
-    return transactions.filter((t) => {
-      if (selectedType !== "all" && t.type !== selectedType) return false;
-      if (selectedGateway !== "all" && t.payment_method !== selectedGateway) return false;
-      if (selectedStatus !== "all" && t.status !== selectedStatus) return false;
-      if (selectedDeptFilter !== "all" && t.department_name !== selectedDeptFilter) return false;
-
-      if (selectedDateRange !== "all") {
-        const txnDate = new Date(t.created_at);
-        const now = new Date();
-        if (selectedDateRange === "today" && txnDate.toDateString() !== now.toDateString()) {
-          return false;
-        } else if (
-          selectedDateRange === "7days" &&
-          txnDate < new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-        ) {
-          return false;
-        } else if (
-          selectedDateRange === "month" &&
-          (txnDate.getMonth() !== now.getMonth() || txnDate.getFullYear() !== now.getFullYear())
-        ) {
-          return false;
-        } else if (selectedDateRange === "year" && txnDate.getFullYear() !== now.getFullYear()) {
-          return false;
-        }
-      }
-
-      if (txnSearch.trim()) {
-        const q = txnSearch.toLowerCase();
-        return (
-          t.transaction_id.toLowerCase().includes(q) ||
-          t.receipt_number.toLowerCase().includes(q) ||
-          t.user_name.toLowerCase().includes(q) ||
-          Boolean(t.student_id?.toLowerCase().includes(q))
-        );
-      }
-      return true;
-    });
-  }, [
-    transactions,
-    selectedType,
-    selectedGateway,
-    selectedStatus,
-    selectedDeptFilter,
-    selectedDateRange,
-    txnSearch,
-  ]);
 
   const currentDeptObj = useMemo(
     () => departments.find((d) => d.id === activeDeptTab) || departments[0],
@@ -248,6 +213,7 @@ export default function AdminFinancePage() {
     );
   }, [transactions, currentDeptObj, reminderModalSemester]);
 
+  // Payroll Calculations
   const currentMonthWages = useMemo(
     () => wages.filter((w) => w.month.toLowerCase() === selectedMonth.toLowerCase()),
     [wages, selectedMonth]
@@ -275,25 +241,37 @@ export default function AdminFinancePage() {
     [showToast]
   );
 
-  const handleConfirmBulkDisburse = () => {
-    const { updatedWages, count } = adminService.disburseAllPendingWages(
-      selectedMonth,
-      bulkGateway
-    );
-    setWages(updatedWages);
-    setTransactions(adminService.getTransactions());
-    setIsBulkDisburseOpen(false);
-    showToast(`Disbursed wages for all ${count} pending faculty members for ${selectedMonth}!`);
-  };
+  const handleDisburseBulk = useCallback(
+    (month: string, gateway: PaymentMethod) => {
+      const { updatedWages, count } = adminService.disburseAllPendingWages(month, gateway);
+      setWages(updatedWages);
+      setTransactions(adminService.getTransactions());
+      showToast(`Disbursed wages for all ${count} pending faculty members for ${month}!`);
+    },
+    [showToast]
+  );
 
   const handleToggleSemester = useCallback((semName: OrdinalSemesterName) => {
     setExpandedSemester((prev) => (prev === semName ? null : semName));
   }, []);
 
+  const handleSendDueReminders = useCallback(
+    (channel: string) => {
+      if (!reminderModalSemester) return;
+      const count = overdueStudentsInSelectedSemester.length;
+      setReminderModalSemester(null);
+      showToast(
+        `Sent due payment reminders via ${channel.toUpperCase()} to ${count} students in ${reminderModalSemester}.`
+      );
+    },
+    [overdueStudentsInSelectedSemester.length, reminderModalSemester, showToast]
+  );
+
   return (
-    <div className="w-full space-y-5 pb-12">
+    <div className="w-full max-w-[1600px] mx-auto space-y-5 pb-12">
+      {/* Toast Alert */}
       {toastMessage && (
-        <div className="fixed top-6 right-8 z-50 bg-success text-on-brand px-4 py-2.5 rounded-xl shadow-xl flex items-center gap-2 text-xs font-semibold border border-success/30">
+        <div className="fixed top-6 right-8 z-50 bg-success text-on-brand px-4 py-2.5 rounded-xl flex items-center gap-2 text-xs font-semibold border border-success/30">
           <Check className="w-4 h-4" /> {toastMessage}
         </div>
       )}
@@ -303,25 +281,31 @@ export default function AdminFinancePage() {
         <div>
           <div className="flex items-center gap-2.5 flex-wrap">
             <h1 className="text-xl md:text-2xl font-semibold tracking-tight text-fg">
-              Fees, Payments &amp; Faculty Payroll
+              Fees, Payments &amp; Treasury Operations
             </h1>
             <span className="px-2 py-0.5 rounded-md text-xs font-semibold bg-brand-soft text-brand border border-brand/35">
               Finance Hub
             </span>
           </div>
           <p className="text-xs text-fg-muted mt-1">
-            Manage student fee collections, digital transaction vouchers, and faculty payroll disbursements.
+            YouTube Studio–grade console for student tuition collections, digital gateway reconciliation, semester dues clearance, and faculty payroll.
           </p>
         </div>
       </div>
 
-      {/* 4 Core Tabs Segmented Dock */}
+      {/* 5 Core Tabs Segmented Dock */}
       <div className="p-1.5 flex items-center gap-1.5 overflow-x-auto scrollbar-none rounded-2xl bg-surface border border-line relative">
         {[
           { id: "overview" as const, label: "Financial Overview", icon: Receipt },
-          { id: "transactions" as const, label: "All Transactions", icon: CreditCard, count: transactions.length },
-          { id: "departments" as const, label: "Department Breakdown", icon: Building2 },
+          {
+            id: "transactions" as const,
+            label: "Transactions Ledger",
+            icon: CreditCard,
+            count: transactions.length,
+          },
+          { id: "dues" as const, label: "Semester Dues & Reminders", icon: Building2 },
           { id: "payroll" as const, label: "Faculty Payroll", icon: DollarSign },
+          { id: "gateways" as const, label: "Gateway & Sandbox", icon: Smartphone },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -359,40 +343,31 @@ export default function AdminFinancePage() {
         })}
       </div>
 
+      {/* Tab 1: Financial Overview */}
       {activeTab === "overview" && (
         <FinanceOverviewTab
           totalInflow={totalInflow}
+          totalPendingDues={totalPendingDues}
+          totalOverdueAmount={totalOverdueAmount}
           totalOutflow={totalOutflow}
-          totalTuitionFees={totalInflow}
-          totalWagesDisbursed={totalOutflow}
-          totalDues={totalDues}
+          netBalance={netBalance}
           deptProgressList={deptProgressList}
           recentTransactions={transactions.slice(0, 5)}
+          allTransactions={transactions}
           formatTransactionType={formatTransactionType}
           onSwitchTab={setActiveTab}
           onViewReceipt={setViewingReceipt}
         />
       )}
 
+      {/* Tab 2: Transactions Ledger */}
       {activeTab === "transactions" && (
-        <FinanceTransactionsTab
-          filteredTransactions={filteredTransactions}
+        <TransactionsLedgerTab
+          transactions={transactions}
           departments={departments}
-          txnSearch={txnSearch}
-          onTxnSearchChange={setTxnSearch}
-          selectedType={selectedType}
-          onTypeChange={setSelectedType}
-          selectedGateway={selectedGateway}
-          onGatewayChange={setSelectedGateway}
-          selectedStatus={selectedStatus}
-          onStatusChange={setSelectedStatus}
-          selectedDeptFilter={selectedDeptFilter}
-          onDeptFilterChange={setSelectedDeptFilter}
-          selectedDateRange={selectedDateRange}
-          onDateRangeChange={setSelectedDateRange}
           formatTransactionType={formatTransactionType}
-          onExportCsv={() => {
-            const csv = adminService.exportTransactionsCSV(filteredTransactions);
+          onExportCsv={(filtered) => {
+            const csv = adminService.exportTransactionsCSV(filtered);
             downloadCsvFile(
               csv,
               `UniCampus_Transactions_${new Date().toISOString().slice(0, 10)}.csv`
@@ -400,11 +375,16 @@ export default function AdminFinancePage() {
           }}
           onViewReceipt={setViewingReceipt}
           onCopy={copyToClipboard}
+          onPaymentRecorded={() => {
+            loadData();
+            showToast("Transaction recorded in master treasury ledger.");
+          }}
         />
       )}
 
-      {activeTab === "departments" && currentDeptObj && currentDeptProgress && (
-        <FinanceDepartmentsTab
+      {/* Tab 3: Semester Dues Breakdown */}
+      {activeTab === "dues" && currentDeptObj && currentDeptProgress && (
+        <SemesterDuesTab
           departments={departments}
           activeDeptTab={activeDeptTab}
           onSelectDeptTab={setActiveDeptTab}
@@ -422,11 +402,16 @@ export default function AdminFinancePage() {
             );
           }}
           onViewReceipt={setViewingReceipt}
+          reminderModalSemester={reminderModalSemester}
+          onCloseReminderModal={() => setReminderModalSemester(null)}
+          overdueStudentsInSelectedSemester={overdueStudentsInSelectedSemester}
+          onSendDueReminders={handleSendDueReminders}
         />
       )}
 
+      {/* Tab 4: Faculty Payroll */}
       {activeTab === "payroll" && (
-        <FinancePayrollTab
+        <TeacherPayrollTab
           isDeptAdmin={isDeptAdmin}
           adminDepartmentName={adminDepartmentName}
           monthCycles={MONTH_CYCLES}
@@ -434,43 +419,35 @@ export default function AdminFinancePage() {
           onSelectMonth={setSelectedMonth}
           currentMonthWages={currentMonthWages}
           payrollSummary={payrollSummary}
-          onGoToDepartments={() => setActiveTab("departments")}
+          onGoToDepartments={() => setActiveTab("dues")}
           onExportPayrollCsv={() => {
             const csv = adminService.exportWagesCSV(currentMonthWages);
             downloadCsvFile(csv, `UniCampus_Payroll_${selectedMonth.replace(/\s+/g, "_")}.csv`);
           }}
-          onOpenBulkDisburse={() => setIsBulkDisburseOpen(true)}
-          onViewSlip={setViewingSalarySlip}
           onDisburseSingle={handleDisburseSingle}
+          onDisburseBulk={handleDisburseBulk}
         />
       )}
 
-      <FinanceModals
-        viewingReceipt={viewingReceipt}
-        onCloseReceipt={() => setViewingReceipt(null)}
+      {/* Tab 5: Gateway Config & Sandbox Simulation */}
+      {activeTab === "gateways" && (
+        <GatewayConfigPanel
+          departments={departments}
+          transactions={transactions}
+          onViewReceipt={setViewingReceipt}
+          onPaymentRecorded={() => {
+            loadData();
+          }}
+          showToast={showToast}
+        />
+      )}
+
+      {/* Global Digital Receipt Voucher Modal */}
+      <OfficialReceiptModal
+        receipt={viewingReceipt}
+        open={Boolean(viewingReceipt)}
+        onClose={() => setViewingReceipt(null)}
         onCopy={copyToClipboard}
-        viewingSalarySlip={viewingSalarySlip}
-        onCloseSalarySlip={() => setViewingSalarySlip(null)}
-        isBulkDisburseOpen={isBulkDisburseOpen}
-        onCloseBulkDisburse={() => setIsBulkDisburseOpen(false)}
-        selectedMonth={selectedMonth}
-        payrollPending={payrollSummary.pending}
-        payrollPendingCount={payrollSummary.pendingCount}
-        bulkGateway={bulkGateway}
-        onBulkGatewayChange={setBulkGateway}
-        onConfirmBulkDisburse={handleConfirmBulkDisburse}
-        reminderModalSemester={reminderModalSemester}
-        onCloseReminderModal={() => setReminderModalSemester(null)}
-        currentDeptObj={currentDeptObj}
-        overdueStudentsInSelectedSemester={overdueStudentsInSelectedSemester}
-        onSendDueReminders={() => {
-          if (!reminderModalSemester) return;
-          const count = overdueStudentsInSelectedSemester.length;
-          setReminderModalSemester(null);
-          showToast(
-            `Sent payment due reminders to ${count} students in ${reminderModalSemester}.`
-          );
-        }}
       />
     </div>
   );
