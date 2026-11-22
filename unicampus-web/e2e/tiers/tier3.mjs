@@ -204,7 +204,7 @@ async function testNoticesRouting(browser, baseUrl) {
 
     const distinctPassed = headings.size === 3 && refs.size === 3;
     const examPassed =
-      /Final Examination Schedule Spring 2026 Released/i.test(nExam.heading) &&
+      /Final Examination Schedule \(6th Semester, 2026\) Released/i.test(nExam.heading) &&
       nExam.refNo === "UC/COE/2026/108";
 
     return [

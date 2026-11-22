@@ -296,7 +296,7 @@ export default function StudentsPage() {
             <span className="font-semibold text-fg">
               {filteredStudents.length}
             </span>{" "}
-            enrolled peers • Semester 6 Spring 2026 Batch Directory
+            enrolled peers • 3rd Year · 6th Semester Batch Directory
           </div>
 
           <div className="flex items-center gap-1.5">

@@ -68,7 +68,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     pathname === "/splash" ||
     pathname === "/" ||
     pathname === "/login" ||
-    pathname === "/register";
+    pathname === "/register" ||
+    pathname === "/forgot-password";
   const isAdmin = pathname === "/admin" || pathname.startsWith("/admin/");
   const isTeacherPath = pathname === "/teacher" || pathname.startsWith("/teacher/");
   const isTeacherUser = currentUser?.role === "teacher";

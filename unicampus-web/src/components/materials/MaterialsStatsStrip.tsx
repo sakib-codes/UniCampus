@@ -21,7 +21,7 @@ export function MaterialsStatsStrip() {
               </span>
             </div>
             <span className="text-xs text-fg-muted font-sans tabular-nums">
-              Across 5 enrolled Spring 2026 courses
+              Across 5 enrolled 6th Semester courses
             </span>
           </div>
           <div className="w-12 h-12 rounded-xl bg-brand-soft border border-brand/20 flex items-center justify-center text-brand shrink-0">

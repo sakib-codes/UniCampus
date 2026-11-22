@@ -94,6 +94,7 @@ export function UsersFilterBar({
               <option value="all">Status: All Accounts</option>
               <option value="active">Active Only</option>
               <option value="pending">Pending Verification</option>
+              <option value="rejected">Rejected (Needs Re-apply)</option>
               <option value="suspended">Suspended</option>
             </select>
             <ChevronDown className="w-3.5 h-3.5 text-fg-muted absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />

@@ -382,7 +382,7 @@ export default function DashboardPage() {
                   Today&apos;s Schedule
                 </h2>
                 <div className="flex items-center gap-2 mt-0.5 text-xs text-fg-muted">
-                  <span>Monday, Spring 2026</span>
+                  <span>Monday, 3rd Year · 6th Semester</span>
                   <span>·</span>
                   <span className="text-brand font-medium">2 Lectures &amp; 1 Lab</span>
                 </div>
@@ -441,7 +441,7 @@ export default function DashboardPage() {
                 id="not-exam-108"
                 category="URGENT"
                 timeAgo="2h ago"
-                title="Final Examination Schedule (Spring 2026) released"
+                title="Final Examination Schedule (6th Semester, 2026) released"
                 description="Controller of Examinations published the master final seat plan & time slots."
               />
               <NoticeSnippetCard

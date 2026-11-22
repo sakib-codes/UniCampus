@@ -1,21 +1,25 @@
 "use client";
 
 import React from "react";
-import { Users, BookOpen, Settings } from "lucide-react";
+import { Users, BookOpen, Settings, UserCog } from "lucide-react";
 import type { DepartmentData } from "./departmentsData";
 
 interface DepartmentCardProps {
   dept: DepartmentData;
+  isSuperAdmin?: boolean;
   onSelectRoster: (dept: DepartmentData) => void;
   onSelectCurriculum: (dept: DepartmentData) => void;
   onSelectSettings: (dept: DepartmentData) => void;
+  onAssignHod?: (dept: DepartmentData) => void;
 }
 
 export const DepartmentCard = React.memo(function DepartmentCard({
   dept,
+  isSuperAdmin = false,
   onSelectRoster,
   onSelectCurriculum,
   onSelectSettings,
+  onAssignHod,
 }: DepartmentCardProps) {
   return (
     <div className="bg-surface border border-line rounded-2xl p-6 relative flex flex-col justify-between hover:border-brand/60 transition-colors group">
@@ -64,6 +68,17 @@ export const DepartmentCard = React.memo(function DepartmentCard({
               </span>
             </div>
           </div>
+          {isSuperAdmin && (
+            <button
+              type="button"
+              onClick={() => (onAssignHod ? onAssignHod(dept) : onSelectSettings(dept))}
+              title={`Assign or Edit Head of ${dept.code}`}
+              className="px-2.5 py-1.5 rounded-lg bg-surface hover:bg-brand-soft text-fg-muted hover:text-brand border border-line hover:border-brand/30 text-xs font-semibold inline-flex items-center gap-1 shrink-0 cursor-pointer transition-colors"
+            >
+              <UserCog className="w-3.5 h-3.5" />
+              <span>Edit HOD</span>
+            </button>
+          )}
         </div>
 
         {/* 3-Column Metric Strip */}

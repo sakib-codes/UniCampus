@@ -270,7 +270,7 @@ async function runCanonicalChecksForTheme(browser, baseUrl, theme) {
       makeCheckResult(
         `T4 /dashboard canonical term & student [${theme}]`,
         dashMissing.length === 0,
-        dashMissing.length === 0 ? "Spring 2026, Sakib Ahmed, 6th Semester present" : `Missing: ${dashMissing.join(", ")}`,
+        dashMissing.length === 0 ? "Academic Year 2026, Sakib Ahmed, 6th Semester present" : `Missing: ${dashMissing.join(", ")}`,
       ),
     );
 
@@ -335,7 +335,7 @@ async function runCanonicalChecksForTheme(browser, baseUrl, theme) {
       makeCheckResult(
         `T4 /routine canonical term [${theme}]`,
         routineTermPresent,
-        routineTermPresent ? "Spring 2026 present" : "Missing Spring 2026",
+        routineTermPresent ? "Academic Year 2026 present" : "Missing Academic Year 2026",
       ),
     );
 
@@ -450,7 +450,7 @@ async function runCanonicalChecksForTheme(browser, baseUrl, theme) {
         `T4 /teacher/dashboard canonical term, Dr. Asif & Room 508 [${theme}]`,
         tDashMissing.length === 0,
         tDashMissing.length === 0
-          ? "Spring 2026, Dr. Asif Rahman, Room 508 present"
+          ? "Academic Year 2026, Dr. Asif Rahman, Room 508 present"
           : `Missing: ${tDashMissing.join(", ")}`,
       ),
     );
@@ -481,7 +481,7 @@ async function runCanonicalChecksForTheme(browser, baseUrl, theme) {
       makeCheckResult(
         `T4 /admin/dashboard canonical term & 5 depts = 4,820 [${theme}]`,
         aDashIssues.length === 0,
-        aDashIssues.length === 0 ? "Spring 2026 & 5 depts (4,820) present" : aDashIssues.join("; "),
+        aDashIssues.length === 0 ? "Academic Year 2026 & 5 depts (4,820) present" : aDashIssues.join("; "),
       ),
     );
 

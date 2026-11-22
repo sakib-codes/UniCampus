@@ -54,7 +54,7 @@ export const ROUTE_TARGETS = [
 export const PORTAL_ORDER = ["public", "student", "teacher", "admin"];
 
 export const CANONICAL = {
-  term: "Spring 2026",
+  term: "Academic Year 2026",
   student: {
     name: "Sakib Ahmed",
     id: "211-15-4424",

@@ -34,7 +34,7 @@ export function SuperAdminGate({ children, featureName = "System Settings" }: Su
         </h2>
 
         <div className="text-xs text-fg-muted font-medium mb-5 leading-relaxed">
-          This section contains central university infrastructure, institutional finance, and system-wide controls managed exclusively by the Super Administrator.
+          This section contains central university infrastructure, institutional finance, and system-wide controls managed exclusively by the central Admin.
           
           <div className="block mt-4 p-3.5 rounded-xl bg-canvas border border-line text-xs font-semibold text-fg-muted text-left space-y-1.5">
             <div className="flex justify-between items-center text-xs gap-2">

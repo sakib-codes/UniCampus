@@ -153,7 +153,7 @@ export default function StudentMaterialsPage() {
                 ACADEMIC REPOSITORY
               </span>
               <span className="text-xs text-fg-muted">
-                • Spring 2026 Enrolled Cohort
+                • 3rd Year · 6th Semester Enrolled Cohort
               </span>
             </div>
             <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-fg leading-tight">

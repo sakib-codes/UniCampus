@@ -18,6 +18,7 @@ import {
 import { UsersFilterBar } from "@/components/admin/users/UsersFilterBar";
 import { UsersDirectoryTable } from "@/components/admin/users/UsersDirectoryTable";
 import { UsersModals } from "@/components/admin/users/UsersModals";
+import { RegistrationReviewModal } from "@/components/admin/users/RegistrationReviewModal";
 
 export default function AdminUsersPage() {
   const { currentUser, isDeptAdmin } = useAdminAuth();
@@ -35,6 +36,8 @@ export default function AdminUsersPage() {
   const [openPopoverId, setOpenPopoverId] = useState<string | null>(null);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isCsvModalOpen, setIsCsvModalOpen] = useState(false);
+  const [reviewingUser, setReviewingUser] = useState<UserRecord | null>(null);
+  const [reviewRejectMode, setReviewRejectMode] = useState(false);
   const [editingUser, setEditingUser] = useState<UserRecord | null>(null);
   const [editRole, setEditRole] = useState<"student" | "teacher" | "admin">("student");
   const [editDeptKey, setEditDeptKey] = useState<DeptKey>("cse");
@@ -125,8 +128,9 @@ export default function AdminUsersPage() {
   const directoryCounts = useMemo(() => {
     const active = users.filter((u) => u.status === "active").length;
     const pending = users.filter((u) => u.status === "pending").length;
+    const rejected = users.filter((u) => u.status === "rejected").length;
     const suspended = users.filter((u) => u.status === "suspended").length;
-    return { active, pending, suspended };
+    return { active, pending, rejected, suspended };
   }, [users]);
 
   const roleTabs = useMemo(
@@ -219,20 +223,36 @@ export default function AdminUsersPage() {
 
   const handleApproveUser = useCallback(
     (user: UserRecord) => {
-      adminService.approveProfile(user.profileId);
-      triggerToast(`Approved account for ${user.name}.`);
+      adminService.approveProfile(user.profileId, currentUser?.full_name || "Academic Administration");
+      triggerToast(`Approved and activated account for ${user.name}.`);
       setOpenPopoverId(null);
     },
-    [triggerToast]
+    [currentUser, triggerToast]
   );
 
-  const handleRejectUser = useCallback(
-    (user: UserRecord) => {
-      adminService.rejectProfile(user.profileId);
-      triggerToast(`Rejected application for ${user.name}.`);
+  const handleOpenReview = useCallback((user: UserRecord) => {
+    setReviewRejectMode(false);
+    setReviewingUser(user);
+    setOpenPopoverId(null);
+  }, []);
+
+  const handleOpenRejectWithReason = useCallback((user: UserRecord) => {
+    setReviewRejectMode(true);
+    setReviewingUser(user);
+    setOpenPopoverId(null);
+  }, []);
+
+  const handleConfirmRejectWithReason = useCallback(
+    (user: UserRecord, reason: string) => {
+      adminService.rejectProfile(
+        user.profileId,
+        reason,
+        currentUser?.full_name || "Academic Administration"
+      );
+      triggerToast(`Rejected ${user.name}'s application with correction note.`);
       setOpenPopoverId(null);
     },
-    [triggerToast]
+    [currentUser, triggerToast]
   );
 
   const handleToggleHold = useCallback(
@@ -391,20 +411,31 @@ export default function AdminUsersPage() {
         onSuspendToggle={handleSuspendToggle}
         onToggleHold={handleToggleHold}
         onApprove={handleApproveUser}
-        onReject={handleRejectUser}
+        onReject={handleOpenRejectWithReason}
+        onReview={handleOpenReview}
       />
 
       {/* BOTTOM METADATA STATUS STRIP */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs text-fg-muted px-2 font-sans tabular-nums gap-2 pt-1">
         <div>
           Directory sample: {users.length} accounts ({directoryCounts.active} Active ·{" "}
-          {directoryCounts.pending} Pending · {directoryCounts.suspended} Suspended)
+          {directoryCounts.pending} Pending · {directoryCounts.rejected} Rejected ·{" "}
+          {directoryCounts.suspended} Suspended)
         </div>
         <div>
           Portal Total: {CAMPUS_METRICS.totalUsers.toLocaleString()} (4,924 Active · 118
           Pending · 30 Suspended)
         </div>
       </div>
+
+      <RegistrationReviewModal
+        key={reviewingUser ? `${reviewingUser.profileId}-${reviewRejectMode}` : "closed"}
+        user={reviewingUser}
+        initialRejectMode={reviewRejectMode}
+        onClose={() => setReviewingUser(null)}
+        onApprove={handleApproveUser}
+        onReject={handleConfirmRejectWithReason}
+      />
 
       <UsersModals
         isInviteModalOpen={isInviteModalOpen}
@@ -425,7 +456,7 @@ export default function AdminUsersPage() {
         onDownloadTemplate={() => triggerToast("Sample roster CSV template downloaded.")}
         onProcessCsvImport={() => {
           setIsCsvModalOpen(false);
-          triggerToast("Imported 124 students from CSE_Spring2026_Batch.csv.");
+          triggerToast("Imported 124 students from CSE_2026_Batch.csv.");
         }}
         editingUser={editingUser}
         onCloseEditModal={() => setEditingUser(null)}

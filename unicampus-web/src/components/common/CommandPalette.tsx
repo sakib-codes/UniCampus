@@ -88,7 +88,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
     {
       id: "nav-advising",
       title: "Course Advising & Pre-Registration",
-      subtitle: "Select Fall 2026 courses, resolve clashes & submit",
+      subtitle: "Select 4th Year · 7th Semester courses, resolve clashes & submit",
       category: "Academic",
       icon: BookOpen,
       badge: "Advising",
@@ -233,14 +233,14 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
     {
       id: "act-latest-notice",
       title: "View Latest Pinned Notice",
-      subtitle: "Final Examination Schedule Spring 2026",
+      subtitle: "Final Examination Schedule — 6th Semester 2026",
       category: "Quick Actions",
       icon: Megaphone,
       action: () => {
         router.push("/notices/not-exam-108");
         onClose();
       },
-      keywords: ["latest", "midterm", "exam", "notice", "spring", "2026"],
+      keywords: ["latest", "midterm", "exam", "notice", "semester", "2026"],
     },
 
     // Admin Console

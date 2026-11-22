@@ -20,12 +20,14 @@ export interface UserRecord {
   studentId?: string | null;
   lastLogin: string;
   isOnlineNow?: boolean;
-  status: "active" | "pending" | "suspended";
+  status: "active" | "pending" | "suspended" | "rejected";
   statusLabel: string;
+  rejectionReason?: string | null;
   verified?: boolean;
   academic_hold?: boolean;
   financial_hold?: boolean;
   hold_reason?: string | null;
+  profile: Profile;
 }
 
 export const DEPT_META: Record<
@@ -100,9 +102,11 @@ export function mapProfileToUserRecord(profile: Profile, index: number): UserRec
   ];
   const isOnline = profile.id === "user-stud-1";
 
-  const rawStatus = (profile as unknown as Record<string, unknown>).account_status as string | undefined;
-  const status: "active" | "pending" | "suspended" =
-    rawStatus === "suspended"
+  const rawStatus = profile.account_status;
+  const status: "active" | "pending" | "suspended" | "rejected" =
+    rawStatus === "rejected"
+      ? "rejected"
+      : rawStatus === "suspended"
       ? "suspended"
       : rawStatus === "pending" || !profile.is_approved
       ? "pending"
@@ -111,6 +115,8 @@ export function mapProfileToUserRecord(profile: Profile, index: number): UserRec
   const statusLabel =
     status === "active"
       ? "Active"
+      : status === "rejected"
+      ? "Rejected"
       : status === "suspended"
       ? "Suspended"
       : "Pending Verification";
@@ -124,7 +130,9 @@ export function mapProfileToUserRecord(profile: Profile, index: number): UserRec
     role: profile.role,
     roleLabel:
       profile.role === "admin"
-        ? "Admin"
+        ? profile.admin_role === "dept_admin"
+          ? "Department Admin"
+          : "Admin"
         : profile.role === "teacher"
         ? "Teacher"
         : "Student",
@@ -136,17 +144,22 @@ export function mapProfileToUserRecord(profile: Profile, index: number): UserRec
     semesterName: profile.semester_name,
     teacherCode: profile.teacher_code,
     studentId: profile.student_id,
-    lastLogin: status === "pending"
-      ? "Pending verification"
-      : isOnline
-      ? "Online now"
-      : loginWindows[index % loginWindows.length],
+    lastLogin:
+      status === "rejected"
+        ? "Awaiting re-application"
+        : status === "pending"
+        ? "Pending verification"
+        : isOnline
+        ? "Online now"
+        : loginWindows[index % loginWindows.length],
     isOnlineNow: isOnline && status === "active",
     status,
     statusLabel,
+    rejectionReason: profile.rejection_reason || null,
     verified: profile.admin_role === "super_admin",
     academic_hold: Boolean(profile.academic_hold),
     financial_hold: Boolean(profile.financial_hold),
     hold_reason: profile.hold_reason || null,
+    profile,
   };
 }

@@ -2,26 +2,77 @@ export type UserRoleType = 'student' | 'teacher' | 'admin';
 
 export type AdminRoleLevel = 'super_admin' | 'dept_admin';
 
+export interface BoardExamRecord {
+  exam: 'JSC' | 'SSC' | 'HSC';
+  board: string;
+  group?: string;
+  passing_year: string;
+  roll_number?: string;
+  registration_number?: string;
+  gpa: string;
+  institution?: string;
+  marksheet_filename?: string;
+}
+
+export interface TeacherQualificationRecord {
+  designation: string;
+  employment_type: 'Full-Time' | 'Adjunct' | 'Visiting';
+  highest_degree: string;
+  undergrad_degree: string;
+  undergrad_university: string;
+  undergrad_year: string;
+  undergrad_cgpa: string;
+  postgrad_degree?: string;
+  postgrad_university?: string;
+  postgrad_year?: string;
+  experience_years: string;
+  specialization: string;
+  cv_filename?: string;
+  certificate_filename?: string;
+}
+
 export interface Profile {
   id: string;
   full_name: string;
   email: string;
+  phone?: string;
   role: UserRoleType;
   admin_role?: AdminRoleLevel;
   department_id: string;
   department_name?: string;
   semester_id: string | null;
   semester_name?: string | null;
+  academic_year?: string | null;
   teacher_code: string | null;
   student_id: string | null;
   avatar_url: string;
   is_approved: boolean;
   created_at: string;
-  account_status?: 'active' | 'pending' | 'suspended';
+  account_status?: 'active' | 'pending' | 'suspended' | 'rejected';
+  rejection_reason?: string | null;
+  reviewed_at?: string | null;
+  reviewed_by?: string | null;
   academic_hold?: boolean;
   financial_hold?: boolean;
   hold_reason?: string | null;
   assigned_courses?: string[];
+  // Bangladeshi Academic & Identity Metadata
+  date_of_birth?: string;
+  gender?: string;
+  blood_group?: string;
+  religion?: string;
+  nationality?: string;
+  id_document_type?: 'NID' | 'Birth Certificate';
+  nid_or_birth_cert?: string;
+  father_name?: string;
+  father_phone?: string;
+  mother_name?: string;
+  mother_phone?: string;
+  emergency_phone?: string;
+  present_address?: string;
+  permanent_address?: string;
+  board_exams?: BoardExamRecord[];
+  teacher_qualifications?: TeacherQualificationRecord;
 }
 
 export interface UserRole {
@@ -74,6 +125,8 @@ export interface Subject {
   title: string;
   credit: number;
   type?: 'Theory' | 'Lab';
+  assigned_teacher_id?: string | null;
+  assigned_teacher_name?: string | null;
 }
 
 export interface ClassRoutine {

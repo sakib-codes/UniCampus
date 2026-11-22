@@ -131,7 +131,7 @@ export const ProgressKpiBento = memo(function ProgressKpiBento() {
             <div className="pt-2.5 border-t border-line flex items-center justify-between text-xs font-sans">
               <span className="text-fg-muted">Target Graduation</span>
               <span className="text-fg font-semibold tabular-nums">
-                33 credits left · Fall 2027
+                33 credits left · 4th Year (8th Sem)
               </span>
             </div>
           </div>
@@ -228,7 +228,7 @@ export const ProgressKpiBento = memo(function ProgressKpiBento() {
               <div className="mt-2.5 flex items-center gap-1.5">
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-success-light border border-success/25 text-success font-sans text-xs font-semibold tabular-nums">
                   <TrendingUp className="w-3 h-3" />
-                  +0.07 vs Fall 2025
+                  +0.07 vs 5th Semester
                 </span>
               </div>
 

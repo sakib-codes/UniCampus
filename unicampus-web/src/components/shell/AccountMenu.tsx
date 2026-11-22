@@ -26,8 +26,7 @@ interface AccountMenuProps {
 
 export function AccountMenu({ role, onOpenShortcuts }: AccountMenuProps) {
   const router = useRouter();
-  const { currentUser, isSuperAdmin, isDeptAdmin, adminDepartmentName, logout } =
-    useAdminAuth();
+  const { currentUser, isSuperAdmin, isDeptAdmin, logout } = useAdminAuth();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const reduceMotion = useReducedMotion();
@@ -72,8 +71,8 @@ export function AccountMenu({ role, onOpenShortcuts }: AccountMenuProps) {
   const roleBadge =
     role === "admin"
       ? isSuperAdmin
-        ? "Super Admin"
-        : `${adminDepartmentName || "Department"} Admin`
+        ? "Admin"
+        : "Department Admin"
       : role === "teacher"
       ? `${currentUser?.department_name || "CSE"} Faculty`
       : `${currentUser?.semester_name || "6th Sem"} • ${

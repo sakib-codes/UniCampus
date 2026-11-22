@@ -14,6 +14,7 @@ import {
   CreditCard,
   Check,
   X,
+  FileSearch,
 } from "lucide-react";
 import { Badge, Button } from "@/components/ui";
 import type { UserRecord } from "./usersData";
@@ -31,6 +32,7 @@ interface UserRowProps {
   onToggleHold?: (user: UserRecord, holdType: "academic" | "financial") => void;
   onApprove?: (user: UserRecord) => void;
   onReject?: (user: UserRecord) => void;
+  onReview?: (user: UserRecord) => void;
 }
 
 const UserTableRow = React.memo(function UserTableRow({
@@ -46,6 +48,7 @@ const UserTableRow = React.memo(function UserTableRow({
   onToggleHold,
   onApprove,
   onReject,
+  onReview,
 }: UserRowProps) {
   return (
     <tr
@@ -64,7 +67,7 @@ const UserTableRow = React.memo(function UserTableRow({
               <span className="truncate">{user.name}</span>
               {user.verified && (
                 <span
-                  title="Verified Superadmin Privileges"
+                  title="Verified Admin Privileges"
                   className="inline-flex text-brand shrink-0"
                 >
                   <CheckCircle2 className="w-3.5 h-3.5" />
@@ -83,7 +86,7 @@ const UserTableRow = React.memo(function UserTableRow({
         {user.role === "admin" && (
           <Badge variant="brand">
             <Shield className="w-3 h-3" />
-            <span>Admin</span>
+            <span>{user.roleLabel}</span>
           </Badge>
         )}
         {user.role === "teacher" && (
@@ -130,6 +133,11 @@ const UserTableRow = React.memo(function UserTableRow({
           {user.status === "pending" && (
             <Badge variant="warning">Pending Verification</Badge>
           )}
+          {user.status === "rejected" && (
+            <span title={user.rejectionReason || "Rejected — awaiting re-application"}>
+              <Badge variant="danger">Rejected</Badge>
+            </span>
+          )}
           {user.status === "suspended" && (
             <Badge variant="danger">Suspended</Badge>
           )}
@@ -145,8 +153,17 @@ const UserTableRow = React.memo(function UserTableRow({
       {/* 7. Actions */}
       <td className="py-[var(--row-py)] px-4 text-right whitespace-nowrap relative">
         <div className="inline-flex items-center justify-end gap-1.5">
-          {user.status === "pending" && (
+          {(user.status === "pending" || user.status === "rejected") && (
             <div className="inline-flex items-center gap-1 mr-1">
+              <button
+                type="button"
+                onClick={() => onReview?.(user)}
+                title="Review Registration Dossier"
+                className="px-2 py-1 rounded-lg bg-brand-soft hover:bg-brand/20 text-brand border border-brand/25 text-xs font-semibold inline-flex items-center gap-1 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+              >
+                <FileSearch className="w-3 h-3" />
+                <span>Review</span>
+              </button>
               <button
                 type="button"
                 onClick={() => onApprove?.(user)}
@@ -156,15 +173,17 @@ const UserTableRow = React.memo(function UserTableRow({
                 <Check className="w-3 h-3" />
                 <span>Approve</span>
               </button>
-              <button
-                type="button"
-                onClick={() => onReject?.(user)}
-                title="Reject User"
-                className="px-2 py-1 rounded-lg bg-danger hover:bg-danger/90 text-on-brand text-xs font-semibold inline-flex items-center gap-1 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-              >
-                <X className="w-3 h-3" />
-                <span>Reject</span>
-              </button>
+              {user.status === "pending" && (
+                <button
+                  type="button"
+                  onClick={() => onReject?.(user)}
+                  title="Reject with Reason"
+                  className="px-2 py-1 rounded-lg bg-danger hover:bg-danger/90 text-on-brand text-xs font-semibold inline-flex items-center gap-1 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                >
+                  <X className="w-3 h-3" />
+                  <span>Reject</span>
+                </button>
+              )}
             </div>
           )}
 
@@ -219,6 +238,15 @@ const UserTableRow = React.memo(function UserTableRow({
                 <div className="my-1 border-t border-line" />
               </>
             )}
+
+            <button
+              type="button"
+              onClick={() => onReview?.(user)}
+              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-fg hover:bg-surface-2 hover:text-brand text-xs transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+            >
+              <FileSearch className="w-3.5 h-3.5 text-brand shrink-0" />
+              <span className="font-medium">Review Registration Dossier</span>
+            </button>
 
             <button
               type="button"
@@ -305,6 +333,7 @@ const UserMobileCard = React.memo(function UserMobileCard({
   onToggleHold,
   onApprove,
   onReject,
+  onReview,
 }: Omit<UserRowProps, "openUpward" | "onImpersonate">) {
   return (
     <div className="p-4 space-y-3 relative">
@@ -341,6 +370,9 @@ const UserMobileCard = React.memo(function UserMobileCard({
         {user.status === "pending" && (
           <Badge variant="warning">Pending Verification</Badge>
         )}
+        {user.status === "rejected" && (
+          <Badge variant="danger">Rejected</Badge>
+        )}
         {user.status === "suspended" && (
           <Badge variant="danger">Suspended</Badge>
         )}
@@ -352,8 +384,16 @@ const UserMobileCard = React.memo(function UserMobileCard({
         )}
       </div>
 
-      {user.status === "pending" && (
+      {(user.status === "pending" || user.status === "rejected") && (
         <div className="flex items-center gap-2 pt-1">
+          <button
+            type="button"
+            onClick={() => onReview?.(user)}
+            className="flex-1 min-h-[36px] rounded-lg bg-brand-soft hover:bg-brand/20 text-brand border border-brand/25 text-xs font-semibold flex items-center justify-center gap-1 cursor-pointer transition-colors"
+          >
+            <FileSearch className="w-3.5 h-3.5" />
+            <span>Review</span>
+          </button>
           <button
             type="button"
             onClick={() => onApprove?.(user)}
@@ -362,14 +402,16 @@ const UserMobileCard = React.memo(function UserMobileCard({
             <Check className="w-3.5 h-3.5" />
             <span>Approve</span>
           </button>
-          <button
-            type="button"
-            onClick={() => onReject?.(user)}
-            className="flex-1 min-h-[36px] rounded-lg bg-danger hover:bg-danger/90 text-on-brand text-xs font-semibold flex items-center justify-center gap-1 cursor-pointer transition-colors"
-          >
-            <X className="w-3.5 h-3.5" />
-            <span>Reject</span>
-          </button>
+          {user.status === "pending" && (
+            <button
+              type="button"
+              onClick={() => onReject?.(user)}
+              className="flex-1 min-h-[36px] rounded-lg bg-danger hover:bg-danger/90 text-on-brand text-xs font-semibold flex items-center justify-center gap-1 cursor-pointer transition-colors"
+            >
+              <X className="w-3.5 h-3.5" />
+              <span>Reject</span>
+            </button>
+          )}
         </div>
       )}
 
@@ -462,6 +504,7 @@ interface UsersDirectoryTableProps {
   onToggleHold?: (user: UserRecord, holdType: "academic" | "financial") => void;
   onApprove?: (user: UserRecord) => void;
   onReject?: (user: UserRecord) => void;
+  onReview?: (user: UserRecord) => void;
 }
 
 export function UsersDirectoryTable({
@@ -483,6 +526,7 @@ export function UsersDirectoryTable({
   onToggleHold,
   onApprove,
   onReject,
+  onReview,
 }: UsersDirectoryTableProps) {
   return (
     <div className="bg-surface rounded-2xl border border-line relative overflow-visible">
@@ -544,6 +588,7 @@ export function UsersDirectoryTable({
                   onToggleHold={onToggleHold}
                   onApprove={onApprove}
                   onReject={onReject}
+                  onReview={onReview}
                 />
               ))
             )}
@@ -580,6 +625,7 @@ export function UsersDirectoryTable({
               onToggleHold={onToggleHold}
               onApprove={onApprove}
               onReject={onReject}
+              onReview={onReview}
             />
           ))
         )}

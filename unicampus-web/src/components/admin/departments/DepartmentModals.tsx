@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Building2, Users, BookOpen, Settings, X, Plus, Trash2, Lock, Unlock } from "lucide-react";
 import type { DepartmentData } from "./departmentsData";
 import { ORDINAL_SEMESTERS } from "@/lib/mockData";
+import { ACADEMIC_YEARS, formatYearSemester, getAcademicYearForSemester } from "@/lib/canonicalCampus";
 import { adminService } from "@/lib/services/adminService";
 
 interface DepartmentModalsProps {
@@ -33,12 +34,19 @@ interface DepartmentModalsProps {
     subject: { code: string; title: string; credit: number; type: "Theory" | "Lab"; semester_name: string }
   ) => void;
   onDeleteSubject?: (subjectId?: string, code?: string) => void;
+  onAssignSubjectTeacher?: (
+    subjectId: string,
+    courseCode: string,
+    teacherId: string | null,
+    teacherName: string | null
+  ) => void;
   selectedSettingsDept: DepartmentData | null;
   onCloseSettingsDept: () => void;
   onSaveSettings: (
     dept: DepartmentData,
     updates: {
       hodName: string;
+      headTeacherId?: string | null;
       office: string;
       status: "Accredited • Active" | "Pending Review";
       totalStudents: number;
@@ -47,6 +55,8 @@ interface DepartmentModalsProps {
     }
   ) => void;
   onShowToast: (msg: string) => void;
+  isDeptAdmin?: boolean;
+  allFaculty?: { id: string; name: string; departmentId: string; code?: string | null }[];
 }
 
 export function DepartmentModals({
@@ -73,13 +83,17 @@ export function DepartmentModals({
   onCloseCurriculumDept,
   onCreateSubject,
   onDeleteSubject,
+  onAssignSubjectTeacher,
   selectedSettingsDept,
   onCloseSettingsDept,
   onSaveSettings,
   onShowToast,
+  isDeptAdmin = false,
+  allFaculty = [],
 }: DepartmentModalsProps) {
   // Settings form states
   const [settingsHod, setSettingsHod] = useState("");
+  const [settingsHodId, setSettingsHodId] = useState<string>("");
   const [settingsOffice, setSettingsOffice] = useState("");
   const [settingsStatus, setSettingsStatus] = useState<"Accredited • Active" | "Pending Review">("Accredited • Active");
   const [settingsStudents, setSettingsStudents] = useState("500");
@@ -88,6 +102,7 @@ export function DepartmentModals({
 
   // Curriculum add form state
   const [isAddingCourse, setIsAddingCourse] = useState(false);
+  const [yearFilter, setYearFilter] = useState<string>("All");
   const [newCourseCode, setNewCourseCode] = useState("");
   const [newCourseTitle, setNewCourseTitle] = useState("");
   const [newCourseCredit, setNewCourseCredit] = useState("3.0");
@@ -107,6 +122,7 @@ export function DepartmentModals({
     if (selectedSettingsDept) {
       queueMicrotask(() => {
         setSettingsHod(selectedSettingsDept.hodName || "");
+        setSettingsHodId(selectedSettingsDept.headTeacherId || "");
         setSettingsOffice(selectedSettingsDept.office || "");
         setSettingsStatus(selectedSettingsDept.status || "Accredited • Active");
         setSettingsStudents(String(selectedSettingsDept.totalStudents || 500));
@@ -135,6 +151,7 @@ export function DepartmentModals({
     if (!selectedSettingsDept) return;
     onSaveSettings(selectedSettingsDept, {
       hodName: settingsHod.trim() || selectedSettingsDept.hodName,
+      headTeacherId: settingsHodId || selectedSettingsDept.headTeacherId || null,
       office: settingsOffice.trim() || selectedSettingsDept.office,
       status: settingsStatus,
       totalStudents: parseInt(settingsStudents, 10) || selectedSettingsDept.totalStudents,
@@ -423,10 +440,10 @@ export function DepartmentModals({
               </button>
             </div>
 
-            <div className="space-y-2.5 max-h-[420px] overflow-y-auto pr-1">
-              <div className="flex items-center justify-between pb-1">
+            <div className="space-y-2.5 max-h-[460px] overflow-y-auto pr-1">
+              <div className="flex flex-wrap items-center justify-between gap-2 pb-1">
                 <span className="text-xs font-semibold text-fg-muted">
-                  Active Course Syllabi ({selectedCurriculumDept.curriculumList.length})
+                  4-Year / 8-Semester Subjects ({selectedCurriculumDept.curriculumList.length})
                 </span>
                 <button
                   type="button"
@@ -436,6 +453,24 @@ export function DepartmentModals({
                   <Plus className="w-3.5 h-3.5" />
                   <span>{isAddingCourse ? "Cancel" : "Add Subject"}</span>
                 </button>
+              </div>
+
+              {/* 4-Year Filter Strip */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none]">
+                {["All", ...ACADEMIC_YEARS.map((y) => y.label)].map((yr) => (
+                  <button
+                    key={yr}
+                    type="button"
+                    onClick={() => setYearFilter(yr)}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-colors shrink-0 cursor-pointer ${
+                      yearFilter === yr
+                        ? "bg-brand text-on-brand border-brand"
+                        : "bg-surface-2 text-fg-muted border-line hover:text-fg"
+                    }`}
+                  >
+                    {yr === "All" ? "All Years (Sem 1–8)" : yr}
+                  </button>
+                ))}
               </div>
 
               {isAddingCourse && (
@@ -503,7 +538,7 @@ export function DepartmentModals({
                     </div>
                     <div>
                       <label className="block text-xs font-semibold text-fg-muted mb-1">
-                        Semester
+                        Year &amp; Semester
                       </label>
                       <select
                         value={newCourseSem}
@@ -512,7 +547,7 @@ export function DepartmentModals({
                       >
                         {ORDINAL_SEMESTERS.map((sem) => (
                           <option key={sem} value={sem}>
-                            {sem}
+                            {formatYearSemester(sem)}
                           </option>
                         ))}
                       </select>
@@ -536,23 +571,89 @@ export function DepartmentModals({
                 </form>
               )}
 
-              {selectedCurriculumDept.curriculumList.map((course, idx) => (
+              {selectedCurriculumDept.curriculumList.filter(
+                (course) =>
+                  yearFilter === "All" ||
+                  getAcademicYearForSemester(course.semester) === yearFilter
+              ).length === 0 ? (
+                <div className="p-8 rounded-xl bg-surface-2 border border-dashed border-line text-center space-y-2">
+                  <p className="text-xs font-semibold text-fg">
+                    No subjects listed {yearFilter === "All" ? `in ${selectedCurriculumDept.code}` : `for ${yearFilter}`} yet
+                  </p>
+                  <p className="text-xs text-fg-muted">
+                    Add subjects with their official course codes, credits, and 4-year semester placement.
+                  </p>
+                  {!isAddingCourse && (
+                    <button
+                      type="button"
+                      onClick={() => setIsAddingCourse(true)}
+                      className="mt-1 px-3 py-1.5 rounded-lg bg-brand text-on-brand text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Add First Subject</span>
+                    </button>
+                  )}
+                </div>
+              ) : (
+              selectedCurriculumDept.curriculumList
+                .filter(
+                  (course) =>
+                    yearFilter === "All" ||
+                    getAcademicYearForSemester(course.semester) === yearFilter
+                )
+                .map((course, idx) => (
                 <div
-                  key={idx}
+                  key={course.id || `${course.code}-${idx}`}
                   className="p-3.5 rounded-xl bg-surface-2 border border-line flex flex-wrap items-center justify-between gap-3"
                 >
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <span className="font-mono text-xs font-semibold text-brand bg-surface px-2 py-0.5 rounded border border-line">
                         {course.code}
                       </span>
                       <span className="text-xs font-sans px-2 py-0.5 rounded-full bg-surface text-fg-muted border border-line">
-                        {course.semester}
+                        {formatYearSemester(course.semester)}
                       </span>
                     </div>
                     <div className="font-semibold text-xs text-fg truncate">
                       {course.title}
                     </div>
+                    {course.id && allFaculty.length > 0 && (
+                      <div className="mt-1.5 flex items-center gap-1.5">
+                        <span className="text-[11px] text-fg-muted shrink-0">Instructor:</span>
+                        <select
+                          aria-label={`Assign instructor for ${course.code}`}
+                          value={course.assignedTeacherId || ""}
+                          onChange={(e) => {
+                            const tid = e.target.value || null;
+                            const match = allFaculty.find((f) => f.id === tid);
+                            onAssignSubjectTeacher?.(
+                              course.id!,
+                              course.code,
+                              tid,
+                              match?.name || null
+                            );
+                          }}
+                          className="bg-surface border border-line rounded-md px-2 py-0.5 text-[11px] text-fg focus:border-brand focus-visible:outline-none cursor-pointer max-w-[210px]"
+                        >
+                          <option value="">Unassigned</option>
+                          {allFaculty
+                            .filter((f) => f.departmentId === selectedCurriculumDept.id)
+                            .map((f) => (
+                              <option key={f.id} value={f.id}>
+                                {f.name}
+                              </option>
+                            ))}
+                          {allFaculty
+                            .filter((f) => f.departmentId !== selectedCurriculumDept.id)
+                            .map((f) => (
+                              <option key={f.id} value={f.id}>
+                                {f.name} (Cross-Dept)
+                              </option>
+                            ))}
+                        </select>
+                      </div>
+                    )}
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="font-sans tabular-nums text-xs text-success font-semibold bg-success-light px-2.5 py-1 rounded-lg border border-success/30">
@@ -609,7 +710,7 @@ export function DepartmentModals({
                     </button>
                   </div>
                 </div>
-              ))}
+              )))}
             </div>
 
             <div className="pt-4 mt-4 border-t border-line flex items-center justify-between text-xs text-fg-muted">
@@ -658,20 +759,71 @@ export function DepartmentModals({
             </div>
 
             <div className="space-y-4">
-              <div>
-                <label
-                  htmlFor="dept-settings-hod"
-                  className="block text-xs font-semibold text-fg-muted mb-1.5"
-                >
-                  Assigned Head of Department (HOD)
-                </label>
-                <input
-                  id="dept-settings-hod"
-                  type="text"
-                  value={settingsHod}
-                  onChange={(e) => setSettingsHod(e.target.value)}
-                  className="w-full min-h-[44px] bg-surface-2 border border-line focus:border-brand rounded-xl px-3.5 py-2 text-xs text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-                />
+              <div className="p-3.5 rounded-xl bg-surface-2/70 border border-line space-y-2.5">
+                <div className="flex items-center justify-between gap-2">
+                  <label
+                    htmlFor="dept-settings-hod-select"
+                    className="block text-xs font-semibold text-fg"
+                  >
+                    Assign / Edit Head of Department (HOD)
+                  </label>
+                  {isDeptAdmin && (
+                    <span className="text-[11px] font-semibold text-fg-muted">
+                      Admin Only
+                    </span>
+                  )}
+                </div>
+
+                {allFaculty.length > 0 && (
+                  <select
+                    id="dept-settings-hod-select"
+                    disabled={isDeptAdmin}
+                    value={settingsHodId}
+                    onChange={(e) => {
+                      const pickedId = e.target.value;
+                      setSettingsHodId(pickedId);
+                      const match = allFaculty.find((f) => f.id === pickedId);
+                      if (match) {
+                        setSettingsHod(match.name);
+                      }
+                    }}
+                    className="w-full min-h-[42px] bg-surface border border-line focus:border-brand rounded-xl px-3 py-2 text-xs text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    <option value="">Select registered faculty or type custom name below...</option>
+                    {allFaculty
+                      .filter((f) => f.departmentId === selectedSettingsDept.id)
+                      .map((f) => (
+                        <option key={f.id} value={f.id}>
+                          {f.name} ({selectedSettingsDept.code}{f.code ? ` · ${f.code}` : ""})
+                        </option>
+                      ))}
+                    {allFaculty
+                      .filter((f) => f.departmentId !== selectedSettingsDept.id)
+                      .map((f) => (
+                        <option key={f.id} value={f.id}>
+                          {f.name}{f.code ? ` (${f.code})` : ""}
+                        </option>
+                      ))}
+                  </select>
+                )}
+
+                <div>
+                  <label
+                    htmlFor="dept-settings-hod"
+                    className="block text-[11px] font-medium text-fg-muted mb-1"
+                  >
+                    HOD Display Name
+                  </label>
+                  <input
+                    id="dept-settings-hod"
+                    type="text"
+                    disabled={isDeptAdmin}
+                    value={settingsHod}
+                    onChange={(e) => setSettingsHod(e.target.value)}
+                    placeholder="e.g. Prof. Dr. M. Lutfar Rahman"
+                    className="w-full min-h-[42px] bg-surface border border-line focus:border-brand rounded-xl px-3.5 py-2 text-xs text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-60 disabled:cursor-not-allowed"
+                  />
+                </div>
               </div>
 
               <div>
@@ -679,15 +831,16 @@ export function DepartmentModals({
                   htmlFor="dept-settings-admin-name"
                   className="block text-xs font-semibold text-fg-muted mb-1.5"
                 >
-                  Department Administrator Name
+                  Department Admin Name
                 </label>
                 <input
                   id="dept-settings-admin-name"
                   type="text"
-                  placeholder="e.g. CSE Dept Admin"
+                  disabled={isDeptAdmin}
+                  placeholder="e.g. CSE Department Admin"
                   value={settingsAdminName}
                   onChange={(e) => setSettingsAdminName(e.target.value)}
-                  className="w-full min-h-[44px] bg-surface-2 border border-line focus:border-brand rounded-xl px-3.5 py-2 text-xs text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                  className="w-full min-h-[44px] bg-surface-2 border border-line focus:border-brand rounded-xl px-3.5 py-2 text-xs text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-60 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -696,15 +849,16 @@ export function DepartmentModals({
                   htmlFor="dept-settings-admin-email"
                   className="block text-xs font-semibold text-fg-muted mb-1.5"
                 >
-                  Department Administrator Email
+                  Department Admin Email
                 </label>
                 <input
                   id="dept-settings-admin-email"
                   type="email"
+                  disabled={isDeptAdmin}
                   placeholder="e.g. cse.admin@unicampus.edu"
                   value={settingsAdminEmail}
                   onChange={(e) => setSettingsAdminEmail(e.target.value)}
-                  className="w-full min-h-[44px] bg-surface-2 border border-line focus:border-brand rounded-xl px-3.5 py-2 text-xs text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                  className="w-full min-h-[44px] bg-surface-2 border border-line focus:border-brand rounded-xl px-3.5 py-2 text-xs text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-60 disabled:cursor-not-allowed"
                 />
               </div>
 

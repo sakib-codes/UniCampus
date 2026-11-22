@@ -151,10 +151,10 @@ export default function LoginPage() {
               <span className="font-semibold text-fg block">Administrative Authority Scope:</span>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
                 {[
-                  { id: "super", label: "Superadmin" },
-                  { id: "dept-cse", label: "CSE Dept" },
-                  { id: "dept-eee", label: "EEE Dept" },
-                  { id: "dept-bba", label: "BBA Dept" },
+                  { id: "super", label: "Admin" },
+                  { id: "dept-cse", label: "CSE Dept Admin" },
+                  { id: "dept-eee", label: "EEE Dept Admin" },
+                  { id: "dept-bba", label: "BBA Dept Admin" },
                 ].map((dept) => (
                   <button
                     key={dept.id}
@@ -193,13 +193,12 @@ export default function LoginPage() {
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs">
                 <label htmlFor="login-password" className="font-semibold text-fg">Password</label>
-                <button
-                  type="button"
-                  onClick={() => setForgotModalOpen(true)}
-                  className="text-brand hover:underline font-medium cursor-pointer"
+                <Link
+                  href="/forgot-password"
+                  className="text-brand hover:underline font-medium"
                 >
                   Forgot password?
-                </button>
+                </Link>
               </div>
               <div className="relative">
                 <input

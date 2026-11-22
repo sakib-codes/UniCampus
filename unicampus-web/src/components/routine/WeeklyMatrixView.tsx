@@ -105,7 +105,7 @@ export const WeeklyMatrixView = memo(function WeeklyMatrixView({
             </div>
             <div>
               <h2 className="font-sans font-semibold text-base text-fg">
-                Spring 2026 Master Timetable Grid
+                3rd Year · 6th Semester Master Timetable Grid
               </h2>
               <p className="text-xs text-fg-muted">
                 Full weekly department layout • CSE Section A

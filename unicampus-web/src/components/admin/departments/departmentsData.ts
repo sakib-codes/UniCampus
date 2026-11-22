@@ -32,6 +32,8 @@ export interface DepartmentData {
     type: "Theory" | "Lab";
     semester: string;
     semesterId?: string;
+    assignedTeacherId?: string | null;
+    assignedTeacherName?: string | null;
   }[];
 }
 

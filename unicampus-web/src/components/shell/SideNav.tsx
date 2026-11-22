@@ -41,7 +41,7 @@ export const NAV_GROUPS: Record<
     {
       key: "academic",
       label: "Academic",
-      ids: ["home", "advising", "routine", "progress", "payments"],
+      ids: ["home", "advising", "assignments", "routine", "progress", "payments"],
     },
     {
       key: "community",
@@ -53,7 +53,7 @@ export const NAV_GROUPS: Record<
     {
       key: "teaching",
       label: "Teaching",
-      ids: ["home", "attendance", "gradebook", "routine", "materials"],
+      ids: ["home", "attendance", "gradebook", "advising", "assignments", "routine", "materials"],
     },
     {
       key: "operations",
@@ -94,8 +94,8 @@ export function SideNav({
   const displayMeta =
     role === "admin"
       ? isDeptAdmin
-        ? currentUser?.department_name || "Department Admin"
-        : "Super Admin"
+        ? "Department Admin"
+        : "Admin"
       : role === "teacher"
       ? currentUser?.department_name || "Faculty"
       : currentUser?.student_id || "Student";
@@ -234,7 +234,7 @@ export function SideNav({
                       {isRestrictedForDept && (
                         <span
                           className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-surface-2 text-fg-muted text-[12px] leading-none shrink-0"
-                          title="Super Admin only"
+                          title="Admin only"
                         >
                           <Lock className="w-3 h-3" />
                         </span>

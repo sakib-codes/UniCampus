@@ -207,7 +207,7 @@ export default function AdminSettingsPage() {
             <div className="pt-4 mt-4 border-t border-line px-3">
               <div className="flex items-center gap-2 text-xs font-sans text-fg-muted">
                 <Cpu className="w-3.5 h-3.5" />
-                <span>Campus Engine · Spring 2026</span>
+                <span>Campus Engine · Academic Year 2026</span>
               </div>
             </div>
           </div>

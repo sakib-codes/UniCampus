@@ -12,6 +12,7 @@ import {
   Clock,
   Compass,
   Copy,
+  CreditCard,
   Edit3,
   ExternalLink,
   Eye,
@@ -28,6 +29,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { Toast } from "@/components/ui/Toast";
+import { AcademicIdCard } from "@/components/common/AcademicIdCard";
 import { cn } from "@/components/ui/cn";
 
 type AvailabilityStatus = "In Office" | "In Class" | "Advising" | "Online" | "Away";
@@ -142,6 +144,7 @@ export default function TeacherProfilePage() {
 
   // Edit Modal state
   const [editOpen, setEditOpen] = useState(false);
+  const [idCardOpen, setIdCardOpen] = useState(false);
   const [draftBio, setDraftBio] = useState(bio);
   const [draftInterests, setDraftInterests] = useState(researchInterests.join(", "));
   const [draftPhone, setDraftPhone] = useState(phone);
@@ -216,6 +219,10 @@ export default function TeacherProfilePage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
+          <Button variant="secondary" size="md" onClick={() => setIdCardOpen(true)}>
+            <CreditCard className="w-4 h-4 text-brand" />
+            <span>Faculty ID Card</span>
+          </Button>
           <Link
             href="/teachers/1"
             className="inline-flex items-center justify-center gap-2 min-h-[44px] px-4 py-2 rounded-xl bg-surface hover:bg-surface-2 text-fg border border-line text-xs sm:text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
@@ -697,6 +704,28 @@ export default function TeacherProfilePage() {
             />
           </div>
         </form>
+      </Modal>
+
+      {/* Official Printable Faculty Academic ID Card Modal */}
+      <Modal
+        open={idCardOpen}
+        onClose={() => setIdCardOpen(false)}
+        title="Official Faculty Identity Card"
+        description="Auto-issued institutional faculty ID card for campus access and academic verification."
+        size="md"
+      >
+        <div className="py-2">
+          <AcademicIdCard
+            role="teacher"
+            academicId={CANONICAL_FACULTY.facultyCode}
+            fullName={CANONICAL_FACULTY.name}
+            departmentName={CANONICAL_FACULTY.departmentName}
+            departmentCode={CANONICAL_FACULTY.departmentCode}
+            designation={CANONICAL_FACULTY.designation}
+            bloodGroup="O+"
+            phone={phone}
+          />
+        </div>
       </Modal>
 
       {/* Feedback Toast */}

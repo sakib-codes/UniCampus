@@ -13,6 +13,8 @@ import {
   detectScheduleClashes, 
   type SelectedRegistrationItem 
 } from "@/components/advising/advisingData";
+import { advisingService } from "@/lib/services/advisingService";
+import { CANONICAL_STUDENT } from "@/lib/canonicalCampus";
 
 const STORAGE_KEY = "unicampus:course-advising";
 
@@ -26,6 +28,7 @@ const INITIAL_SELECTED: SelectedRegistrationItem[] = [
 export default function AdvisingPage() {
   const [selectedItems, setSelectedItems] = useState<SelectedRegistrationItem[]>(INITIAL_SELECTED);
   const [status, setStatus] = useState<"draft" | "submitted" | "approved">("draft");
+  const [advisorNote, setAdvisorNote] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
 
@@ -36,32 +39,39 @@ export default function AdvisingPage() {
     message: "",
   });
 
-  // Hydrate stored registration plan on client mount
+  // Hydrate stored registration plan and listen to advisor approval/revision updates
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
+    const hydrate = () => {
+      const synced = advisingService.getStudentSubmission(CANONICAL_STUDENT.studentId);
+      if (synced) {
         queueMicrotask(() => {
-          if (Array.isArray(parsed.items)) setSelectedItems(parsed.items);
-          if (parsed.status) setStatus(parsed.status);
+          setSelectedItems(synced.items);
+          setStatus(synced.status === "revision_requested" ? "draft" : synced.status);
+          setAdvisorNote(synced.advisorNote || null);
         });
+        return;
       }
-    } catch {
-      // Fallback to initial
-    }
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          queueMicrotask(() => {
+            if (Array.isArray(parsed.items)) setSelectedItems(parsed.items);
+            if (parsed.status) setStatus(parsed.status);
+          });
+        }
+      } catch {
+        // Fallback to initial
+      }
+    };
+    hydrate();
+    window.addEventListener("unicampus:advising-updated", hydrate);
+    return () => window.removeEventListener("unicampus:advising-updated", hydrate);
   }, []);
 
-  // Sync back to storage on changes
+  // Sync back to storage & shared advisor queue on changes
   const saveState = (items: SelectedRegistrationItem[], newStatus: "draft" | "submitted" | "approved") => {
-    try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({ items, status: newStatus })
-      );
-    } catch {
-      // Storage unavailable fallback
-    }
+    advisingService.upsertStudentPlan(items, newStatus);
   };
 
   // Clash calculation
@@ -172,6 +182,23 @@ export default function AdvisingPage() {
     <div className="w-full space-y-6 pb-16">
       {/* 1. Advising Page Header */}
       <AdvisingHeader status={status} />
+
+      {advisorNote && (
+        <div
+          className={`p-4 rounded-2xl border text-xs flex items-start justify-between gap-3 ${
+            status === "approved"
+              ? "bg-success-light border-success/30 text-fg"
+              : "bg-warning-light border-warning/30 text-fg"
+          }`}
+        >
+          <div>
+            <strong className={status === "approved" ? "text-success" : "text-warning"}>
+              {status === "approved" ? "Advisor Approval Note: " : "Advisor Revision Request: "}
+            </strong>
+            <span>{advisorNote}</span>
+          </div>
+        </div>
+      )}
 
       {/* 2. Main 2-Column Advising Studio */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">

@@ -94,7 +94,7 @@ export const GeneralTab = memo(function GeneralTab({
               {isTeacher
                 ? CANONICAL_FACULTY.designation
                 : isAdmin
-                ? "Super Admin"
+                ? "Admin"
                 : CANONICAL_STUDENT.batch}
             </span>
           </div>

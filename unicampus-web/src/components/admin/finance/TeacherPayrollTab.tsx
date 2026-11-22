@@ -237,11 +237,11 @@ export function TeacherPayrollTab({
           <Crown className="w-6 h-6" />
         </div>
         <h3 className="text-base font-semibold text-fg mb-1">
-          Super Admin Authority Required
+          Admin Authority Required
         </h3>
         <p className="text-xs text-fg-muted leading-relaxed mb-4">
-          Institutional faculty salary disbursements and corporate banking transfers are restricted to the central Super Administrator.
-          As {adminDepartmentName || "Department"} Administrator, you have full oversight over student fee collections and clearances under the{" "}
+          Institutional faculty salary disbursements and corporate banking transfers are restricted to the central Admin.
+          As a Department Admin ({adminDepartmentName || "Department"}), you have full oversight over student fee collections and clearances under the{" "}
           <strong>Department Dues</strong> tab.
         </p>
         <button

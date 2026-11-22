@@ -5,7 +5,35 @@
  * Teacher, and Admin portals as well as mock/service layers.
  */
 
-export const ACTIVE_TERM = "Spring 2026" as const;
+export const ACTIVE_TERM = "Academic Year 2026" as const;
+
+export const ACADEMIC_YEARS = [
+  { year: 1, label: "1st Year", semesters: ["1st Semester", "2nd Semester"] as const },
+  { year: 2, label: "2nd Year", semesters: ["3rd Semester", "4th Semester"] as const },
+  { year: 3, label: "3rd Year", semesters: ["5th Semester", "6th Semester"] as const },
+  { year: 4, label: "4th Year", semesters: ["7th Semester", "8th Semester"] as const },
+] as const;
+
+export function getAcademicYearForSemester(semester: string): string {
+  const s = semester.toLowerCase();
+  if (s.includes("1st") || s.includes("2nd") || s === "1" || s === "2" || s.endsWith("-1") || s.endsWith("-2")) {
+    return "1st Year";
+  }
+  if (s.includes("3rd") || s.includes("4th") || s === "3" || s === "4" || s.endsWith("-3") || s.endsWith("-4")) {
+    return "2nd Year";
+  }
+  if (s.includes("5th") || s.includes("6th") || s === "5" || s === "6" || s.endsWith("-5") || s.endsWith("-6")) {
+    return "3rd Year";
+  }
+  if (s.includes("7th") || s.includes("8th") || s === "7" || s === "8" || s.endsWith("-7") || s.endsWith("-8")) {
+    return "4th Year";
+  }
+  return "1st Year";
+}
+
+export function formatYearSemester(semester: string): string {
+  return `${getAcademicYearForSemester(semester)} • ${semester}`;
+}
 
 export const CANONICAL_STUDENT = {
   id: "user-stud-1",

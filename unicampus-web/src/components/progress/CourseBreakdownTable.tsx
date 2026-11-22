@@ -70,12 +70,12 @@ interface CourseBreakdownTableProps {
 
 const SEMESTER_TABS = [
   { id: "all", label: "All Courses", pill: "96.0 Cr", tone: "neutral" as const },
-  { id: "sem-6", label: "Sem 6: Spring 2026 (Active)", pill: "Proj 3.85", tone: "success" as const },
-  { id: "sem-5", label: "Sem 5: Fall 2025", pill: "SGPA 3.84", tone: "brand" as const },
-  { id: "sem-4", label: "Sem 4: Spring 2025", pill: "SGPA 3.81", tone: "neutral" as const },
-  { id: "sem-3", label: "Sem 3: Fall 2024", pill: "SGPA 3.68", tone: "neutral" as const },
-  { id: "sem-2", label: "Sem 2: Spring 2024", pill: "SGPA 3.70", tone: "neutral" as const },
-  { id: "sem-1", label: "Sem 1: Fall 2023", pill: "SGPA 3.62", tone: "neutral" as const },
+  { id: "sem-6", label: "3rd Year · 6th Sem (Active)", pill: "Proj 3.85", tone: "success" as const },
+  { id: "sem-5", label: "3rd Year · 5th Sem", pill: "SGPA 3.84", tone: "brand" as const },
+  { id: "sem-4", label: "2nd Year · 4th Sem", pill: "SGPA 3.81", tone: "neutral" as const },
+  { id: "sem-3", label: "2nd Year · 3rd Sem", pill: "SGPA 3.68", tone: "neutral" as const },
+  { id: "sem-2", label: "1st Year · 2nd Sem", pill: "SGPA 3.70", tone: "neutral" as const },
+  { id: "sem-1", label: "1st Year · 1st Sem", pill: "SGPA 3.62", tone: "neutral" as const },
 ];
 
 export const CourseBreakdownTable = memo(function CourseBreakdownTable({

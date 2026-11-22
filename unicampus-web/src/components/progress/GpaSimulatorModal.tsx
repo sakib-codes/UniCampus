@@ -98,7 +98,7 @@ export const GpaSimulatorModal = memo(function GpaSimulatorModal({
                     Interactive GPA Scenario Simulator
                   </h3>
                   <p className="text-xs text-fg-muted">
-                    Adjust target grades for Spring 2026 courses to calculate projected SGPA and cumulative CGPA.
+                    Adjust target grades for 3rd Year · 6th Semester courses to calculate projected SGPA and cumulative CGPA.
                   </p>
                 </div>
               </div>

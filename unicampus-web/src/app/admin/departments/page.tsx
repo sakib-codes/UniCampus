@@ -14,6 +14,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { CAMPUS_METRICS } from "@/lib/canonicalCampus";
+import { ORDINAL_SEMESTERS } from "@/lib/mockData";
 import {
   DEPARTMENTS,
   type DepartmentData,
@@ -23,17 +24,47 @@ import { DepartmentModals } from "@/components/admin/departments/DepartmentModal
 import { adminService } from "@/lib/services/adminService";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 
+function resolveSemesterName(semesterId: string, semestersMap: Map<string, string>): string {
+  if (semestersMap.has(semesterId)) {
+    return semestersMap.get(semesterId)!;
+  }
+  const match = semesterId.match(/-(\d+)$/);
+  if (match) {
+    const idx = parseInt(match[1], 10) - 1;
+    if (idx >= 0 && idx < ORDINAL_SEMESTERS.length) {
+      return ORDINAL_SEMESTERS[idx];
+    }
+  }
+  return "1st Semester";
+}
+
 export default function AdminDepartmentsPage() {
   const { isDeptAdmin } = useAdminAuth();
   const [departments, setDepartments] = useState<DepartmentData[]>(DEPARTMENTS);
+  const [allFaculty, setAllFaculty] = useState<
+    { id: string; name: string; departmentId: string; code?: string | null }[]
+  >([]);
   const [searchFilter, setSearchFilter] = useState("");
 
-  // Modals & Drawers
+  // Modals & Drawers (store IDs so open modals always reflect live state)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [selectedRosterDept, setSelectedRosterDept] = useState<DepartmentData | null>(null);
-  const [selectedCurriculumDept, setSelectedCurriculumDept] = useState<DepartmentData | null>(null);
-  const [selectedSettingsDept, setSelectedSettingsDept] = useState<DepartmentData | null>(null);
+  const [selectedRosterDeptId, setSelectedRosterDeptId] = useState<string | null>(null);
+  const [selectedCurriculumDeptId, setSelectedCurriculumDeptId] = useState<string | null>(null);
+  const [selectedSettingsDeptId, setSelectedSettingsDeptId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const selectedRosterDept = useMemo(
+    () => departments.find((d) => d.id === selectedRosterDeptId) ?? null,
+    [departments, selectedRosterDeptId]
+  );
+  const selectedCurriculumDept = useMemo(
+    () => departments.find((d) => d.id === selectedCurriculumDeptId) ?? null,
+    [departments, selectedCurriculumDeptId]
+  );
+  const selectedSettingsDept = useMemo(
+    () => departments.find((d) => d.id === selectedSettingsDeptId) ?? null,
+    [departments, selectedSettingsDeptId]
+  );
 
   // New Department Form State
   const [newDeptName, setNewDeptName] = useState("");
@@ -52,7 +83,20 @@ export default function AdminDepartmentsPage() {
   const loadDepartmentsData = useCallback(() => {
     const storedDepts = adminService.getDepartments();
     const storedSubjects = adminService.getSubjects();
+    const storedSemesters = adminService.getSemesters();
     const storedProfiles = adminService.getProfiles();
+    const semestersMap = new Map(storedSemesters.map((sem) => [sem.id, sem.name]));
+
+    setAllFaculty(
+      storedProfiles
+        .filter((p) => p.role === "teacher")
+        .map((p) => ({
+          id: p.id,
+          name: p.full_name,
+          departmentId: p.department_id,
+          code: p.teacher_code,
+        }))
+    );
 
     const combined: DepartmentData[] = storedDepts.map((d) => {
       const existing = DEPARTMENTS.find((base) => base.id === d.id);
@@ -74,9 +118,18 @@ export default function AdminDepartmentsPage() {
           title: s.title,
           credits: s.credit,
           type: (s.type || "Theory") as "Theory" | "Lab",
-          semester: "1st Semester",
+          semester: resolveSemesterName(s.semester_id, semestersMap),
           semesterId: s.semester_id,
-        }));
+          assignedTeacherId: s.assigned_teacher_id || null,
+          assignedTeacherName: s.assigned_teacher_name || null,
+        }))
+        .sort((a, b) => {
+          const semDiff =
+            ORDINAL_SEMESTERS.indexOf(a.semester as (typeof ORDINAL_SEMESTERS)[number]) -
+            ORDINAL_SEMESTERS.indexOf(b.semester as (typeof ORDINAL_SEMESTERS)[number]);
+          if (semDiff !== 0) return semDiff;
+          return a.code.localeCompare(b.code);
+        });
 
       const initials =
         d.head_teacher_name
@@ -90,7 +143,7 @@ export default function AdminDepartmentsPage() {
         id: d.id,
         code: d.code,
         codeNumber: existing?.codeNumber || `CODE ${d.code}`,
-        division: existing?.division || "Undergraduate Studies",
+        division: existing?.division || "4-Year Undergraduate Program",
         name: d.name,
         initials,
         hodName: d.head_teacher_name || existing?.hodName || "Dean Appointee",
@@ -101,12 +154,12 @@ export default function AdminDepartmentsPage() {
         deptAdminName: d.dept_admin_name,
         deptAdminEmail: d.dept_admin_email,
         office: existing?.office || "Academic Wing, Room 301",
-        totalStudents: d.stats?.students ?? existing?.totalStudents ?? 450,
-        totalFaculty: d.stats?.teachers ?? (deptFaculty.length || existing?.totalFaculty || 18),
-        activePrograms: existing?.activePrograms || ["B.Sc.", "M.Sc."],
+        totalStudents: d.stats?.students ?? existing?.totalStudents ?? 0,
+        totalFaculty: d.stats?.teachers ?? (deptFaculty.length || existing?.totalFaculty || 0),
+        activePrograms: existing?.activePrograms || ["B.Sc. (4-Year / 8-Sem)"],
         status: (existing?.status as "Accredited • Active" | "Pending Review") || "Accredited • Active",
         facultyList: deptFaculty.length > 0 ? deptFaculty : existing?.facultyList || [],
-        curriculumList: deptSubjects.length > 0 ? deptSubjects : existing?.curriculumList || [],
+        curriculumList: deptSubjects,
       };
     });
 
@@ -137,7 +190,7 @@ export default function AdminDepartmentsPage() {
     e.preventDefault();
     if (!newDeptName.trim() || !newDeptCode.trim()) return;
 
-    adminService.createDepartment({
+    const created = adminService.createDepartment({
       name: newDeptName.trim(),
       code: newDeptCode.toUpperCase().trim(),
       head_teacher_id: null,
@@ -145,7 +198,7 @@ export default function AdminDepartmentsPage() {
       stats: {
         students: parseInt(newDeptCapacity, 10) || 450,
         teachers: parseInt(newDeptFacultyCount, 10) || 18,
-        courses: 2,
+        courses: 0,
       },
     });
 
@@ -156,13 +209,15 @@ export default function AdminDepartmentsPage() {
     setNewDeptCodeNum("");
     setNewDeptHod("");
     setNewDeptOffice("");
-    showToast(`Successfully created ${newDeptName.trim()} (${newDeptCode.toUpperCase().trim()}).`);
+    setSelectedCurriculumDeptId(created.id);
+    showToast(`Created ${created.name} (${created.code}) with 4-Year / 8-Semester curriculum. You can now add subjects.`);
   };
 
   const handleSaveSettings = (
     dept: DepartmentData,
     updates: {
       hodName: string;
+      headTeacherId?: string | null;
       office: string;
       status: "Accredited • Active" | "Pending Review";
       totalStudents: number;
@@ -170,10 +225,14 @@ export default function AdminDepartmentsPage() {
       deptAdminEmail?: string;
     }
   ) => {
-    if (updates.hodName) {
-      adminService.updateDepartmentHOD(dept.id, dept.headTeacherId || "teach-hod", updates.hodName);
+    if (!isDeptAdmin && updates.hodName) {
+      adminService.updateDepartmentHOD(
+        dept.id,
+        updates.headTeacherId ?? dept.headTeacherId ?? null,
+        updates.hodName
+      );
     }
-    if (updates.deptAdminName && updates.deptAdminEmail) {
+    if (!isDeptAdmin && updates.deptAdminName && updates.deptAdminEmail) {
       adminService.updateDepartmentAdmin(
         dept.id,
         dept.deptAdminId || `admin-${dept.code.toLowerCase()}`,
@@ -182,24 +241,40 @@ export default function AdminDepartmentsPage() {
       );
     }
     loadDepartmentsData();
-    setSelectedSettingsDept(null);
-    showToast(`Saved governance parameters for ${dept.code}.`);
+    setSelectedSettingsDeptId(null);
+    showToast(`Saved governance parameters & HOD assignment for ${dept.code}.`);
   };
 
   const handleCreateSubject = (
     deptId: string,
     subject: { code: string; title: string; credit: number; type: "Theory" | "Lab"; semester_name: string }
   ) => {
+    const dept = departments.find((d) => d.id === deptId);
+    const deptSlug = (dept?.code || deptId.replace(/^dept-/, "")).toLowerCase();
+    const semIndex = Math.max(
+      1,
+      ORDINAL_SEMESTERS.indexOf(subject.semester_name as (typeof ORDINAL_SEMESTERS)[number]) + 1
+    );
+    const normalizedCode = subject.code.trim().toUpperCase();
+
+    const duplicate = dept?.curriculumList.some(
+      (c) => c.code.toUpperCase() === normalizedCode
+    );
+    if (duplicate) {
+      showToast(`Subject code ${normalizedCode} already exists in ${dept?.code}.`);
+      return;
+    }
+
     adminService.createSubject({
       department_id: deptId,
-      semester_id: `sem-${deptId}-1`,
-      code: subject.code,
-      title: subject.title,
+      semester_id: `sem-${deptSlug}-${semIndex}`,
+      code: normalizedCode,
+      title: subject.title.trim(),
       credit: subject.credit,
       type: subject.type,
     });
     loadDepartmentsData();
-    showToast(`Added ${subject.code} (${subject.title}) to curriculum.`);
+    showToast(`Added ${normalizedCode} (${subject.title.trim()}) to ${subject.semester_name}.`);
   };
 
   const handleDeleteSubject = (subjectId?: string, code?: string) => {
@@ -208,6 +283,27 @@ export default function AdminDepartmentsPage() {
     }
     loadDepartmentsData();
     showToast(`Removed course ${code || ""} from syllabus.`);
+  };
+
+  const handleAssignSubjectTeacher = (
+    subjectId: string,
+    courseCode: string,
+    teacherId: string | null,
+    teacherName: string | null
+  ) => {
+    adminService.updateSubject(subjectId, {
+      assigned_teacher_id: teacherId,
+      assigned_teacher_name: teacherName,
+    });
+    if (teacherId) {
+      adminService.assignCourseToTeacher(teacherId, courseCode);
+    }
+    loadDepartmentsData();
+    showToast(
+      teacherName
+        ? `Assigned ${teacherName} to teach ${courseCode}.`
+        : `Cleared instructor assignment for ${courseCode}.`
+    );
   };
 
   return (
@@ -284,7 +380,7 @@ export default function AdminDepartmentsPage() {
           <div className="min-w-0">
             <div className="text-xs font-sans text-fg-muted">Active Faculties</div>
             <div className="text-2xl font-sans font-bold text-fg mt-1 tabular-nums">
-              {CAMPUS_METRICS.departmentsCount}{" "}
+              {departments.length}{" "}
               <span className="text-xs font-normal text-fg-muted">Depts</span>
             </div>
           </div>
@@ -338,9 +434,11 @@ export default function AdminDepartmentsPage() {
           <DepartmentCard
             key={dept.id}
             dept={dept}
-            onSelectRoster={setSelectedRosterDept}
-            onSelectCurriculum={setSelectedCurriculumDept}
-            onSelectSettings={setSelectedSettingsDept}
+            isSuperAdmin={!isDeptAdmin}
+            onSelectRoster={(d) => setSelectedRosterDeptId(d.id)}
+            onSelectCurriculum={(d) => setSelectedCurriculumDeptId(d.id)}
+            onSelectSettings={(d) => setSelectedSettingsDeptId(d.id)}
+            onAssignHod={(d) => setSelectedSettingsDeptId(d.id)}
           />
         ))}
       </div>
@@ -386,15 +484,18 @@ export default function AdminDepartmentsPage() {
         onNewDeptFacultyCountChange={setNewDeptFacultyCount}
         onCreateDepartment={handleCreateDepartment}
         selectedRosterDept={selectedRosterDept}
-        onCloseRosterDept={() => setSelectedRosterDept(null)}
+        onCloseRosterDept={() => setSelectedRosterDeptId(null)}
         selectedCurriculumDept={selectedCurriculumDept}
-        onCloseCurriculumDept={() => setSelectedCurriculumDept(null)}
+        onCloseCurriculumDept={() => setSelectedCurriculumDeptId(null)}
         onCreateSubject={handleCreateSubject}
         onDeleteSubject={handleDeleteSubject}
+        onAssignSubjectTeacher={handleAssignSubjectTeacher}
         selectedSettingsDept={selectedSettingsDept}
-        onCloseSettingsDept={() => setSelectedSettingsDept(null)}
+        onCloseSettingsDept={() => setSelectedSettingsDeptId(null)}
         onSaveSettings={handleSaveSettings}
         onShowToast={showToast}
+        isDeptAdmin={isDeptAdmin}
+        allFaculty={allFaculty}
       />
     </div>
   );

@@ -17,7 +17,7 @@ interface AdminAuthContextType {
   effectiveDeptId: string; // 'all' or department id currently in focus
   isApproved: boolean;
   isSuspended: boolean;
-  accountStatus: 'active' | 'pending' | 'suspended';
+  accountStatus: 'active' | 'pending' | 'suspended' | 'rejected';
   hasExplicitSession: boolean;
   canManageUser: (target: Profile) => boolean;
   isLoaded: boolean;
@@ -244,10 +244,12 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
   // For Super Admin, whatever activeScopeDeptId is selected ('all' or specific)
   const effectiveDeptId = isDeptAdmin ? (currentUser?.department_id || 'all') : activeScopeDeptId;
 
-  const accountStatus: 'active' | 'pending' | 'suspended' =
+  const accountStatus: 'active' | 'pending' | 'suspended' | 'rejected' =
     currentUser?.account_status || (currentUser?.is_approved ? 'active' : 'pending');
   const isSuspended = accountStatus === 'suspended';
-  const isApproved = Boolean(currentUser?.is_approved && !isSuspended && accountStatus !== 'pending');
+  const isApproved = Boolean(
+    currentUser?.is_approved && !isSuspended && accountStatus !== 'pending' && accountStatus !== 'rejected'
+  );
 
   const canManageUser = (target: Profile): boolean => {
     if (!currentUser || currentUser.role !== 'admin') return false;

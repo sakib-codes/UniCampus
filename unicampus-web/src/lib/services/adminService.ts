@@ -23,6 +23,10 @@ import {
   ORDINAL_SEMESTERS
 } from '@/lib/mockData';
 import { getSupabaseClient } from '@/lib/supabase/client';
+import {
+  generateStudentAcademicId,
+  generateTeacherAcademicId,
+} from '@/lib/academicIdGenerator';
 
 const ADMIN_SCHEMA_VERSION = 'v2';
 const SCHEMA_VERSION_KEY = 'unicampus_admin_schema_version';
@@ -48,7 +52,7 @@ const INITIAL_AUDIT_LOGS: AuditLogItem[] = [
     category: "Access",
     title: "Role Assignment",
     description: "Faculty portal role assigned to dr.farhana@unicampus.edu.",
-    actor_name: "Super Admin",
+    actor_name: "Admin",
     department_id: "dept-cse",
     department_name: "Computer Science & Engineering",
     iconBg: "bg-brand-soft",
@@ -85,8 +89,8 @@ const INITIAL_AUDIT_LOGS: AuditLogItem[] = [
     time: "1h ago",
     timestamp: new Date(Date.now() - 60 * 60000).toISOString(),
     category: "Snapshot",
-    title: "Academic Term Archive",
-    description: "Semester gradebook & student registry records archived for Spring 2026.",
+    title: "Academic Session Archive",
+    description: "Semester gradebook & student registry records archived for Academic Year 2026.",
     actor_name: "System Registrar",
     department_id: null,
     department_name: "Central University Administration",
@@ -176,10 +180,32 @@ class AdminService {
     return getStoredItem<Profile[]>(STORAGE_KEYS.PROFILES, INITIAL_PROFILES);
   }
 
-  approveProfile(id: string): Profile[] {
+  approveProfile(id: string, actorName: string = 'Academic Administration'): Profile[] {
     const profiles = this.getProfiles();
-    const updated = profiles.map((p) => (p.id === id ? { ...p, is_approved: true, account_status: 'active' as const } : p));
+    const target = profiles.find((p) => p.id === id);
+    const updated = profiles.map((p) =>
+      p.id === id
+        ? {
+            ...p,
+            is_approved: true,
+            account_status: 'active' as const,
+            rejection_reason: null,
+            reviewed_at: new Date().toISOString(),
+            reviewed_by: actorName,
+          }
+        : p
+    );
     setStoredItem(STORAGE_KEYS.PROFILES, updated);
+    if (target) {
+      this.logAction({
+        category: 'Access',
+        title: 'Registration Approved',
+        description: `Approved ${target.role} registration for ${target.full_name} (${target.student_id || target.teacher_code || target.email}).`,
+        actor_name: actorName,
+        department_id: target.department_id,
+        department_name: target.department_name,
+      });
+    }
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new Event('unicampus:profiles-updated'));
     }
@@ -221,14 +247,80 @@ class AdminService {
     return updated;
   }
 
-  rejectProfile(id: string): Profile[] {
+  rejectProfile(
+    id: string,
+    reason: string = 'Application requires correction before verification.',
+    actorName: string = 'Academic Administration'
+  ): Profile[] {
     const profiles = this.getProfiles();
-    const updated = profiles.filter((p) => p.id !== id);
+    const target = profiles.find((p) => p.id === id);
+    const trimmedReason = reason.trim() || 'Application requires correction before verification.';
+    const updated = profiles.map((p) =>
+      p.id === id
+        ? {
+            ...p,
+            is_approved: false,
+            account_status: 'rejected' as const,
+            rejection_reason: trimmedReason,
+            reviewed_at: new Date().toISOString(),
+            reviewed_by: actorName,
+          }
+        : p
+    );
     setStoredItem(STORAGE_KEYS.PROFILES, updated);
+    if (target) {
+      this.logAction({
+        category: 'Access',
+        title: 'Registration Rejected',
+        description: `Rejected ${target.full_name} (${target.email}): "${trimmedReason}"`,
+        actor_name: actorName,
+        department_id: target.department_id,
+        department_name: target.department_name,
+      });
+    }
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new Event('unicampus:profiles-updated'));
     }
     return updated;
+  }
+
+  getProfileByEmail(email: string): Profile | undefined {
+    const normalized = email.trim().toLowerCase();
+    if (!normalized) return undefined;
+    return this.getProfiles().find((p) => p.email.trim().toLowerCase() === normalized);
+  }
+
+  resubmitProfile(id: string, updates: Partial<Profile>): Profile | null {
+    const profiles = this.getProfiles();
+    let resubmitted: Profile | null = null;
+    const updated = profiles.map((p) => {
+      if (p.id !== id) return p;
+      resubmitted = {
+        ...p,
+        ...updates,
+        is_approved: false,
+        account_status: 'pending' as const,
+        rejection_reason: null,
+        reviewed_at: null,
+        reviewed_by: null,
+      };
+      return resubmitted;
+    });
+    if (!resubmitted) return null;
+    setStoredItem(STORAGE_KEYS.PROFILES, updated);
+    const finalProfile = resubmitted as Profile;
+    this.logAction({
+      category: 'Access',
+      title: 'Application Resubmitted',
+      description: `${finalProfile.full_name} (${finalProfile.email}) updated their dossier and re-applied for verification.`,
+      actor_name: finalProfile.full_name,
+      department_id: finalProfile.department_id,
+      department_name: finalProfile.department_name,
+    });
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('unicampus:profiles-updated'));
+    }
+    return finalProfile;
   }
 
   updateProfile(id: string, updates: Partial<Profile>): Profile[] {
@@ -243,8 +335,23 @@ class AdminService {
 
   createProfile(data: Omit<Profile, 'id' | 'created_at'>): Profile {
     const profiles = this.getProfiles();
+    const depts = this.getDepartments();
+    const dept = depts.find((d) => d.id === data.department_id);
+    const deptCode = dept?.code || data.department_id.replace(/^dept-/, '').toUpperCase() || 'GEN';
+
+    const autoStudentId =
+      data.role === 'student'
+        ? data.student_id || generateStudentAcademicId(deptCode, profiles)
+        : data.student_id;
+    const autoTeacherCode =
+      data.role === 'teacher'
+        ? data.teacher_code || generateTeacherAcademicId(deptCode, profiles)
+        : data.teacher_code;
+
     const newProfile: Profile = {
       ...data,
+      student_id: autoStudentId,
+      teacher_code: autoTeacherCode,
       id: `user-${Date.now()}`,
       created_at: new Date().toISOString(),
     };
@@ -267,14 +374,28 @@ class AdminService {
     return all.filter((s) => s.department_id === deptId);
   }
 
-  updateDepartmentHOD(deptId: string, headTeacherId: string, headTeacherName: string): Department[] {
+  updateDepartmentHOD(deptId: string, headTeacherId: string | null, headTeacherName: string): Department[] {
     const depts = this.getDepartments();
-    const updated = depts.map((d) => 
-      d.id === deptId 
+    const target = depts.find((d) => d.id === deptId);
+    const updated = depts.map((d) =>
+      d.id === deptId
         ? { ...d, head_teacher_id: headTeacherId, head_teacher_name: headTeacherName }
         : d
     );
     setStoredItem(STORAGE_KEYS.DEPARTMENTS, updated);
+    if (target) {
+      this.logAction({
+        category: 'Access',
+        title: 'Department Head Updated',
+        description: `Assigned ${headTeacherName} as Head of Department for ${target.name} (${target.code}).`,
+        actor_name: 'Admin',
+        department_id: target.id,
+        department_name: target.name,
+      });
+    }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('unicampus:departments-updated'));
+    }
     return updated;
   }
 
@@ -311,21 +432,28 @@ class AdminService {
 
   createDepartment(data: Omit<Department, 'id'>): Department {
     const depts = this.getDepartments();
-    const id = `dept-${data.code.toLowerCase()}`;
+    const slug = data.code.toLowerCase().replace(/[^a-z0-9]/g, '');
+    let id = `dept-${slug}`;
+    if (depts.some((d) => d.id === id)) {
+      id = `dept-${slug}-${Date.now().toString().slice(-4)}`;
+    }
     const newDept: Department = { ...data, id };
     const updated = [...depts, newDept];
     setStoredItem(STORAGE_KEYS.DEPARTMENTS, updated);
 
-    // Also auto-generate 1st to 8th semester for this new department
+    // Auto-generate 4-Year / 8-Semester structure (1st through 8th Semester) for this department
     const semesters = this.getSemesters();
     const newSemesters: Semester[] = ORDINAL_SEMESTERS.map((name, index) => ({
-      id: `sem-${data.code.toLowerCase()}-${index + 1}`,
+      id: `sem-${slug}-${index + 1}`,
       department_id: id,
       name,
       order_index: index + 1,
     }));
     setStoredItem(STORAGE_KEYS.SEMESTERS, [...semesters, ...newSemesters]);
 
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('unicampus:departments-updated'));
+    }
     return newDept;
   }
 

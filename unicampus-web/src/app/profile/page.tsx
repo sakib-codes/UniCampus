@@ -12,7 +12,9 @@ import {
   Copy,
   Check,
   Globe,
-  Code
+  Code,
+  CreditCard,
+  FileCheck2
 } from "lucide-react";
 
 function GithubIcon({ className = "w-3.5 h-3.5" }: { className?: string }) {
@@ -34,7 +36,10 @@ import { useAdminAuth } from "@/context/AdminAuthContext";
 import ProfileAvatar from "@/components/common/ProfileAvatar";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { Modal } from "@/components/ui/Modal";
 import { Toast } from "@/components/ui/Toast";
+import { AcademicIdCard } from "@/components/common/AcademicIdCard";
+import { ExamAdmitCardModal } from "@/components/common/ExamAdmitCardModal";
 import { 
   ACTIVE_TERM, 
   CANONICAL_FACULTY, 
@@ -75,6 +80,8 @@ export default function ProfilePage() {
 
   const [profileData, setProfileData] = useState<StudentProfileData>(DEFAULT_PROFILE_DATA);
   const [editOpen, setEditOpen] = useState(false);
+  const [idCardOpen, setIdCardOpen] = useState(false);
+  const [admitCardOpen, setAdmitCardOpen] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [toast, setToast] = useState<{ open: boolean; message: string }>({
     open: false,
@@ -199,7 +206,9 @@ export default function ProfilePage() {
                   </>
                 ) : isAdmin ? (
                   <>
-                    <span>Super Admin</span>
+                    <span>
+                      {currentUser?.admin_role === "dept_admin" ? "Department Admin" : "Admin"}
+                    </span>
                     <span>·</span>
                     <span>{ACTIVE_TERM}</span>
                   </>
@@ -218,7 +227,29 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5 shrink-0 w-full sm:w-auto">
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0 w-full sm:w-auto">
+            {!isAdmin && (
+              <Button
+                variant="secondary"
+                size="md"
+                onClick={() => setIdCardOpen(true)}
+                className="w-full sm:w-auto"
+              >
+                <CreditCard className="w-4 h-4 text-brand" />
+                <span>Academic ID Card</span>
+              </Button>
+            )}
+            {!isTeacher && !isAdmin && (
+              <Button
+                variant="secondary"
+                size="md"
+                onClick={() => setAdmitCardOpen(true)}
+                className="w-full sm:w-auto"
+              >
+                <FileCheck2 className="w-4 h-4 text-success" />
+                <span>Exam Admit Card</span>
+              </Button>
+            )}
             {!isTeacher && !isAdmin && (
               <Button
                 variant="primary"
@@ -482,6 +513,44 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Official Printable Academic ID Card Modal */}
+      <Modal
+        open={idCardOpen}
+        onClose={() => setIdCardOpen(false)}
+        title="Official Academic Identity Card"
+        description="Auto-issued institutional identity card for campus and examination verification."
+        size="md"
+      >
+        <div className="py-2">
+          <AcademicIdCard
+            role={isTeacher ? "teacher" : "student"}
+            academicId={isTeacher ? facultyCode : studentId}
+            fullName={displayName}
+            departmentName={departmentName}
+            departmentCode={CANONICAL_STUDENT.departmentCode}
+            photoUrl={!isTeacher && !isAdmin ? profileData.avatarUrl : null}
+            semesterName={currentUser?.semester_name || CANONICAL_STUDENT.semester}
+            designation={isTeacher ? CANONICAL_FACULTY.designation : undefined}
+            bloodGroup={profileData.bloodGroup}
+            phone={phone}
+            emergencyPhone={emergencyPhone}
+          />
+        </div>
+      </Modal>
+
+      {/* Official Exam Admit Card Modal */}
+      <ExamAdmitCardModal
+        open={admitCardOpen}
+        onClose={() => setAdmitCardOpen(false)}
+        studentName={displayName}
+        studentId={studentId}
+        departmentName={departmentName}
+        semesterName={currentUser?.semester_name || CANONICAL_STUDENT.semester}
+        photoUrl={profileData.avatarUrl}
+        academicHold={Boolean(currentUser?.academic_hold)}
+        financialHold={Boolean(currentUser?.financial_hold)}
+      />
 
       {/* Interactive Edit Profile Modal */}
       <StudentEditProfileModal

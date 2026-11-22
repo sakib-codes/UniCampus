@@ -96,7 +96,7 @@ export const COURSE_GROUPS: CourseGroup[] = [
         id: "mat-se-2",
         courseCode: "CSE-3205",
         courseName: "Software Engineering & System Design",
-        title: "Spring 2025 Midterm Question Paper & Rubric (Solved)",
+        title: "2nd Year · 4th Semester Midterm Question Paper & Rubric (Solved)",
         instructor: "Dr. Farhana Khan",
         uploadedAt: "Oct 15, 2026",
         fileSize: "2.9 MB",

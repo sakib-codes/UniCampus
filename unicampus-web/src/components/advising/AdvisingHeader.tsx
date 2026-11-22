@@ -26,7 +26,7 @@ export function AdvisingHeader({
         <div className="space-y-1.5 min-w-0">
           <div className="flex items-center gap-2.5 flex-wrap">
             <span className="px-2.5 py-0.5 rounded-full bg-brand-soft text-brand text-xs font-semibold">
-              Fall 2026 Registration
+              4th Year · 7th Semester Advising
             </span>
             <div className="flex items-center gap-1.5 text-xs text-fg-muted font-medium">
               <Clock className="w-3.5 h-3.5 text-brand" />

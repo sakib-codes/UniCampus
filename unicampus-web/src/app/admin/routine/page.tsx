@@ -292,8 +292,8 @@ export default function AdminRoutinePage() {
                 className="min-h-[44px] appearance-none bg-surface border border-line text-fg text-xs font-sans font-semibold rounded-xl pl-3 pr-8 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand cursor-pointer"
               >
                 <option>{ACTIVE_TERM} (Active)</option>
-                <option>Fall 2025 (Archived)</option>
-                <option>Summer 2026 (Draft)</option>
+                <option>Academic Year 2025 (Archived)</option>
+                <option>Academic Year 2027 (Draft)</option>
               </select>
               <ChevronDown className="w-3.5 h-3.5 text-fg-muted absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>

@@ -4,6 +4,7 @@ import {
   Building2,
   Calendar,
   CheckSquare,
+  ClipboardList,
   CreditCard,
   FolderGit2,
   GraduationCap,
@@ -63,6 +64,7 @@ export const PORTAL_NAV: Record<PortalRole, PortalNavConfig> = {
     desktop: [
       { id: "home", label: "Home", href: "/dashboard", icon: Home, exact: true },
       { id: "advising", label: "Advising", href: "/advising", icon: BookOpen },
+      { id: "assignments", label: "Assignments", href: "/assignments", icon: ClipboardList },
       { id: "routine", label: "Routine", href: "/routine", icon: Calendar },
       { id: "progress", label: "Progress", href: "/dashboard/progress", icon: TrendingUp },
       { id: "payments", label: "Payments", href: "/payments", icon: CreditCard },
@@ -101,6 +103,8 @@ export const PORTAL_NAV: Record<PortalRole, PortalNavConfig> = {
     ],
     mobileOverflow: [
       { id: "profile", label: "Profile", href: "/profile", icon: User },
+      { id: "advising", label: "Advising", href: "/advising", icon: BookOpen },
+      { id: "assignments", label: "Assignments", href: "/assignments", icon: ClipboardList },
       { id: "payments", label: "Payments", href: "/payments", icon: CreditCard },
       { id: "progress", label: "Progress", href: "/dashboard/progress", icon: TrendingUp },
       { id: "classmates", label: "Classmates", href: "/students", icon: GraduationCap },
@@ -129,6 +133,8 @@ export const PORTAL_NAV: Record<PortalRole, PortalNavConfig> = {
         badgeTone: "success",
       },
       { id: "gradebook", label: "Gradebook", href: "/teacher/grades", icon: GraduationCap },
+      { id: "advising", label: "Advising", href: "/teacher/advising", icon: BookOpen },
+      { id: "assignments", label: "Assignments", href: "/teacher/assignments", icon: ClipboardList },
       { id: "routine", label: "Routine", href: "/teacher/routine", icon: Calendar },
       { id: "materials", label: "Materials", href: "/teacher/materials", icon: FolderGit2 },
       { id: "notices", label: "Notices", href: "/teacher/notices", icon: Megaphone },
@@ -162,6 +168,8 @@ export const PORTAL_NAV: Record<PortalRole, PortalNavConfig> = {
       { id: "more", label: "More", icon: Menu, action: "more" },
     ],
     mobileOverflow: [
+      { id: "advising", label: "Advising Approvals", href: "/teacher/advising", icon: BookOpen },
+      { id: "assignments", label: "Assignments", href: "/teacher/assignments", icon: ClipboardList },
       { id: "routine", label: "Routine", href: "/teacher/routine", icon: Calendar },
       { id: "materials", label: "Materials", href: "/teacher/materials", icon: FolderGit2 },
       { id: "notices", label: "Notices", href: "/teacher/notices", icon: Megaphone },
@@ -309,6 +317,12 @@ export function getPortalTitle(
     if (pathname.startsWith("/teacher/grades")) {
       return { section: "Faculty", title: "Gradebook", homeHref };
     }
+    if (pathname.startsWith("/teacher/advising")) {
+      return { section: "Faculty", title: "Advising Approvals", homeHref };
+    }
+    if (pathname.startsWith("/teacher/assignments")) {
+      return { section: "Faculty", title: "Assignments", homeHref };
+    }
     if (pathname.startsWith("/teacher/routine")) {
       return { section: "Faculty", title: "Routine", homeHref };
     }
@@ -357,6 +371,9 @@ export function getPortalTitle(
   }
   if (pathname === "/advising") {
     return { section: "Student", title: "Course Advising", homeHref };
+  }
+  if (pathname === "/assignments") {
+    return { section: "Student", title: "Assignments", homeHref };
   }
   if (pathname === "/routine") {
     return { section: "Student", title: "Routine", homeHref };

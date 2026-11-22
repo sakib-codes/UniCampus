@@ -25,9 +25,9 @@ export const COURSE_OPTIONS = [
 ] as const;
 
 export const SEMESTER_OPTIONS = [
-  "Spring 2026 • Sec A",
-  "Spring 2026 • Sec B",
-  "Fall 2025 • Sec A",
+  "3rd Year • 6th Sem • Sec A",
+  "3rd Year • 6th Sem • Sec B",
+  "3rd Year • 5th Sem • Sec A",
 ] as const;
 
 // Score limits definition (10 + 10 + 25 + 15 + 40 = 100% normalized basis)

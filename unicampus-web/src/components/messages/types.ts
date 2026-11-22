@@ -327,7 +327,7 @@ export const INITIAL_TEACHER_CONVERSATIONS: Conversation[] = [
   {
     id: "t-conv-3",
     name: "Dr. Shahriar Hossain",
-    role: "Central Administration • Super Admin",
+    role: "Central Administration • Admin",
     category: "office",
     avatar: "",
     isOnline: false,

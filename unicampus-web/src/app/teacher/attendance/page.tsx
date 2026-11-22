@@ -37,7 +37,7 @@ export default function TeacherAttendancePage() {
   // Session Configurations
   const selectedCourse = "CSE-3101";
   const courseName = "Design & Analysis of Algorithms";
-  const selectedSection = "Section A (Spring 2026)";
+  const selectedSection = "Section A (3rd Year • 6th Semester)";
   const sessionDate = "Today, Oct 22, 2026 (10:00 AM)";
   const sessionTopic = "Lecture 09: Shortest Paths & Dijkstra's Algorithm";
 

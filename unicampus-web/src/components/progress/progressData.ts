@@ -35,9 +35,9 @@ export interface SimCourse {
 export const semesterMilestones: SemesterMilestone[] = [
   {
     id: "sem-1",
-    termName: "Semester 1 (Fall 2023)",
-    termShort: "Sem 1 (Fall 23)",
-    academicYear: "2023-2024",
+    termName: "1st Year · 1st Semester",
+    termShort: "Y1 · Sem 1",
+    academicYear: "1st Year (2023–2024)",
     sgpa: 3.62,
     cgpa: 3.62,
     credits: 18.0,
@@ -45,9 +45,9 @@ export const semesterMilestones: SemesterMilestone[] = [
   },
   {
     id: "sem-2",
-    termName: "Semester 2 (Spring 2024)",
-    termShort: "Sem 2 (Spr 24)",
-    academicYear: "2023-2024",
+    termName: "1st Year · 2nd Semester",
+    termShort: "Y1 · Sem 2",
+    academicYear: "1st Year (2023–2024)",
     sgpa: 3.70,
     cgpa: 3.66,
     credits: 18.0,
@@ -55,9 +55,9 @@ export const semesterMilestones: SemesterMilestone[] = [
   },
   {
     id: "sem-3",
-    termName: "Semester 3 (Fall 2024)",
-    termShort: "Sem 3 (Fall 24)",
-    academicYear: "2024-2025",
+    termName: "2nd Year · 3rd Semester",
+    termShort: "Y2 · Sem 3",
+    academicYear: "2nd Year (2024–2025)",
     sgpa: 3.68,
     cgpa: 3.67,
     credits: 21.0,
@@ -65,9 +65,9 @@ export const semesterMilestones: SemesterMilestone[] = [
   },
   {
     id: "sem-4",
-    termName: "Semester 4 (Spring 2025)",
-    termShort: "Sem 4 (Spr 25)",
-    academicYear: "2024-2025",
+    termName: "2nd Year · 4th Semester",
+    termShort: "Y2 · Sem 4",
+    academicYear: "2nd Year (2024–2025)",
     sgpa: 3.81,
     cgpa: 3.71,
     credits: 18.0,
@@ -76,9 +76,9 @@ export const semesterMilestones: SemesterMilestone[] = [
   },
   {
     id: "sem-5",
-    termName: "Semester 5 (Fall 2025)",
-    termShort: "Sem 5 (Fall 25)",
-    academicYear: "2025-2026",
+    termName: "3rd Year · 5th Semester",
+    termShort: "Y3 · Sem 5",
+    academicYear: "3rd Year (2025–2026)",
     sgpa: 3.84,
     cgpa: 3.78,
     credits: 21.0,
@@ -87,9 +87,9 @@ export const semesterMilestones: SemesterMilestone[] = [
   },
   {
     id: "sem-6",
-    termName: "Semester 6 (Spring 2026)",
-    termShort: "Sem 6 (Spring 26*)",
-    academicYear: "2025-2026",
+    termName: "3rd Year · 6th Semester",
+    termShort: "Y3 · Sem 6*",
+    academicYear: "3rd Year (2025–2026)",
     sgpa: 3.85,
     cgpa: 3.79,
     credits: 15.0,
@@ -99,7 +99,7 @@ export const semesterMilestones: SemesterMilestone[] = [
 ];
 
 export const courseDatabase: CourseRecord[] = [
-  // Sem 6 (Spring 2026 - Active / In Progress)
+  // 3rd Year · 6th Semester (Active / In Progress)
   {
     code: "CSE-3205",
     name: "Software Engineering & System Architecture",
@@ -167,7 +167,7 @@ export const courseDatabase: CourseRecord[] = [
     semester: "sem-6",
   },
 
-  // Sem 5 (Fall 2025) - SGPA 3.84, Credits 21.0
+  // 3rd Year · 5th Semester - SGPA 3.84, Credits 21.0
   {
     code: "CSE-3101",
     name: "Operating Systems",
@@ -268,7 +268,7 @@ export const courseDatabase: CourseRecord[] = [
     semester: "sem-5",
   },
 
-  // Sem 4 (Spring 2025) - SGPA 3.81, Credits 18.0
+  // 2nd Year · 4th Semester - SGPA 3.81, Credits 18.0
   {
     code: "CSE-2201",
     name: "Algorithms & Complexity",
@@ -347,7 +347,7 @@ export const courseDatabase: CourseRecord[] = [
     semester: "sem-4",
   },
 
-  // Sem 3 (Fall 2024) - SGPA 3.68, Credits 21.0
+  // 2nd Year · 3rd Semester - SGPA 3.68, Credits 21.0
   {
     code: "CSE-2101",
     name: "Data Structures",
@@ -448,7 +448,7 @@ export const courseDatabase: CourseRecord[] = [
     semester: "sem-3",
   },
 
-  // Sem 2 (Spring 2024) - SGPA 3.70, Credits 18.0
+  // 1st Year · 2nd Semester - SGPA 3.70, Credits 18.0
   {
     code: "CSE-1201",
     name: "Discrete Mathematics",
@@ -527,7 +527,7 @@ export const courseDatabase: CourseRecord[] = [
     semester: "sem-2",
   },
 
-  // Sem 1 (Fall 2023) - SGPA 3.62, Credits 18.0
+  // 1st Year · 1st Semester - SGPA 3.62, Credits 18.0
   {
     code: "CSE-1101",
     name: "Structured Programming Language",

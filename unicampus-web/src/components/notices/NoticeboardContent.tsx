@@ -81,7 +81,7 @@ function mapAdminNoticeToNoticeItem(notice: Notice): NoticeItem {
     department: notice.department_name || "Campus Wide",
     dateStr,
     timeStr,
-    academicSession: "Spring Semester 2026",
+    academicSession: "Academic Year 2026",
     targetAudience: notice.target_role === "all" ? "All Campus" : "Undergraduate Scholars",
     pinnedUrgent: notice.pinned,
     attachmentName,
@@ -386,7 +386,7 @@ export function NoticeboardContent({
               {filteredNotices.length} circular
               {filteredNotices.length === 1 ? "" : "s"}
             </span>
-            <span className="text-fg-subtle">Spring 2026</span>
+            <span className="text-fg-subtle">Academic Year 2026</span>
           </div>
 
           {/* Scrollable List */}
