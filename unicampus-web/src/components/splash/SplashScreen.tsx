@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { CampusLottie } from "@/components/common/CampusLottie";
 import { ACTIVE_TERM } from "@/lib/canonicalCampus";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 
@@ -40,12 +41,12 @@ export function SplashScreen({ autoRedirect = false }: SplashScreenProps) {
       {/* Floating Center Splash Card */}
       <main className="w-full flex-1 flex items-center justify-center">
         <div className="w-full max-w-[420px] bg-surface rounded-2xl p-6 sm:p-10 border border-line shadow-sm flex flex-col items-center text-center">
-          {/* Brand Icon Squircle */}
-          <div className="w-16 h-16 rounded-2xl bg-brand flex items-center justify-center shadow-sm mb-6">
-            <span className="text-3xl font-bold text-on-brand leading-none">
-              U
-            </span>
-          </div>
+          {/* Mobile-Parity Animated Lottie Launch Graphic */}
+          <CampusLottie
+            name="rocket"
+            className="w-32 h-32 mb-2"
+            ariaLabel="UniCampus launch animation"
+          />
 
           {/* Brand Name */}
           <h1 className="text-2xl sm:text-3xl font-semibold text-fg tracking-tight mb-1">

@@ -35,7 +35,7 @@ export function CourseOfferingCard({
 
   return (
     <div
-      className={`rounded-2xl bg-surface border transition-all duration-150 p-5 space-y-4 ${
+      className={`rounded-2xl bg-surface border transition-colors duration-150 p-5 space-y-4 ${
         isSelected
           ? "border-brand ring-1 ring-brand/30 shadow-xs"
           : "border-line hover:border-brand/40"

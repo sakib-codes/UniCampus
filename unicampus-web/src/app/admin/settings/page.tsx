@@ -8,12 +8,15 @@ import { executeThemeTransition } from "@/lib/themeTransition";
 import {
   ADMIN_SETTINGS_STORAGE_KEY,
   ADMIN_SETTINGS_UPDATED_EVENT,
+  ALL_WEEKDAYS,
   DEFAULT_ADMIN_SETTINGS,
+  WEEKDAY_FULL_NAMES,
   applyAdminDensity,
   clampSessionTimeout,
   readAdminSettings,
   syncAdminDensityFromStorage,
   type AdminSettingsData,
+  type WeekdayShort,
 } from "@/lib/adminSettings";
 import {
   Monitor,
@@ -27,7 +30,6 @@ import {
   Check,
   Lock,
   Sliders,
-  Cpu,
   CheckCircle2,
   AlertTriangle,
   Copy,
@@ -126,14 +128,14 @@ export default function AdminSettingsPage() {
 
   const tabs = [
     { id: "appearance", label: "Appearance & Theme", icon: Monitor, statusDot: null },
-    { id: "security", label: "Security & Auth Gate", icon: ShieldCheck, statusDot: "active" },
-    { id: "database", label: "Database & Storage", icon: Database, statusDot: "active" },
+    { id: "security", label: "Security & Auth Gate", icon: ShieldCheck, statusDot: null },
+    { id: "database", label: "Database & Storage", icon: Database, statusDot: null },
     { id: "api", label: "API Keys & Webhooks", icon: Key, statusDot: null },
     {
       id: "maintenance",
       label: "Maintenance & System",
       icon: ServerCrash,
-      statusDot: settings.maintenanceMode ? "danger" : "normal",
+      statusDot: settings.maintenanceMode ? "danger" : null,
     },
   ] as const;
 
@@ -156,11 +158,8 @@ export default function AdminSettingsPage() {
 
         {/* Main Settings Grid */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-          {/* Navigation Sidebar */}
-          <div className="md:col-span-4 lg:col-span-3 space-y-1.5 p-3 rounded-2xl bg-surface border border-line">
-            <div className="px-3 py-2 text-xs font-semibold font-sans text-fg-muted">
-              Navigation Sections
-            </div>
+          {/* Clean Borderless Left Settings Rail (Linear / GitHub / Slack pattern) */}
+          <nav aria-label="Settings sections" className="md:col-span-4 lg:col-span-3 space-y-1">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -169,16 +168,16 @@ export default function AdminSettingsPage() {
                   type="button"
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as SettingsTab)}
-                  className={`relative w-full min-h-[44px] text-left px-3.5 py-3 rounded-xl text-sm font-medium flex items-center justify-between transition-colors cursor-pointer z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
+                  className={`relative w-full h-10 text-left px-3 rounded-xl text-sm font-medium flex items-center justify-between transition-colors cursor-pointer z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                     isActive
                       ? "text-fg font-semibold"
-                      : "text-fg-muted hover:text-fg hover:bg-surface-2/50"
+                      : "text-fg-muted hover:text-fg hover:bg-surface-2/60"
                   }`}
                 >
                   {isActive && (
                     <motion.div
                       layoutId="admin-settings-tab"
-                      className="absolute inset-0 bg-surface-2 border border-line rounded-xl -z-10"
+                      className="absolute inset-0 bg-surface border border-line rounded-xl -z-10 shadow-2xs"
                       transition={{ type: "spring", stiffness: 450, damping: 32 }}
                     />
                   )}
@@ -186,31 +185,18 @@ export default function AdminSettingsPage() {
                     <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-brand" : "text-fg-muted"}`} />
                     <span className="truncate">{tab.label}</span>
                   </div>
-                  {tab.statusDot === "active" && (
-                    <span
-                      className="w-2 h-2 rounded-full bg-success shrink-0"
-                      title="Operational"
-                      aria-label="Operational"
-                    />
-                  )}
                   {tab.statusDot === "danger" && (
                     <span
-                      className="w-2 h-2 rounded-full bg-danger animate-pulse shrink-0"
-                      title="Lockdown Active"
-                      aria-label="Lockdown Active"
-                    />
+                      className="px-1.5 py-0.5 rounded-md bg-danger-light text-danger text-[10px] font-semibold shrink-0"
+                      title="Maintenance lockdown active"
+                    >
+                      On
+                    </span>
                   )}
                 </button>
               );
             })}
-
-            <div className="pt-4 mt-4 border-t border-line px-3">
-              <div className="flex items-center gap-2 text-xs font-sans text-fg-muted">
-                <Cpu className="w-3.5 h-3.5" />
-                <span>Campus Engine · Academic Year 2026</span>
-              </div>
-            </div>
-          </div>
+          </nav>
 
           {/* Content Pane */}
           <div className="md:col-span-8 lg:col-span-9">
@@ -455,6 +441,60 @@ export default function AdminSettingsPage() {
                             ariaLabel="Toggle instant push notifications"
                           />
                         </div>
+                      </div>
+                    </div>
+
+                    {/* Weekly Holidays (Campus Off-Days) */}
+                    <div className="p-6 space-y-4 rounded-2xl bg-surface border border-line">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                          <h3 className="text-sm font-semibold text-fg">
+                            Weekly Holidays (Campus Off-Days)
+                          </h3>
+                          <p className="text-xs text-fg-muted mt-1">
+                            Selected days are hidden across all Admin, Faculty, and Student timetables and schedules.
+                          </p>
+                        </div>
+                        <span className="text-xs font-medium text-fg-muted tabular-nums shrink-0">
+                          {7 - settings.weeklyHolidays.length} working days / week
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+                        {ALL_WEEKDAYS.map((day: WeekdayShort) => {
+                          const isHoliday = settings.weeklyHolidays.includes(day);
+                          return (
+                            <button
+                              key={day}
+                              type="button"
+                              aria-pressed={isHoliday}
+                              title={`${WEEKDAY_FULL_NAMES[day]} — ${isHoliday ? "Weekly Holiday" : "Working Day"}`}
+                              onClick={() => {
+                                setSettings((prev) => {
+                                  const exists = prev.weeklyHolidays.includes(day);
+                                  if (!exists && prev.weeklyHolidays.length >= 6) {
+                                    setToastMessage("At least 1 working day must remain active.");
+                                    return prev;
+                                  }
+                                  const next = exists
+                                    ? prev.weeklyHolidays.filter((d) => d !== day)
+                                    : [...prev.weeklyHolidays, day];
+                                  return { ...prev, weeklyHolidays: next };
+                                });
+                              }}
+                              className={`h-12 rounded-xl border text-xs font-semibold flex flex-col items-center justify-center gap-0.5 transition-colors cursor-pointer focus:outline-none ${
+                                isHoliday
+                                  ? "bg-danger-light border-danger/35 text-danger"
+                                  : "bg-surface-2 border-line text-fg hover:border-brand/40"
+                              }`}
+                            >
+                              <span>{day}</span>
+                              <span className="text-[10px] font-medium opacity-80">
+                                {isHoliday ? "Holiday" : "Active"}
+                              </span>
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>

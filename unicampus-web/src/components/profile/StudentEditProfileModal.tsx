@@ -136,7 +136,7 @@ export function StudentEditProfileModal({
   };
 
   const inputClass =
-    "w-full px-3.5 py-2.5 rounded-xl bg-canvas border border-line text-fg placeholder:text-fg-muted text-xs sm:text-sm font-sans focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-all duration-150";
+    "w-full px-3.5 py-2.5 rounded-xl bg-canvas border border-line text-fg placeholder:text-fg-muted text-xs sm:text-sm font-sans focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors duration-150";
 
   return (
     <Modal

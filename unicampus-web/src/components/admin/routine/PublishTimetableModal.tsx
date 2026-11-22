@@ -1,25 +1,44 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
 import { Send, X } from "lucide-react";
 import { Button } from "@/components/ui";
-import { ACTIVE_TERM, CAMPUS_METRICS } from "@/lib/canonicalCampus";
+import { ACTIVE_TERM } from "@/lib/canonicalCampus";
 
 interface PublishTimetableModalProps {
   open: boolean;
   onClose: () => void;
   onConfirm: () => void;
+  assignedCount?: number;
+  studentCount?: number;
+  facultyCount?: number;
 }
 
 export function PublishTimetableModal({
   open,
   onClose,
   onConfirm,
+  assignedCount = 0,
+  studentCount = 0,
+  facultyCount = 0,
 }: PublishTimetableModalProps) {
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-      <div className="bg-surface border border-line rounded-2xl w-full max-w-md shadow-xl p-6 relative">
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.16 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4"
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96, y: 8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.97, y: 4 }}
+            transition={{ type: "spring", stiffness: 420, damping: 28 }}
+            className="bg-surface border border-line rounded-2xl w-full max-w-md shadow-xl p-6 relative"
+          >
         <div className="flex items-center justify-between border-b border-line pb-4 mb-4">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-brand-soft border border-brand/20 text-brand flex items-center justify-center shrink-0">
@@ -52,7 +71,7 @@ export function PublishTimetableModal({
             </div>
             <div className="flex items-center justify-between font-sans tabular-nums">
               <span>Assigned Sections:</span>
-              <span className="text-success font-semibold">142 of 142 (100%)</span>
+              <span className="text-success font-semibold">{assignedCount} scheduled</span>
             </div>
             <div className="flex items-center justify-between font-sans">
               <span>Conflict Validation:</span>
@@ -62,8 +81,8 @@ export function PublishTimetableModal({
 
           <p className="text-xs leading-relaxed">
             Publishing will push notifications to{" "}
-            {CAMPUS_METRICS.students.toLocaleString()} enrolled students and{" "}
-            {CAMPUS_METRICS.faculty.toLocaleString()} teaching faculty. Course
+            {studentCount.toLocaleString()} enrolled students and{" "}
+            {facultyCount.toLocaleString()} teaching faculty. Course
             routines will be immediately reflected across student dashboard calendars.
           </p>
         </div>
@@ -76,7 +95,9 @@ export function PublishTimetableModal({
             Confirm &amp; Deploy Routine
           </Button>
         </div>
-      </div>
-    </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

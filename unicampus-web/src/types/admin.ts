@@ -31,6 +31,15 @@ export interface TeacherQualificationRecord {
   certificate_filename?: string;
 }
 
+export interface AdmissionPaymentRecord {
+  method: 'bKash' | 'Nagad' | 'Rocket' | 'Bank Deposit / Pay Slip';
+  trx_id: string;
+  amount: string;
+  paid_date?: string;
+  slip_filename?: string;
+  slip_preview_url?: string;
+}
+
 export interface Profile {
   id: string;
   full_name: string;
@@ -40,6 +49,7 @@ export interface Profile {
   admin_role?: AdminRoleLevel;
   department_id: string;
   department_name?: string;
+  program_name?: string | null;
   semester_id: string | null;
   semester_name?: string | null;
   academic_year?: string | null;
@@ -73,6 +83,9 @@ export interface Profile {
   permanent_address?: string;
   board_exams?: BoardExamRecord[];
   teacher_qualifications?: TeacherQualificationRecord;
+  admission_payment?: AdmissionPaymentRecord | null;
+  email_verified?: boolean;
+  phone_verified?: boolean;
 }
 
 export interface UserRole {

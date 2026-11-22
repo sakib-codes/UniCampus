@@ -147,7 +147,7 @@ export default function ForgotPasswordPage() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="sakib.cse@unicampus.edu"
-                        className="w-full min-h-[44px] pl-10 pr-3.5 py-2.5 rounded-xl bg-surface-2 border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-all duration-150"
+                        className="w-full min-h-[44px] pl-10 pr-3.5 py-2.5 rounded-xl bg-surface-2 border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors duration-150"
                       />
                     </div>
                   </div>
@@ -178,7 +178,7 @@ export default function ForgotPasswordPage() {
                       value={otp}
                       onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
                       placeholder="482910"
-                      className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface-2 border border-line text-center font-mono text-lg tracking-[0.35em] text-fg focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-all duration-150"
+                      className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface-2 border border-line text-center font-mono text-lg tracking-[0.35em] text-fg focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors duration-150"
                     />
                   </div>
                   <div className="flex items-center gap-2.5">
@@ -217,7 +217,7 @@ export default function ForgotPasswordPage() {
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="Minimum 6 characters"
-                      className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface-2 border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-all duration-150"
+                      className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface-2 border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors duration-150"
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -231,7 +231,7 @@ export default function ForgotPasswordPage() {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Re-enter password"
-                      className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface-2 border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-all duration-150"
+                      className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface-2 border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors duration-150"
                     />
                   </div>
                   <div className="p-3 rounded-xl bg-surface-2 border border-line flex items-start gap-2 text-xs text-fg-muted">

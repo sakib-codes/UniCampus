@@ -1,11 +1,17 @@
 "use client";
 
 import { useMemo, useState, useCallback, useEffect } from "react";
-import { CheckCircle2, FileDown, Send, ChevronDown } from "lucide-react";
-import { Badge, Button, PageHeader, Toast } from "@/components/ui";
+import { CheckCircle2, FileDown, Send } from "lucide-react";
+import { Badge, Button, PageHeader, Select, Toast } from "@/components/ui";
 import { ACTIVE_TERM } from "@/lib/canonicalCampus";
 import { adminService } from "@/lib/services/adminService";
+import { supabaseSyncBridge } from "@/lib/supabase/syncBridge";
+import {
+  ADMIN_SETTINGS_UPDATED_EVENT,
+  getActiveWorkingDays,
+} from "@/lib/adminSettings";
 import { useAdminAuth } from "@/context/AdminAuthContext";
+import type { Department } from "@/types/admin";
 import {
   COURSE_OPTIONS,
   INITIAL_SLOTS,
@@ -27,17 +33,40 @@ const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 export default function AdminRoutinePage() {
   const { isDeptAdmin, currentUser } = useAdminAuth();
   const [building, setBuilding] = useState<BuildingType>("bldg-1");
-  const [selectedDay, setSelectedDay] = useState("Mon");
+  const [workingDays, setWorkingDays] = useState<string[]>(["Sun", "Mon", "Tue", "Wed", "Thu"]);
+  const [selectedDay, setSelectedDay] = useState("Sun");
   const [semester, setSemester] = useState(`${ACTIVE_TERM} (Active)`);
   const [capacityFilter, setCapacityFilter] = useState("all");
   const [deptFilter, setDeptFilter] = useState("all");
   const [highlightConflicts, setHighlightConflicts] = useState(true);
   const [showUtilization, setShowUtilization] = useState(true);
 
-  const [activeSlotId, setActiveSlotId] = useState<string>("slot-cse-402");
-  const [slots, setSlots] = useState<SlotData[]>(INITIAL_SLOTS);
+  const [activeSlotId, setActiveSlotId] = useState<string>(() =>
+    supabaseSyncBridge.isLive() ? "" : "slot-cse-402"
+  );
+  const [slots, setSlots] = useState<SlotData[]>(() =>
+    supabaseSyncBridge.isLive() ? [] : INITIAL_SLOTS
+  );
+  const [liveDepartments, setLiveDepartments] = useState<Department[]>([]);
+  const [liveCounts, setLiveCounts] = useState({ students: 0, faculty: 0 });
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
+
+  // Sync active working days from Admin Settings (hides configured weekly holidays)
+  useEffect(() => {
+    const syncWorkingDays = () => {
+      const days = getActiveWorkingDays();
+      setWorkingDays(days);
+      setSelectedDay((prev) => (days.includes(prev as typeof days[number]) ? prev : days[0] || "Sun"));
+    };
+    queueMicrotask(syncWorkingDays);
+    window.addEventListener(ADMIN_SETTINGS_UPDATED_EVENT, syncWorkingDays);
+    window.addEventListener("storage", syncWorkingDays);
+    return () => {
+      window.removeEventListener(ADMIN_SETTINGS_UPDATED_EVENT, syncWorkingDays);
+      window.removeEventListener("storage", syncWorkingDays);
+    };
+  }, []);
 
   // Lock department filter if dept admin
   useEffect(() => {
@@ -49,9 +78,18 @@ export default function AdminRoutinePage() {
     }
   }, [isDeptAdmin, currentUser]);
 
-  // Hydrate from adminService
+  // Hydrate from adminService & live Supabase
   useEffect(() => {
+    const syncMeta = () => {
+      setLiveDepartments(adminService.getDepartments());
+      const profs = adminService.getProfiles();
+      setLiveCounts({
+        students: profs.filter((p) => p.role === "student").length,
+        faculty: profs.filter((p) => p.role === "teacher").length,
+      });
+    };
     queueMicrotask(() => {
+      syncMeta();
       const storedRoutines = adminService.getRoutines();
       if (storedRoutines && storedRoutines.length > 0) {
         const convertedSlots: SlotData[] = storedRoutines.map((r, i) => {
@@ -278,25 +316,24 @@ export default function AdminRoutinePage() {
             <Badge variant={conflictInfo.hasConflict ? "danger" : "success"}>
               {conflictInfo.hasConflict
                 ? "1 Conflict Detected"
-                : "0 Conflicts · 142 Sections Assigned"}
+                : `0 Conflicts · ${slots.length} ${slots.length === 1 ? "Section" : "Sections"} Assigned`}
             </Badge>
           </span>
         }
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            <div className="relative">
-              <select
-                value={semester}
-                onChange={(e) => setSemester(e.target.value)}
-                aria-label="Select semester term"
-                className="min-h-[44px] appearance-none bg-surface border border-line text-fg text-xs font-sans font-semibold rounded-xl pl-3 pr-8 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand cursor-pointer"
-              >
-                <option>{ACTIVE_TERM} (Active)</option>
-                <option>Academic Year 2025 (Archived)</option>
-                <option>Academic Year 2027 (Draft)</option>
-              </select>
-              <ChevronDown className="w-3.5 h-3.5 text-fg-muted absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
+            <Select
+              value={semester}
+              onChange={setSemester}
+              ariaLabel="Select semester term"
+              variant="surface"
+              className="min-w-[210px]"
+              options={[
+                { value: `${ACTIVE_TERM} (Active)`, label: `${ACTIVE_TERM} (Active)` },
+                { value: "Academic Year 2025 (Archived)", label: "Academic Year 2025 (Archived)" },
+                { value: "Academic Year 2027 (Draft)", label: "Academic Year 2027 (Draft)" },
+              ]}
+            />
 
             <Button
               variant="secondary"
@@ -341,10 +378,12 @@ export default function AdminRoutinePage() {
         onBuildingChange={setBuilding}
         selectedDay={selectedDay}
         onDayChange={setSelectedDay}
+        workingDays={workingDays}
         capacityFilter={capacityFilter}
         onCapacityFilterChange={setCapacityFilter}
         deptFilter={deptFilter}
         onDeptFilterChange={setDeptFilter}
+        departments={liveDepartments}
         highlightConflicts={highlightConflicts}
         onHighlightConflictsChange={setHighlightConflicts}
         showUtilization={showUtilization}
@@ -385,6 +424,9 @@ export default function AdminRoutinePage() {
       <PublishTimetableModal
         open={isPublishModalOpen}
         onClose={() => setIsPublishModalOpen(false)}
+        assignedCount={slots.length}
+        studentCount={liveCounts.students}
+        facultyCount={liveCounts.faculty}
         onConfirm={handlePublishConfirm}
       />
     </div>

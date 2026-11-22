@@ -58,8 +58,50 @@ export const HIGHEST_DEGREES = [
   "B.Sc. / B.A. / BBA",
 ] as const;
 
+export const DEPARTMENT_PROGRAMS: Record<string, readonly string[]> = {
+  CSE: [
+    "B.Sc. in Computer Science & Engineering",
+    "B.Sc. in Software Engineering",
+    "M.Sc. in Computer Science & Engineering",
+  ],
+  EEE: [
+    "B.Sc. in Electrical & Electronic Engineering",
+    "M.Sc. in Electrical & Electronic Engineering",
+  ],
+  BBA: [
+    "BBA (Bachelor of Business Administration)",
+    "MBA (Regular)",
+    "EMBA (Executive MBA)",
+  ],
+  PHARM: [
+    "B.Pharm (Hons.)",
+    "M.Pharm in Pharmaceutical Technology",
+  ],
+  ENG: [
+    "B.A. (Hons.) in English",
+    "M.A. in English Literature & ELT",
+  ],
+};
+
+export function getProgramsForDepartment(deptCode?: string, deptName?: string): string[] {
+  const code = (deptCode || "").toUpperCase().trim();
+  if (DEPARTMENT_PROGRAMS[code]) {
+    return [...DEPARTMENT_PROGRAMS[code]];
+  }
+  const cleanName = deptName?.trim() || "General Studies";
+  return [`Bachelor (Hons.) in ${cleanName}`, `Master's in ${cleanName}`];
+}
+
+export const ADMISSION_PAYMENT_METHODS = [
+  "bKash",
+  "Nagad",
+  "Rocket",
+  "Bank Deposit / Pay Slip",
+] as const;
+
 export interface StudentRegistrationForm {
-  fullName: string;
+  firstName: string;
+  lastName: string;
   email: string;
   phone: string;
   photoUrl: string;
@@ -77,6 +119,7 @@ export interface StudentRegistrationForm {
   presentAddress: string;
   permanentAddress: string;
   deptId: string;
+  programName: string;
   semesterName: OrdinalSemesterName;
   // JSC
   jscBoard: string;
@@ -101,10 +144,18 @@ export interface StudentRegistrationForm {
   hscRegNo: string;
   hscGpa: string;
   hscMarksheetName: string;
+  // Admission Fee Payment Verification
+  paymentMethod: "bKash" | "Nagad" | "Rocket" | "Bank Deposit / Pay Slip";
+  paymentTrxId: string;
+  paymentAmount: string;
+  paymentDate: string;
+  paymentSlipName: string;
+  paymentSlipPreviewUrl: string;
 }
 
 export interface TeacherRegistrationForm {
-  fullName: string;
+  firstName: string;
+  lastName: string;
   email: string;
   phone: string;
   emergencyPhone: string;
@@ -134,7 +185,8 @@ export interface TeacherRegistrationForm {
 }
 
 export const INITIAL_STUDENT_FORM: StudentRegistrationForm = {
-  fullName: "",
+  firstName: "",
+  lastName: "",
   email: "",
   phone: "",
   photoUrl: "",
@@ -152,6 +204,7 @@ export const INITIAL_STUDENT_FORM: StudentRegistrationForm = {
   presentAddress: "",
   permanentAddress: "",
   deptId: "dept-cse",
+  programName: "B.Sc. in Computer Science & Engineering",
   semesterName: "1st Semester",
   jscBoard: "Dhaka",
   jscYear: "2019",
@@ -173,10 +226,17 @@ export const INITIAL_STUDENT_FORM: StudentRegistrationForm = {
   hscRegNo: "",
   hscGpa: "",
   hscMarksheetName: "",
+  paymentMethod: "bKash",
+  paymentTrxId: "",
+  paymentAmount: "15000",
+  paymentDate: "",
+  paymentSlipName: "",
+  paymentSlipPreviewUrl: "",
 };
 
 export const INITIAL_TEACHER_FORM: TeacherRegistrationForm = {
-  fullName: "",
+  firstName: "",
+  lastName: "",
   email: "",
   phone: "",
   emergencyPhone: "",

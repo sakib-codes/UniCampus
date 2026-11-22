@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { motion } from "framer-motion";
 import { 
   Camera, 
   CameraOff, 
@@ -320,55 +321,40 @@ export default function AttendanceScannerModal({
         </div>
       ) : (
         <div className="space-y-4 pt-1">
-          {/* Tabs */}
+          {/* Spring-Animated Tabs */}
           <div className="grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-canvas border border-line">
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab("camera");
-                setErrorMessage(null);
-              }}
-              className={`py-2 px-3 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
-                activeTab === "camera"
-                  ? "bg-surface text-fg font-semibold shadow-xs"
-                  : "text-fg-muted hover:text-fg"
-              }`}
-            >
-              <Camera className="w-3.5 h-3.5" />
-              <span>Camera</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab("sync");
-                setErrorMessage(null);
-              }}
-              className={`py-2 px-3 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
-                activeTab === "sync"
-                  ? "bg-surface text-fg font-semibold shadow-xs"
-                  : "text-fg-muted hover:text-fg"
-              }`}
-            >
-              <Zap className="w-3.5 h-3.5 text-warning" />
-              <span>1-Click Sync</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab("pin");
-                setErrorMessage(null);
-              }}
-              className={`py-2 px-3 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
-                activeTab === "pin"
-                  ? "bg-surface text-fg font-semibold shadow-xs"
-                  : "text-fg-muted hover:text-fg"
-              }`}
-            >
-              <KeyRound className="w-3.5 h-3.5 text-brand" />
-              <span>6-Digit PIN</span>
-            </button>
+            {(
+              [
+                { id: "camera" as const, label: "Camera", icon: <Camera className="w-3.5 h-3.5" /> },
+                { id: "sync" as const, label: "1-Click Sync", icon: <Zap className="w-3.5 h-3.5 text-warning" /> },
+                { id: "pin" as const, label: "6-Digit PIN", icon: <KeyRound className="w-3.5 h-3.5 text-brand" /> },
+              ] as const
+            ).map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    setErrorMessage(null);
+                  }}
+                  className={`relative h-8 px-3 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer focus:outline-none z-10 ${
+                    isActive ? "text-fg font-semibold" : "text-fg-muted hover:text-fg"
+                  }`}
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="attendance-scanner-tab"
+                      transition={{ type: "spring", stiffness: 460, damping: 30, mass: 0.7 }}
+                      className="absolute inset-0 bg-surface border border-line rounded-lg shadow-2xs -z-10"
+                    />
+                  )}
+                  {tab.icon}
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
           </div>
 
           {errorMessage && (

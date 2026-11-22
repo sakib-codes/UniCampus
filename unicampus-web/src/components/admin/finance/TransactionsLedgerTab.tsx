@@ -542,7 +542,7 @@ export function TransactionsLedgerTab({
               value={txnSearch}
               onChange={(e) => setTxnSearch(e.target.value)}
               placeholder="Search Txn ID, student name, student ID, receipt..."
-              className="w-full min-h-[40px] pl-9 pr-8 py-2 font-medium rounded-xl bg-canvas border border-line text-fg placeholder:text-fg-muted text-xs focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-all duration-150"
+              className="w-full min-h-[40px] pl-9 pr-8 py-2 font-medium rounded-xl bg-canvas border border-line text-fg placeholder:text-fg-muted text-xs focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors duration-150"
             />
             {txnSearch && (
               <button

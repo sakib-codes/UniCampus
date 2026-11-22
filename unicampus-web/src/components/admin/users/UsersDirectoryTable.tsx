@@ -15,6 +15,7 @@ import {
   Check,
   X,
   FileSearch,
+  Trash2,
 } from "lucide-react";
 import { Badge, Button } from "@/components/ui";
 import type { UserRecord } from "./usersData";
@@ -33,6 +34,8 @@ interface UserRowProps {
   onApprove?: (user: UserRecord) => void;
   onReject?: (user: UserRecord) => void;
   onReview?: (user: UserRecord) => void;
+  onDelete?: (user: UserRecord) => void;
+  currentUserEmail?: string;
 }
 
 const UserTableRow = React.memo(function UserTableRow({
@@ -49,6 +52,8 @@ const UserTableRow = React.memo(function UserTableRow({
   onApprove,
   onReject,
   onReview,
+  onDelete,
+  currentUserEmail,
 }: UserRowProps) {
   return (
     <tr
@@ -306,15 +311,26 @@ const UserTableRow = React.memo(function UserTableRow({
             <button
               type="button"
               onClick={() => onSuspendToggle(user)}
-              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-danger hover:bg-danger-light text-xs transition-colors font-medium cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-warning hover:bg-warning-light text-xs transition-colors font-medium cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
             >
-              <Ban className="w-3.5 h-3.5 text-danger shrink-0" />
+              <Ban className="w-3.5 h-3.5 text-warning shrink-0" />
               <span>
                 {user.status === "suspended"
-                  ? "Reactivate Account"
+                  ? "Unsuspend Account"
                   : "Suspend Account"}
               </span>
             </button>
+
+            {onDelete && user.email.toLowerCase() !== (currentUserEmail || "").toLowerCase() && (
+              <button
+                type="button"
+                onClick={() => onDelete(user)}
+                className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-danger hover:bg-danger-light text-xs transition-colors font-medium cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+              >
+                <Trash2 className="w-3.5 h-3.5 text-danger shrink-0" />
+                <span>Delete Account</span>
+              </button>
+            )}
           </div>
         )}
       </td>
@@ -505,6 +521,9 @@ interface UsersDirectoryTableProps {
   onApprove?: (user: UserRecord) => void;
   onReject?: (user: UserRecord) => void;
   onReview?: (user: UserRecord) => void;
+  onDelete?: (user: UserRecord) => void;
+  currentUserEmail?: string;
+  statusSummary?: string;
 }
 
 export function UsersDirectoryTable({
@@ -527,6 +546,9 @@ export function UsersDirectoryTable({
   onApprove,
   onReject,
   onReview,
+  onDelete,
+  currentUserEmail,
+  statusSummary,
 }: UsersDirectoryTableProps) {
   return (
     <div className="bg-surface rounded-2xl border border-line relative overflow-visible">
@@ -589,6 +611,8 @@ export function UsersDirectoryTable({
                   onApprove={onApprove}
                   onReject={onReject}
                   onReview={onReview}
+                  onDelete={onDelete}
+                  currentUserEmail={currentUserEmail}
                 />
               ))
             )}
@@ -631,7 +655,7 @@ export function UsersDirectoryTable({
         )}
       </div>
 
-      {/* LIVE PAGINATION FOOTER */}
+      {/* LIVE TABLE FOOTER */}
       <div className="px-4 sm:px-6 py-3 bg-surface-2 border-t border-line rounded-b-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
         <div className="text-fg-muted font-sans tabular-nums">
           Showing{" "}
@@ -643,43 +667,48 @@ export function UsersDirectoryTable({
           <span className="text-fg font-semibold tabular-nums">
             {totalFilteredCount}
           </span>{" "}
-          accounts
+          {totalFilteredCount === 1 ? "account" : "accounts"}
+          {statusSummary ? <span className="ml-2 text-fg-subtle">• {statusSummary}</span> : null}
         </div>
 
-        <div className="flex items-center gap-1.5 font-sans tabular-nums flex-wrap justify-center">
-          <button
-            type="button"
-            disabled={safePage <= 1}
-            onClick={() => onPageChange(Math.max(1, safePage - 1))}
-            className="min-h-[36px] px-2.5 py-1.5 rounded-lg bg-surface border border-line text-fg-muted hover:text-fg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-          >
-            &lt; Prev
-          </button>
-
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+        {totalPages > 1 ? (
+          <div className="flex items-center gap-1.5 font-sans tabular-nums flex-wrap justify-center">
             <button
-              key={page}
               type="button"
-              onClick={() => onPageChange(page)}
-              className={`min-w-[36px] min-h-[36px] rounded-lg text-xs font-semibold flex items-center justify-center cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
-                page === safePage
-                  ? "bg-brand text-on-brand"
-                  : "bg-surface border border-line text-fg-muted hover:text-fg"
-              }`}
+              disabled={safePage <= 1}
+              onClick={() => onPageChange(Math.max(1, safePage - 1))}
+              className="min-h-[36px] px-2.5 py-1.5 rounded-lg bg-surface border border-line text-fg-muted hover:text-fg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
             >
-              {page}
+              &lt; Prev
             </button>
-          ))}
 
-          <button
-            type="button"
-            disabled={safePage >= totalPages}
-            onClick={() => onPageChange(Math.min(totalPages, safePage + 1))}
-            className="min-h-[36px] px-2.5 py-1.5 rounded-lg bg-surface border border-line text-fg-muted hover:text-fg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-          >
-            Next &gt;
-          </button>
-        </div>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                type="button"
+                onClick={() => onPageChange(page)}
+                className={`min-w-[36px] min-h-[36px] rounded-lg text-xs font-semibold flex items-center justify-center cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
+                  page === safePage
+                    ? "bg-brand text-on-brand"
+                    : "bg-surface border border-line text-fg-muted hover:text-fg"
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+
+            <button
+              type="button"
+              disabled={safePage >= totalPages}
+              onClick={() => onPageChange(Math.min(totalPages, safePage + 1))}
+              className="min-h-[36px] px-2.5 py-1.5 rounded-lg bg-surface border border-line text-fg-muted hover:text-fg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+            >
+              Next &gt;
+            </button>
+          </div>
+        ) : (
+          <span className="text-[11px] text-fg-muted">Synced live with Supabase</span>
+        )}
       </div>
     </div>
   );

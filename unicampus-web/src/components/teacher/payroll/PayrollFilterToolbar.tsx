@@ -59,7 +59,7 @@ export function PayrollFilterToolbar({
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder="Search by month (e.g. October), payout method, or TXN ID..."
-              className="w-full min-h-[44px] pl-10 pr-10 text-sm bg-canvas border border-line rounded-xl text-fg placeholder:text-fg-muted focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-all duration-150"
+              className="w-full min-h-[44px] pl-10 pr-10 text-sm bg-canvas border border-line rounded-xl text-fg placeholder:text-fg-muted focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors duration-150"
             />
             {searchQuery && (
               <button

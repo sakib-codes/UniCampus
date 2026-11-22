@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
-import { Upload, FileCheck2, Sparkles, Camera } from "lucide-react";
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import { Upload, FileCheck2, CheckCircle2 } from "lucide-react";
 import type { Department } from "@/types/admin";
 import {
   BLOOD_GROUPS,
@@ -19,79 +20,75 @@ interface TeacherStepsProps {
     value: TeacherRegistrationForm[K]
   ) => void;
   departments: Department[];
+  hideEmailField?: boolean;
 }
 
 const INPUT_CLASS =
-  "w-full min-h-[42px] px-3 py-2 rounded-xl bg-surface border border-line text-xs sm:text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-all duration-150";
-const LABEL_CLASS = "text-xs font-semibold text-fg block mb-1";
+  "w-full min-h-[44px] px-3.5 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors";
+const LABEL_CLASS = "text-xs font-semibold text-fg block mb-1.5";
+
+type CredTab = "Undergrad" | "Postgrad" | "Docs";
 
 export function TeacherRegistrationSteps({
   step,
   form,
   onChange,
   departments,
+  hideEmailField = false,
 }: TeacherStepsProps) {
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === "string") {
-        onChange("photoUrl", reader.result);
-      }
-    };
-    reader.readAsDataURL(file);
-  };
+  const [sameAddress, setSameAddress] = useState(
+    !form.permanentAddress || form.permanentAddress === form.presentAddress
+  );
+  const [activeCredTab, setActiveCredTab] = useState<CredTab>("Undergrad");
 
+  // Step 1: Account Basics (First Name, Last Name, Email, Mobile)
   if (step === 1) {
     return (
       <div className="space-y-4">
-        {/* Faculty Photo Upload */}
-        <div className="flex items-center gap-4 p-3.5 rounded-xl bg-surface-2 border border-line">
-          <div className="w-16 h-16 rounded-xl bg-surface border border-line overflow-hidden flex items-center justify-center shrink-0">
-            {form.photoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={form.photoUrl} alt="Faculty" className="w-full h-full object-cover" />
-            ) : (
-              <Camera className="w-5 h-5 text-fg-muted" />
-            )}
-          </div>
-          <div className="flex-1 min-w-0 space-y-1">
-            <div className="text-xs font-semibold text-fg">
-              Faculty Portrait Photo (Printed on Faculty ID Card)
-            </div>
-            <p className="text-[11px] text-fg-muted">
-              Official formal portrait (JPG/PNG) for your Academic Faculty ID Card.
-            </p>
-            <label className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface border border-line hover:border-brand text-xs font-semibold text-fg cursor-pointer transition-colors">
-              <Upload className="w-3.5 h-3.5 text-brand" />
-              <span>{form.photoUrl ? "Change Photo" : "Upload Photo"}</span>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handlePhotoUpload}
-                className="hidden"
-              />
-            </label>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="sm:col-span-2">
-            <label htmlFor="teach-fullname" className={LABEL_CLASS}>
-              Full Name with Academic Title *
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div>
+            <label htmlFor="teach-firstname" className={LABEL_CLASS}>
+              First Name *
             </label>
             <input
-              id="teach-fullname"
+              id="teach-firstname"
               type="text"
               required
-              value={form.fullName}
-              onChange={(e) => onChange("fullName", e.target.value)}
-              placeholder="e.g. Dr. Asif Rahman / Engr. Tanvir Ahmed"
+              autoFocus
+              value={form.firstName}
+              onChange={(e) => onChange("firstName", e.target.value)}
+              placeholder="e.g. Dr. Asif"
               className={INPUT_CLASS}
             />
           </div>
 
+          <div>
+            <label htmlFor="teach-lastname" className={LABEL_CLASS}>
+              Last Name *
+            </label>
+            <input
+              id="teach-lastname"
+              type="text"
+              required
+              value={form.lastName}
+              onChange={(e) => onChange("lastName", e.target.value)}
+              placeholder="e.g. Rahman"
+              className={INPUT_CLASS}
+            />
+          </div>
+        </div>
+
+        {hideEmailField ? (
+          <div className="flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl bg-success-light/60 border border-success/30 text-xs">
+            <span className="text-fg font-medium truncate">
+              Google account: <strong className="font-semibold">{form.email}</strong>
+            </span>
+            <span className="inline-flex items-center gap-1 text-success font-semibold shrink-0">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              Verified
+            </span>
+          </div>
+        ) : (
           <div>
             <label htmlFor="teach-email" className={LABEL_CLASS}>
               Institutional / Academic Email *
@@ -106,37 +103,31 @@ export function TeacherRegistrationSteps({
               className={INPUT_CLASS}
             />
           </div>
+        )}
 
-          <div>
-            <label htmlFor="teach-phone" className={LABEL_CLASS}>
-              Mobile Number *
-            </label>
-            <input
-              id="teach-phone"
-              type="tel"
-              required
-              value={form.phone}
-              onChange={(e) => onChange("phone", e.target.value)}
-              placeholder="+880 17XX-XXXXXX"
-              className={INPUT_CLASS}
-            />
-          </div>
+        <div>
+          <label htmlFor="teach-phone" className={LABEL_CLASS}>
+            Mobile Number *
+          </label>
+          <input
+            id="teach-phone"
+            type="tel"
+            required
+            value={form.phone}
+            onChange={(e) => onChange("phone", e.target.value)}
+            placeholder="+880 17XX-XXXXXX"
+            className={INPUT_CLASS}
+          />
+        </div>
+      </div>
+    );
+  }
 
-          <div>
-            <label htmlFor="teach-nid" className={LABEL_CLASS}>
-              National ID (NID) Number *
-            </label>
-            <input
-              id="teach-nid"
-              type="text"
-              required
-              value={form.nidNumber}
-              onChange={(e) => onChange("nidNumber", e.target.value)}
-              placeholder="10 or 17-digit NID Number"
-              className={`${INPUT_CLASS} font-mono`}
-            />
-          </div>
-
+  // Step 2: Identity & Birthday (4 compact fields)
+  if (step === 2) {
+    return (
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           <div>
             <label htmlFor="teach-dob" className={LABEL_CLASS}>
               Date of Birth *
@@ -152,128 +143,213 @@ export function TeacherRegistrationSteps({
           </div>
 
           <div>
-            <label htmlFor="teach-blood" className={LABEL_CLASS}>
-              Blood Group *
-            </label>
-            <select
-              id="teach-blood"
-              value={form.bloodGroup}
-              onChange={(e) => onChange("bloodGroup", e.target.value)}
-              className={`${INPUT_CLASS} cursor-pointer`}
-            >
-              {BLOOD_GROUPS.map((bg) => (
-                <option key={bg} value={bg}>{bg}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
             <label htmlFor="teach-gender" className={LABEL_CLASS}>
-              Gender
+              Gender *
             </label>
             <select
               id="teach-gender"
               value={form.gender}
               onChange={(e) => onChange("gender", e.target.value)}
-              className={`${INPUT_CLASS} cursor-pointer`}
+              className={INPUT_CLASS}
             >
               {GENDERS.map((g) => (
-                <option key={g} value={g}>{g}</option>
+                <option key={g} value={g}>
+                  {g}
+                </option>
               ))}
             </select>
           </div>
+        </div>
 
-          <div>
-            <label htmlFor="teach-emergency" className={LABEL_CLASS}>
-              Emergency Contact Phone *
-            </label>
-            <input
-              id="teach-emergency"
-              type="tel"
-              required
-              value={form.emergencyPhone}
-              onChange={(e) => onChange("emergencyPhone", e.target.value)}
-              placeholder="+880 18XX-XXXXXX"
-              className={INPUT_CLASS}
-            />
+        <div>
+          <span className={LABEL_CLASS}>Blood Group</span>
+          <div className="grid grid-cols-4 gap-2">
+            {BLOOD_GROUPS.map((bg) => (
+              <button
+                key={bg}
+                type="button"
+                onClick={() => onChange("bloodGroup", bg)}
+                className={`min-h-[40px] rounded-xl text-xs font-semibold border transition-colors cursor-pointer ${
+                  form.bloodGroup === bg
+                    ? "bg-brand-soft border-brand text-brand"
+                    : "bg-surface border-line text-fg-muted hover:text-fg"
+                }`}
+              >
+                {bg}
+              </button>
+            ))}
           </div>
+        </div>
 
-          <div>
-            <label htmlFor="teach-present-addr" className={LABEL_CLASS}>
-              Present Address *
-            </label>
-            <input
-              id="teach-present-addr"
-              type="text"
-              required
-              value={form.presentAddress}
-              onChange={(e) => onChange("presentAddress", e.target.value)}
-              placeholder="Road, Block, Dhanmondi, Dhaka"
-              className={INPUT_CLASS}
-            />
-          </div>
+        <div>
+          <label htmlFor="teach-nid" className={LABEL_CLASS}>
+            National ID (NID) Number *
+          </label>
+          <input
+            id="teach-nid"
+            type="text"
+            required
+            value={form.nidNumber}
+            onChange={(e) => onChange("nidNumber", e.target.value)}
+            placeholder="10 or 17 digit NID number"
+            className={`${INPUT_CLASS} font-mono`}
+          />
         </div>
       </div>
     );
   }
 
-  if (step === 2) {
-    const selectedDept = departments.find((d) => d.id === form.deptId);
+  // Step 3: Emergency Contact & Address
+  if (step === 3) {
     return (
       <div className="space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="sm:col-span-2">
-            <label htmlFor="teach-dept" className={LABEL_CLASS}>
-              Department of Appointment *
+        <div>
+          <label htmlFor="teach-emergency" className={LABEL_CLASS}>
+            Emergency Contact Number *
+          </label>
+          <input
+            id="teach-emergency"
+            type="tel"
+            required
+            value={form.emergencyPhone}
+            onChange={(e) => onChange("emergencyPhone", e.target.value)}
+            placeholder="+880 18XX-XXXXXX"
+            className={INPUT_CLASS}
+          />
+        </div>
+
+        <div>
+          <label htmlFor="teach-present-addr" className={LABEL_CLASS}>
+            Present Address *
+          </label>
+          <input
+            id="teach-present-addr"
+            type="text"
+            required
+            value={form.presentAddress}
+            onChange={(e) => {
+              onChange("presentAddress", e.target.value);
+              if (sameAddress) onChange("permanentAddress", e.target.value);
+            }}
+            placeholder="House, Road, Thana, District"
+            className={INPUT_CLASS}
+          />
+        </div>
+
+        <label className="inline-flex items-center gap-2 text-xs text-fg-muted cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={sameAddress}
+            onChange={(e) => {
+              const checked = e.target.checked;
+              setSameAddress(checked);
+              if (checked) onChange("permanentAddress", form.presentAddress);
+            }}
+            className="w-4 h-4 rounded text-brand border-line focus:ring-brand cursor-pointer"
+          />
+          <span>Permanent address is the same as present address</span>
+        </label>
+
+        {!sameAddress && (
+          <div>
+            <label htmlFor="teach-perm-addr" className={LABEL_CLASS}>
+              Permanent Address
             </label>
-            <select
-              id="teach-dept"
-              value={form.deptId}
-              onChange={(e) => onChange("deptId", e.target.value)}
-              className={`${INPUT_CLASS} cursor-pointer`}
-            >
-              {departments.map((d) => (
+            <input
+              id="teach-perm-addr"
+              type="text"
+              value={form.permanentAddress}
+              onChange={(e) => onChange("permanentAddress", e.target.value)}
+              placeholder="Village / Area, Upazila, District"
+              className={INPUT_CLASS}
+            />
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Step 4: Department & Academic Appointment
+  if (step === 4) {
+    return (
+      <div className="space-y-4">
+        <div>
+          <label htmlFor="teach-dept" className={LABEL_CLASS}>
+            Academic Department *
+          </label>
+          <select
+            id="teach-dept"
+            value={form.deptId}
+            disabled={departments.length === 0}
+            onChange={(e) => onChange("deptId", e.target.value)}
+            className={INPUT_CLASS}
+          >
+            {departments.length === 0 ? (
+              <option value="">No departments available yet — ask Admin to create one</option>
+            ) : (
+              departments.map((d) => (
                 <option key={d.id} value={d.id}>
                   {d.name} ({d.code})
+                </option>
+              ))
+            )}
+          </select>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div>
+            <label htmlFor="teach-desig" className={LABEL_CLASS}>
+              Designation *
+            </label>
+            <select
+              id="teach-desig"
+              value={form.designation}
+              onChange={(e) => onChange("designation", e.target.value)}
+              className={INPUT_CLASS}
+            >
+              {FACULTY_DESIGNATIONS.map((desig) => (
+                <option key={desig} value={desig}>
+                  {desig}
                 </option>
               ))}
             </select>
           </div>
 
           <div>
-            <label htmlFor="teach-designation" className={LABEL_CLASS}>
-              Academic Designation *
+            <label htmlFor="teach-degree" className={LABEL_CLASS}>
+              Highest Degree *
             </label>
             <select
-              id="teach-designation"
-              value={form.designation}
-              onChange={(e) => onChange("designation", e.target.value)}
-              className={`${INPUT_CLASS} cursor-pointer`}
+              id="teach-degree"
+              value={form.highestDegree}
+              onChange={(e) => onChange("highestDegree", e.target.value)}
+              className={INPUT_CLASS}
             >
-              {FACULTY_DESIGNATIONS.map((d) => (
-                <option key={d} value={d}>{d}</option>
+              {HIGHEST_DEGREES.map((deg) => (
+                <option key={deg} value={deg}>
+                  {deg}
+                </option>
               ))}
             </select>
           </div>
+        </div>
 
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           <div>
-            <label htmlFor="teach-emp-type" className={LABEL_CLASS}>
-              Employment Type *
+            <label htmlFor="teach-emp" className={LABEL_CLASS}>
+              Appointment Type
             </label>
             <select
-              id="teach-emp-type"
+              id="teach-emp"
               value={form.employmentType}
               onChange={(e) =>
-                onChange(
-                  "employmentType",
-                  e.target.value as "Full-Time" | "Adjunct" | "Visiting"
-                )
+                onChange("employmentType", e.target.value as TeacherRegistrationForm["employmentType"])
               }
-              className={`${INPUT_CLASS} cursor-pointer`}
+              className={INPUT_CLASS}
             >
-              <option value="Full-Time">Full-Time Permanent</option>
-              <option value="Adjunct">Adjunct / Part-Time</option>
-              <option value="Visiting">Visiting Faculty</option>
+              <option value="Full-Time">Full-Time</option>
+              <option value="Adjunct">Adjunct</option>
+              <option value="Visiting">Visiting</option>
             </select>
           </div>
 
@@ -291,210 +367,223 @@ export function TeacherRegistrationSteps({
               className={`${INPUT_CLASS} font-mono`}
             />
           </div>
-
-          <div>
-            <label htmlFor="teach-spec" className={LABEL_CLASS}>
-              Research Specialization *
-            </label>
-            <input
-              id="teach-spec"
-              type="text"
-              required
-              value={form.specialization}
-              onChange={(e) => onChange("specialization", e.target.value)}
-              placeholder="e.g. Distributed Systems, AI, VLSI"
-              className={INPUT_CLASS}
-            />
-          </div>
         </div>
 
-        <div className="p-3.5 rounded-xl bg-brand-soft border border-brand/25 space-y-1 text-xs">
-          <div className="flex items-center gap-2 font-semibold text-brand">
-            <Sparkles className="w-4 h-4 shrink-0" />
-            <span>Automatic Faculty Academic ID Issuance</span>
-          </div>
-          <p className="text-fg-muted leading-relaxed">
-            Upon submission, the portal will automatically issue your official{" "}
-            <strong className="text-fg font-mono">
-              FAC-{selectedDept?.code || "CSE"}-XXXX
-            </strong>{" "}
-            Faculty ID and generate your printable Faculty Academic ID Card.
-          </p>
+        <div>
+          <label htmlFor="teach-spec" className={LABEL_CLASS}>
+            Primary Specialization / Research Area *
+          </label>
+          <input
+            id="teach-spec"
+            type="text"
+            required
+            value={form.specialization}
+            onChange={(e) => onChange("specialization", e.target.value)}
+            placeholder="e.g. Machine Learning, Distributed Systems, VLSI"
+            className={INPUT_CLASS}
+          />
         </div>
       </div>
     );
   }
 
-  // Step 3: Academic Qualifications & Documents
+  // Step 5: Academic Degrees & CV (Tabbed: Undergrad | Postgrad | Docs)
+  const ugDone = Boolean(
+    form.undergradDegree.trim() &&
+      form.undergradUniversity.trim() &&
+      form.undergradYear.trim() &&
+      form.undergradCgpa.trim()
+  );
+  const pgDone = Boolean(form.postgradDegree.trim() && form.postgradUniversity.trim());
+  const docsDone = Boolean(form.cvFilename || form.certificateFilename);
+
   return (
     <div className="space-y-4">
-      <div>
-        <label htmlFor="teach-highest" className={LABEL_CLASS}>
-          Highest Earned Degree *
-        </label>
-        <select
-          id="teach-highest"
-          value={form.highestDegree}
-          onChange={(e) => onChange("highestDegree", e.target.value)}
-          className={`${INPUT_CLASS} cursor-pointer`}
-        >
-          {HIGHEST_DEGREES.map((d) => (
-            <option key={d} value={d}>{d}</option>
-          ))}
-        </select>
+      <div className="grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-surface-2 border border-line">
+        {(
+          [
+            { id: "Undergrad" as const, label: "Undergrad *", done: ugDone },
+            { id: "Postgrad" as const, label: "Postgrad", done: pgDone },
+            { id: "Docs" as const, label: "CV / Docs", done: docsDone },
+          ] as const
+        ).map((tab) => {
+          const active = activeCredTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveCredTab(tab.id)}
+              className={`relative h-8 px-2 rounded-lg text-xs font-semibold inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer focus:outline-none z-10 ${
+                active ? "text-fg" : "text-fg-muted hover:text-fg"
+              }`}
+            >
+              {active && (
+                <motion.div
+                  layoutId="reg-teacher-cred-tab"
+                  transition={{ type: "spring", stiffness: 460, damping: 30, mass: 0.7 }}
+                  className="absolute inset-0 bg-surface border border-line rounded-lg shadow-2xs -z-10"
+                />
+              )}
+              <span>{tab.label}</span>
+              {tab.done && <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Undergraduate Degree */}
-      <div className="p-3.5 rounded-xl bg-surface-2 border border-line space-y-2.5">
-        <div className="text-xs font-semibold text-fg">
-          Undergraduate Degree (B.Sc. / B.A. / BBA / Honours) *
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+      {activeCredTab === "Undergrad" && (
+        <div className="space-y-3.5">
           <div>
-            <label htmlFor="teach-ug-deg" className={LABEL_CLASS}>Degree Title *</label>
+            <label htmlFor="ug-deg" className={LABEL_CLASS}>Undergraduate Degree *</label>
             <input
-              id="teach-ug-deg"
+              id="ug-deg"
               type="text"
-              required
               value={form.undergradDegree}
               onChange={(e) => onChange("undergradDegree", e.target.value)}
-              placeholder="B.Sc. in CSE"
+              placeholder="e.g. B.Sc. in Computer Science & Engineering"
               className={INPUT_CLASS}
             />
           </div>
           <div>
-            <label htmlFor="teach-ug-uni" className={LABEL_CLASS}>University *</label>
+            <label htmlFor="ug-uni" className={LABEL_CLASS}>University *</label>
             <input
-              id="teach-ug-uni"
+              id="ug-uni"
               type="text"
-              required
               value={form.undergradUniversity}
               onChange={(e) => onChange("undergradUniversity", e.target.value)}
               placeholder="e.g. BUET / University of Dhaka"
               className={INPUT_CLASS}
             />
           </div>
-          <div>
-            <label htmlFor="teach-ug-year" className={LABEL_CLASS}>Passing Year *</label>
-            <input
-              id="teach-ug-year"
-              type="text"
-              required
-              value={form.undergradYear}
-              onChange={(e) => onChange("undergradYear", e.target.value)}
-              placeholder="e.g. 2018"
-              className={`${INPUT_CLASS} font-mono`}
-            />
-          </div>
-          <div>
-            <label htmlFor="teach-ug-cgpa" className={LABEL_CLASS}>CGPA (out of 4.00) *</label>
-            <input
-              id="teach-ug-cgpa"
-              type="text"
-              required
-              value={form.undergradCgpa}
-              onChange={(e) => onChange("undergradCgpa", e.target.value)}
-              placeholder="e.g. 3.88"
-              className={`${INPUT_CLASS} font-mono`}
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label htmlFor="ug-year" className={LABEL_CLASS}>Passing Year *</label>
+              <input
+                id="ug-year"
+                type="text"
+                value={form.undergradYear}
+                onChange={(e) => onChange("undergradYear", e.target.value)}
+                placeholder="2018"
+                className={`${INPUT_CLASS} font-mono`}
+              />
+            </div>
+            <div>
+              <label htmlFor="ug-cgpa" className={LABEL_CLASS}>CGPA (Out of 4.00) *</label>
+              <input
+                id="ug-cgpa"
+                type="text"
+                value={form.undergradCgpa}
+                onChange={(e) => onChange("undergradCgpa", e.target.value)}
+                placeholder="3.85"
+                className={`${INPUT_CLASS} font-mono`}
+              />
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Postgraduate / Doctoral Degree */}
-      <div className="p-3.5 rounded-xl bg-surface-2 border border-line space-y-2.5">
-        <div className="text-xs font-semibold text-fg">
-          Postgraduate / Doctoral Degree (M.Sc. / MBA / Ph.D.)
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+      {activeCredTab === "Postgrad" && (
+        <div className="space-y-3.5">
+          <p className="text-xs text-fg-muted">
+            Optional — add your M.Sc. / MBA / Ph.D. details if completed or ongoing.
+          </p>
           <div>
-            <label htmlFor="teach-pg-deg" className={LABEL_CLASS}>Degree Title</label>
+            <label htmlFor="pg-deg" className={LABEL_CLASS}>Postgraduate Degree</label>
             <input
-              id="teach-pg-deg"
+              id="pg-deg"
               type="text"
               value={form.postgradDegree}
               onChange={(e) => onChange("postgradDegree", e.target.value)}
-              placeholder="M.Sc. / Ph.D."
+              placeholder="e.g. M.Sc. in Artificial Intelligence"
               className={INPUT_CLASS}
             />
           </div>
-          <div>
-            <label htmlFor="teach-pg-uni" className={LABEL_CLASS}>University</label>
-            <input
-              id="teach-pg-uni"
-              type="text"
-              value={form.postgradUniversity}
-              onChange={(e) => onChange("postgradUniversity", e.target.value)}
-              placeholder="e.g. BUET / NUS"
-              className={INPUT_CLASS}
-            />
-          </div>
-          <div>
-            <label htmlFor="teach-pg-year" className={LABEL_CLASS}>Passing Year</label>
-            <input
-              id="teach-pg-year"
-              type="text"
-              value={form.postgradYear}
-              onChange={(e) => onChange("postgradYear", e.target.value)}
-              placeholder="e.g. 2021"
-              className={`${INPUT_CLASS} font-mono`}
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="sm:col-span-2">
+              <label htmlFor="pg-uni" className={LABEL_CLASS}>University</label>
+              <input
+                id="pg-uni"
+                type="text"
+                value={form.postgradUniversity}
+                onChange={(e) => onChange("postgradUniversity", e.target.value)}
+                placeholder="e.g. BUET / University of Toronto"
+                className={INPUT_CLASS}
+              />
+            </div>
+            <div>
+              <label htmlFor="pg-year" className={LABEL_CLASS}>Year</label>
+              <input
+                id="pg-year"
+                type="text"
+                value={form.postgradYear}
+                onChange={(e) => onChange("postgradYear", e.target.value)}
+                placeholder="2021"
+                className={`${INPUT_CLASS} font-mono`}
+              />
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Document Uploads */}
-      <div className="space-y-2">
-        <label className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl bg-surface border border-dashed border-line hover:border-brand cursor-pointer transition-colors">
-          <div className="flex items-center gap-2 min-w-0 text-xs">
-            {form.cvFilename ? (
-              <FileCheck2 className="w-4 h-4 text-success shrink-0" />
-            ) : (
-              <Upload className="w-4 h-4 text-brand shrink-0" />
-            )}
-            <span className="truncate font-medium text-fg">
-              {form.cvFilename || "Upload Academic CV / Resume (PDF)"}
+      {activeCredTab === "Docs" && (
+        <div className="space-y-3">
+          <label className="flex items-center justify-between gap-3 px-3.5 py-3 rounded-xl bg-surface-2 border border-dashed border-line hover:border-brand cursor-pointer transition-colors">
+            <span className="inline-flex items-center gap-2 text-xs font-medium text-fg truncate">
+              {form.cvFilename ? (
+                <>
+                  <FileCheck2 className="w-4 h-4 text-success shrink-0" />
+                  <span className="truncate">{form.cvFilename}</span>
+                </>
+              ) : (
+                <>
+                  <Upload className="w-4 h-4 text-brand shrink-0" />
+                  <span>Upload Academic CV / Resume (PDF)</span>
+                </>
+              )}
             </span>
-          </div>
-          <span className="text-[11px] font-semibold text-brand shrink-0">
-            {form.cvFilename ? "Replace" : "Browse"}
-          </span>
-          <input
-            type="file"
-            accept=".pdf,.doc,.docx"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) onChange("cvFilename", f.name);
-            }}
-            className="hidden"
-          />
-        </label>
+            <span className="text-[11px] font-semibold text-brand shrink-0">
+              {form.cvFilename ? "Change" : "Browse"}
+            </span>
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) onChange("cvFilename", file.name);
+              }}
+              className="hidden"
+            />
+          </label>
 
-        <label className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl bg-surface border border-dashed border-line hover:border-brand cursor-pointer transition-colors">
-          <div className="flex items-center gap-2 min-w-0 text-xs">
-            {form.certificateFilename ? (
-              <FileCheck2 className="w-4 h-4 text-success shrink-0" />
-            ) : (
-              <Upload className="w-4 h-4 text-brand shrink-0" />
-            )}
-            <span className="truncate font-medium text-fg">
-              {form.certificateFilename || "Upload Highest Degree Certificate / Transcript (PDF or Image)"}
+          <label className="flex items-center justify-between gap-3 px-3.5 py-3 rounded-xl bg-surface-2 border border-dashed border-line hover:border-brand cursor-pointer transition-colors">
+            <span className="inline-flex items-center gap-2 text-xs font-medium text-fg truncate">
+              {form.certificateFilename ? (
+                <>
+                  <FileCheck2 className="w-4 h-4 text-success shrink-0" />
+                  <span className="truncate">{form.certificateFilename}</span>
+                </>
+              ) : (
+                <>
+                  <Upload className="w-4 h-4 text-brand shrink-0" />
+                  <span>Upload Degree Certificate (PDF/JPG)</span>
+                </>
+              )}
             </span>
-          </div>
-          <span className="text-[11px] font-semibold text-brand shrink-0">
-            {form.certificateFilename ? "Replace" : "Browse"}
-          </span>
-          <input
-            type="file"
-            accept=".pdf,image/*"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) onChange("certificateFilename", f.name);
-            }}
-            className="hidden"
-          />
-        </label>
-      </div>
+            <span className="text-[11px] font-semibold text-brand shrink-0">
+              {form.certificateFilename ? "Change" : "Browse"}
+            </span>
+            <input
+              type="file"
+              accept=".pdf,image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) onChange("certificateFilename", file.name);
+              }}
+              className="hidden"
+            />
+          </label>
+        </div>
+      )}
     </div>
   );
 }

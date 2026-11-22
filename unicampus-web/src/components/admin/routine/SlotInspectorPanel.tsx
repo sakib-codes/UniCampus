@@ -12,9 +12,8 @@ import {
   Check,
   RefreshCw,
   ShieldCheck,
-  ChevronDown,
 } from "lucide-react";
-import { Badge, Button } from "@/components/ui";
+import { Badge, Button, Select } from "@/components/ui";
 import { ACTIVE_TERM } from "@/lib/canonicalCampus";
 import { COURSE_OPTIONS, type SlotData } from "./adminRoutineData";
 
@@ -88,21 +87,17 @@ export function SlotInspectorPanel({
                 >
                   Assigned Course
                 </label>
-                <div className="relative">
-                  <select
-                    id="routine-course-select"
-                    value={activeSlot.courseCode}
-                    onChange={(e) => onCourseChange(e.target.value)}
-                    className="w-full min-h-[44px] bg-surface-2 border border-line text-fg text-xs font-sans rounded-xl pl-3 pr-9 py-2.5 truncate focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand cursor-pointer appearance-none"
-                  >
-                    {COURSE_OPTIONS.map((course) => (
-                      <option key={course.code} value={course.code}>
-                        {course.code} • {course.title}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="w-3.5 h-3.5 text-fg-muted absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                </div>
+                <Select
+                  id="routine-course-select"
+                  value={activeSlot.courseCode}
+                  onChange={onCourseChange}
+                  ariaLabel="Assigned course"
+                  size="md"
+                  options={COURSE_OPTIONS.map((course) => ({
+                    value: course.code,
+                    label: `${course.code} • ${course.title}`,
+                  }))}
+                />
               </div>
 
               {/* Section & Enrolled */}

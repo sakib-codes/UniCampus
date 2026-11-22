@@ -51,17 +51,17 @@ export function ApplicationStatusPanel({
 
   return (
     <div className="space-y-5">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-semibold text-fg tracking-tight">
-          Application Status &amp; Re-Application
+      <div className="space-y-1">
+        <h1 className="text-xl sm:text-2xl font-semibold text-fg tracking-tight">
+          Check application status
         </h1>
-        <p className="text-xs sm:text-sm text-fg-muted mt-1">
-          Enter your registered email to check verification status, read any admin feedback, or correct and re-apply.
+        <p className="text-xs sm:text-sm text-fg-muted leading-relaxed">
+          Enter your registered email to track verification, view admin feedback, or correct and re-apply.
         </p>
       </div>
 
-      <form onSubmit={handleLookup} className="flex flex-col sm:flex-row gap-2.5">
-        <div className="relative flex-1">
+      <form onSubmit={handleLookup} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+        <div className="relative flex-1 min-w-0">
           <Search className="w-4 h-4 text-fg-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="email"
@@ -71,12 +71,17 @@ export function ApplicationStatusPanel({
               setLookupEmail(e.target.value);
               if (searched) setSearched(false);
             }}
-            placeholder="Enter your registered email (e.g. tanvir.cse@unicampus.edu)"
-            className="w-full min-h-[44px] pl-10 pr-3.5 py-2.5 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-all duration-150"
+            placeholder="name@unicampus.edu"
+            className="w-full h-11 pl-10 pr-3.5 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
           />
         </div>
-        <Button type="submit" variant="primary" size="lg">
-          Check Status
+        <Button
+          type="submit"
+          variant="primary"
+          size="md"
+          className="h-11 px-5 rounded-xl shrink-0 whitespace-nowrap"
+        >
+          Check status
         </Button>
       </form>
 

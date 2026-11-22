@@ -25,6 +25,7 @@ interface RegistrationReviewModalProps {
 }
 
 const STUDENT_REJECTION_PRESETS = [
+  "Admission payment TrxID or pay slip screenshot could not be verified.",
   "SSC/HSC Roll or Registration number does not match board records.",
   "Uploaded SSC/HSC marksheet is unclear or missing. Please re-upload.",
   "Birth Certificate / NID number is invalid or incomplete.",
@@ -100,6 +101,8 @@ export function RegistrationReviewModal({
                 {user.status === "active" && <Badge variant="success">Approved</Badge>}
                 {user.status === "pending" && <Badge variant="warning">Pending Review</Badge>}
                 {user.status === "rejected" && <Badge variant="danger">Rejected</Badge>}
+                {p.email_verified && <Badge variant="success">Email Verified</Badge>}
+                {p.phone_verified && <Badge variant="success">Phone Verified</Badge>}
               </div>
               <p className="text-xs text-fg-muted mt-0.5 truncate">
                 {user.email} • {user.department}
@@ -115,6 +118,11 @@ export function RegistrationReviewModal({
                   </span>
                 )}
               </div>
+              {isStudent && p.program_name && (
+                <p className="text-xs font-medium text-fg mt-1">
+                  Program: <span className="text-brand">{p.program_name}</span>
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -267,6 +275,66 @@ export function RegistrationReviewModal({
               ) : (
                 <p className="text-xs text-fg-muted">
                   No board examination records attached to this legacy profile.
+                </p>
+              )}
+            </div>
+
+            {/* Admission Fee Payment Proof */}
+            <div className="p-4 rounded-xl bg-surface border border-line space-y-3">
+              <div className="flex items-center justify-between gap-2 text-xs font-semibold text-fg border-b border-line pb-2">
+                <span className="inline-flex items-center gap-2">
+                  <CreditCard className="w-4 h-4 text-brand" />
+                  <span>Admission Fee Payment Proof</span>
+                </span>
+                {p.admission_payment?.trx_id ? (
+                  <Badge variant="brand">{p.admission_payment.method}</Badge>
+                ) : (
+                  <Badge variant="neutral">Not Submitted</Badge>
+                )}
+              </div>
+              {p.admission_payment?.trx_id ? (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+                    <div>
+                      <span className="text-fg-muted block text-[11px]">Transaction ID / Slip No.</span>
+                      <strong className="text-fg font-mono">{p.admission_payment.trx_id}</strong>
+                    </div>
+                    <div>
+                      <span className="text-fg-muted block text-[11px]">Amount Paid</span>
+                      <strong className="text-fg tabular-nums">
+                        ৳{Number(p.admission_payment.amount || 0).toLocaleString()}
+                      </strong>
+                    </div>
+                    <div>
+                      <span className="text-fg-muted block text-[11px]">Payment Date</span>
+                      <strong className="text-fg tabular-nums">
+                        {p.admission_payment.paid_date || "—"}
+                      </strong>
+                    </div>
+                  </div>
+                  {p.admission_payment.slip_filename && (
+                    <div className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-surface-2 border border-line text-xs">
+                      <span className="inline-flex items-center gap-2 text-fg font-medium truncate">
+                        <FileText className="w-4 h-4 text-brand shrink-0" />
+                        <span className="truncate">{p.admission_payment.slip_filename}</span>
+                      </span>
+                      <span className="text-[11px] text-success font-semibold shrink-0">Attached</span>
+                    </div>
+                  )}
+                  {p.admission_payment.slip_preview_url && (
+                    <div className="rounded-xl overflow-hidden border border-line bg-surface-2 max-h-52 flex items-center justify-center">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={p.admission_payment.slip_preview_url}
+                        alt="Admission payment slip"
+                        className="max-h-52 w-auto object-contain"
+                      />
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-xs text-fg-muted">
+                  No admission payment TrxID or pay slip attached to this application.
                 </p>
               )}
             </div>

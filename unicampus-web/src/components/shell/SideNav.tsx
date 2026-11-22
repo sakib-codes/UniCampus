@@ -6,7 +6,6 @@ import { motion, useReducedMotion } from "framer-motion";
 import {
   ChevronLeft,
   ChevronRight,
-  GraduationCap,
   Lock,
   LogOut,
 } from "lucide-react";
@@ -119,9 +118,12 @@ export function SideNav({
             className="flex items-center gap-2.5 min-w-0 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
             title={`UniCampus ${config.portalLabel}`}
           >
-            <div className="w-9 h-9 rounded-xl bg-brand-soft text-brand flex items-center justify-center shrink-0">
-              <GraduationCap className="w-5 h-5" />
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/unicampus_logo.png"
+              alt="UniCampus"
+              className="w-8 h-8 rounded-xl object-contain shrink-0"
+            />
             {!collapsed && (
               <div className="min-w-0">
                 <p className="text-[15px] font-semibold tracking-tight text-fg truncate leading-tight">
@@ -186,7 +188,7 @@ export function SideNav({
                   href={item.href}
                   title={collapsed ? item.label : undefined}
                   aria-current={isActive ? "page" : undefined}
-                  className={`group relative flex items-center h-9 rounded-lg text-sm transition-colors ${
+                  className={`group relative flex items-center h-9 rounded-lg text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                     collapsed ? "justify-center px-2" : "gap-3 px-3"
                   } ${
                     isActive
@@ -207,16 +209,6 @@ export function SideNav({
                         }
                         aria-hidden="true"
                         className="absolute inset-0 rounded-xl bg-brand-soft pointer-events-none"
-                      />
-                      <motion.span
-                        layoutId={`sidenav-active-bar-${role}`}
-                        transition={
-                          reduceMotion
-                            ? { duration: 0 }
-                            : { type: "spring", stiffness: 440, damping: 28, mass: 0.8 }
-                        }
-                        aria-hidden="true"
-                        className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-brand z-10"
                       />
                     </>
                   )}

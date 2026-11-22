@@ -126,7 +126,7 @@ export function PaymentHistoryTab({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search receipt no, TXN ID, or semester..."
-              className="w-full min-h-[44px] pl-10 pr-9 py-2 rounded-xl border border-line bg-surface text-fg text-sm placeholder:text-fg-muted focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-all duration-150"
+              className="w-full min-h-[44px] pl-10 pr-9 py-2 rounded-xl border border-line bg-surface text-fg text-sm placeholder:text-fg-muted focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors duration-150"
             />
             {searchQuery && (
               <button

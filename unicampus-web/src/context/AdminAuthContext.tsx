@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Profile, UserRoleType, AdminRoleLevel } from '@/types/admin';
 import { INITIAL_PROFILES } from '@/lib/mockData';
 import { adminService } from '@/lib/services/adminService';
+import { supabaseSyncBridge } from '@/lib/supabase/syncBridge';
 
 interface AdminAuthContextType {
   currentUser: Profile | null;
@@ -31,6 +32,7 @@ interface AdminAuthContextType {
   loginAsFaculty: () => void;
   loginAsAdmin: () => void;
   loginAsDeptAdmin: (deptId: string) => void;
+  loginWithSupabaseProfile: (profile: Profile) => void;
   logout: () => void;
 }
 
@@ -39,7 +41,7 @@ const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefin
 const AUTH_STORAGE_KEY = 'unicampus_auth_current_user';
 const SCOPE_STORAGE_KEY = 'unicampus_admin_scope_dept';
 const AUTH_SCHEMA_VERSION_KEY = 'unicampus_auth_schema_version';
-const AUTH_SCHEMA_VERSION = 'v2';
+const AUTH_SCHEMA_VERSION = 'v3-live';
 
 function findStudentProfile(): Profile {
   return (
@@ -77,8 +79,10 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
   const [hasExplicitSession, setHasExplicitSession] = useState(false);
   const [activeScopeDeptId, setActiveScopeDeptIdState] = useState<string>('all');
   
-  // Default to Student profile (Sakib Ahmed) for security & student panel privacy
-  const [currentUser, setCurrentUser] = useState<Profile | null>(() => findStudentProfile());
+  // Start clean with no fake dummy user when live Supabase is connected
+  const [currentUser, setCurrentUser] = useState<Profile | null>(() =>
+    supabaseSyncBridge.isLive() ? null : findStudentProfile()
+  );
 
   useEffect(() => {
     queueMicrotask(() => {
@@ -88,31 +92,43 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
           localStorage.removeItem(AUTH_STORAGE_KEY);
           localStorage.removeItem(SCOPE_STORAGE_KEY);
           localStorage.setItem(AUTH_SCHEMA_VERSION_KEY, AUTH_SCHEMA_VERSION);
-          setCurrentUser(findStudentProfile());
+          setCurrentUser(supabaseSyncBridge.isLive() ? null : findStudentProfile());
           setActiveScopeDeptIdState('all');
           setHasExplicitSession(false);
           setIsLoaded(true);
-          return;
-        }
-
-        const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-        if (stored) {
-          try {
-            const parsed = JSON.parse(stored);
-            setCurrentUser(parsed);
-            setHasExplicitSession(true);
-          } catch (e) {
-            console.error('Failed to parse stored auth user', e);
+        } else {
+          const stored = localStorage.getItem(AUTH_STORAGE_KEY);
+          if (stored) {
+            try {
+              const parsed = JSON.parse(stored);
+              setCurrentUser(parsed);
+              setHasExplicitSession(true);
+            } catch (e) {
+              console.error('Failed to parse stored auth user', e);
+              setHasExplicitSession(false);
+            }
+          } else {
             setHasExplicitSession(false);
           }
-        } else {
-          setHasExplicitSession(false);
+
+          const storedScope = localStorage.getItem(SCOPE_STORAGE_KEY);
+          if (storedScope) {
+            setActiveScopeDeptIdState(storedScope);
+          }
+          setIsLoaded(true);
         }
 
-        const storedScope = localStorage.getItem(SCOPE_STORAGE_KEY);
-        if (storedScope) {
-          setActiveScopeDeptIdState(storedScope);
+        // Hydrate live Supabase Auth session if active
+        if (supabaseSyncBridge.isLive()) {
+          void supabaseSyncBridge.getCurrentSessionProfile().then((liveProfile) => {
+            if (liveProfile) {
+              setCurrentUser(liveProfile);
+              setHasExplicitSession(true);
+              localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(liveProfile));
+            }
+          });
         }
+        return;
       }
       setIsLoaded(true);
     });
@@ -229,8 +245,18 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const loginWithSupabaseProfile = (profile: Profile) => {
+    saveUser(profile);
+    if (profile.role === 'admin' && profile.admin_role === 'dept_admin' && profile.department_id) {
+      setActiveScopeDeptId(profile.department_id);
+    } else if (profile.role === 'admin') {
+      setActiveScopeDeptId('all');
+    }
+  };
+
   const logout = () => {
     saveUser(null);
+    void supabaseSyncBridge.signOut();
   };
 
   const isAdmin = currentUser?.role === 'admin';
@@ -286,6 +312,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
         loginAsFaculty,
         loginAsAdmin,
         loginAsDeptAdmin,
+        loginWithSupabaseProfile,
         logout,
       }}
     >

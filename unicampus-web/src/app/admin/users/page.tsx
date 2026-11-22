@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
-import { Upload, UserPlus } from "lucide-react";
-import { Button, PageHeader, Toast } from "@/components/ui";
-import { CAMPUS_METRICS } from "@/lib/canonicalCampus";
-import { INITIAL_PROFILES } from "@/lib/mockData";
+import { Upload, UserPlus, Trash2 } from "lucide-react";
+import { Button, Modal, PageHeader, Toast } from "@/components/ui";
+import { TableRowsSkeleton } from "@/components/ui/Skeleton";
 import { adminService } from "@/lib/services/adminService";
+import type { Department } from "@/types/admin";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import {
   DEPT_META,
@@ -23,9 +23,9 @@ import { RegistrationReviewModal } from "@/components/admin/users/RegistrationRe
 export default function AdminUsersPage() {
   const { currentUser, isDeptAdmin } = useAdminAuth();
 
-  const [users, setUsers] = useState<UserRecord[]>(() =>
-    INITIAL_PROFILES.map((p, idx) => mapProfileToUserRecord(p, idx))
-  );
+  const [users, setUsers] = useState<UserRecord[]>([]);
+  const [liveDepartments, setLiveDepartments] = useState<Department[]>([]);
+  const [isHydrating, setIsHydrating] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<RoleTab>("all");
   const [selectedDept, setSelectedDept] = useState("all");
@@ -38,6 +38,7 @@ export default function AdminUsersPage() {
   const [isCsvModalOpen, setIsCsvModalOpen] = useState(false);
   const [reviewingUser, setReviewingUser] = useState<UserRecord | null>(null);
   const [reviewRejectMode, setReviewRejectMode] = useState(false);
+  const [deletingUser, setDeletingUser] = useState<UserRecord | null>(null);
   const [editingUser, setEditingUser] = useState<UserRecord | null>(null);
   const [editRole, setEditRole] = useState<"student" | "teacher" | "admin">("student");
   const [editDeptKey, setEditDeptKey] = useState<DeptKey>("cse");
@@ -53,13 +54,22 @@ export default function AdminUsersPage() {
 
   const popoverRef = useRef<HTMLDivElement>(null);
 
-  // Sync users with adminService and event bus
+  // Sync users with adminService, live Supabase, and event bus
   useEffect(() => {
     const syncProfiles = () => {
       const profiles = adminService.getProfiles();
       setUsers(profiles.map((p, idx) => mapProfileToUserRecord(p, idx)));
+      setLiveDepartments(adminService.getDepartments());
     };
     syncProfiles();
+    void adminService
+      .hydrateFromSupabase()
+      .then((hydrated) => {
+        if (hydrated) syncProfiles();
+      })
+      .finally(() => {
+        setIsHydrating(false);
+      });
     window.addEventListener("unicampus:profiles-updated", syncProfiles);
     window.addEventListener("storage", syncProfiles);
     return () => {
@@ -135,12 +145,24 @@ export default function AdminUsersPage() {
 
   const roleTabs = useMemo(
     () => [
-      { id: "all" as const, label: "All Users", count: CAMPUS_METRICS.totalUsers.toLocaleString() },
-      { id: "student" as const, label: "Students", count: CAMPUS_METRICS.students.toLocaleString() },
-      { id: "teacher" as const, label: "Faculty", count: CAMPUS_METRICS.faculty.toLocaleString() },
-      { id: "admin" as const, label: "Admins", count: CAMPUS_METRICS.admins.toLocaleString() },
+      { id: "all" as const, label: "All Users", count: users.length.toLocaleString() },
+      {
+        id: "student" as const,
+        label: "Students",
+        count: users.filter((u) => u.role === "student").length.toLocaleString(),
+      },
+      {
+        id: "teacher" as const,
+        label: "Faculty",
+        count: users.filter((u) => u.role === "teacher").length.toLocaleString(),
+      },
+      {
+        id: "admin" as const,
+        label: "Admins",
+        count: users.filter((u) => u.role === "admin").length.toLocaleString(),
+      },
     ],
-    []
+    [users]
   );
 
   const handleTogglePopover = useCallback((userId: string) => {
@@ -314,6 +336,19 @@ export default function AdminUsersPage() {
     triggerToast(`Successfully invited and provisioned account for ${newUser.name}.`);
   };
 
+  const handleRequestDeleteUser = useCallback((user: UserRecord) => {
+    setDeletingUser(user);
+    setOpenPopoverId(null);
+  }, []);
+
+  const handleConfirmDeleteUser = useCallback(() => {
+    if (!deletingUser) return;
+    adminService.deleteProfile(deletingUser.profileId, currentUser?.full_name || "Admin");
+    setUsers((prev) => prev.filter((u) => u.profileId !== deletingUser.profileId));
+    triggerToast(`Permanently removed ${deletingUser.name} (${deletingUser.email}).`);
+    setDeletingUser(null);
+  }, [deletingUser, currentUser?.full_name, triggerToast]);
+
   const handleClearFilters = useCallback(() => {
     setSearchQuery("");
     setActiveTab("all");
@@ -340,9 +375,9 @@ export default function AdminUsersPage() {
           <>
             Manage identity provisioning, role assignments, and account access across{" "}
             <span className="font-sans tabular-nums text-fg font-semibold">
-              {CAMPUS_METRICS.totalUsers.toLocaleString()}
+              {users.length.toLocaleString()}
             </span>{" "}
-            portal users
+            portal {users.length === 1 ? "user" : "users"}
           </>
         }
         actions={
@@ -389,44 +424,39 @@ export default function AdminUsersPage() {
           setCurrentPage(1);
         }}
         roleTabs={roleTabs}
+        departments={liveDepartments}
         onClearFilters={handleClearFilters}
         isDeptAdmin={isDeptAdmin}
       />
 
-      <UsersDirectoryTable
-        paginatedUsers={paginatedUsers}
-        totalFilteredCount={filteredUsers.length}
-        startIdx={startIdx}
-        pageSize={pageSize}
-        safePage={safePage}
-        totalPages={totalPages}
-        openPopoverId={openPopoverId}
-        popoverRef={popoverRef}
-        onPageChange={setCurrentPage}
-        onClearFilters={handleClearFilters}
-        onTogglePopover={handleTogglePopover}
-        onEditRole={handleEditRole}
-        onResetPassword={handleResetPassword}
-        onImpersonate={handleImpersonate}
-        onSuspendToggle={handleSuspendToggle}
-        onToggleHold={handleToggleHold}
-        onApprove={handleApproveUser}
-        onReject={handleOpenRejectWithReason}
-        onReview={handleOpenReview}
-      />
-
-      {/* BOTTOM METADATA STATUS STRIP */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs text-fg-muted px-2 font-sans tabular-nums gap-2 pt-1">
-        <div>
-          Directory sample: {users.length} accounts ({directoryCounts.active} Active ·{" "}
-          {directoryCounts.pending} Pending · {directoryCounts.rejected} Rejected ·{" "}
-          {directoryCounts.suspended} Suspended)
-        </div>
-        <div>
-          Portal Total: {CAMPUS_METRICS.totalUsers.toLocaleString()} (4,924 Active · 118
-          Pending · 30 Suspended)
-        </div>
-      </div>
+      {isHydrating && users.length === 0 ? (
+        <TableRowsSkeleton rows={5} />
+      ) : (
+        <UsersDirectoryTable
+          paginatedUsers={paginatedUsers}
+          totalFilteredCount={filteredUsers.length}
+          startIdx={startIdx}
+          pageSize={pageSize}
+          safePage={safePage}
+          totalPages={totalPages}
+          openPopoverId={openPopoverId}
+          popoverRef={popoverRef}
+          onPageChange={setCurrentPage}
+          onClearFilters={handleClearFilters}
+          onTogglePopover={handleTogglePopover}
+          onEditRole={handleEditRole}
+          onResetPassword={handleResetPassword}
+          onImpersonate={handleImpersonate}
+          onSuspendToggle={handleSuspendToggle}
+          onToggleHold={handleToggleHold}
+          onApprove={handleApproveUser}
+          onReject={handleOpenRejectWithReason}
+          onReview={handleOpenReview}
+          onDelete={handleRequestDeleteUser}
+          currentUserEmail={currentUser?.email}
+          statusSummary={`${directoryCounts.active} Active · ${directoryCounts.pending} Pending · ${directoryCounts.rejected} Rejected · ${directoryCounts.suspended} Suspended`}
+        />
+      )}
 
       <RegistrationReviewModal
         key={reviewingUser ? `${reviewingUser.profileId}-${reviewRejectMode}` : "closed"}
@@ -436,6 +466,44 @@ export default function AdminUsersPage() {
         onApprove={handleApproveUser}
         onReject={handleConfirmRejectWithReason}
       />
+
+      {/* Delete User Confirmation Modal */}
+      <Modal
+        open={Boolean(deletingUser)}
+        onClose={() => setDeletingUser(null)}
+        size="sm"
+        title="Delete User Account"
+        description="This action permanently removes the user from the portal directory and database."
+      >
+        {deletingUser && (
+          <div className="space-y-4 pt-1">
+            <div className="p-3.5 rounded-xl bg-danger-light/60 border border-danger/25 space-y-1 text-xs">
+              <div className="font-semibold text-fg">{deletingUser.name}</div>
+              <div className="text-fg-muted">{deletingUser.email}</div>
+              <div className="font-mono text-danger text-[11px]">
+                {deletingUser.roleLabel} • ID: {deletingUser.id}
+              </div>
+            </div>
+            <p className="text-xs text-fg-muted leading-relaxed">
+              Are you sure you want to permanently remove this account? You can also{" "}
+              <span className="font-semibold text-fg">Suspend</span> the user instead if you only want to pause access temporarily.
+            </p>
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <Button variant="secondary" size="sm" onClick={() => setDeletingUser(null)}>
+                Cancel
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                leftIcon={<Trash2 className="w-3.5 h-3.5" />}
+                onClick={handleConfirmDeleteUser}
+              >
+                Delete Permanently
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       <UsersModals
         isInviteModalOpen={isInviteModalOpen}

@@ -13,7 +13,6 @@ import {
   Download,
   ShieldCheck,
 } from "lucide-react";
-import { CAMPUS_METRICS } from "@/lib/canonicalCampus";
 import { ORDINAL_SEMESTERS } from "@/lib/mockData";
 import {
   DEPARTMENTS,
@@ -21,6 +20,7 @@ import {
 } from "@/components/admin/departments/departmentsData";
 import { DepartmentCard } from "@/components/admin/departments/DepartmentCard";
 import { DepartmentModals } from "@/components/admin/departments/DepartmentModals";
+import { DepartmentCardsSkeleton } from "@/components/ui/Skeleton";
 import { adminService } from "@/lib/services/adminService";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 
@@ -40,7 +40,10 @@ function resolveSemesterName(semesterId: string, semestersMap: Map<string, strin
 
 export default function AdminDepartmentsPage() {
   const { isDeptAdmin } = useAdminAuth();
-  const [departments, setDepartments] = useState<DepartmentData[]>(DEPARTMENTS);
+  const [departments, setDepartments] = useState<DepartmentData[]>([]);
+  const [isHydrating, setIsHydrating] = useState(true);
+  const [totalStudentCount, setTotalStudentCount] = useState(0);
+  const [totalSubjectCount, setTotalSubjectCount] = useState(0);
   const [allFaculty, setAllFaculty] = useState<
     { id: string; name: string; departmentId: string; code?: string | null }[]
   >([]);
@@ -86,6 +89,9 @@ export default function AdminDepartmentsPage() {
     const storedSemesters = adminService.getSemesters();
     const storedProfiles = adminService.getProfiles();
     const semestersMap = new Map(storedSemesters.map((sem) => [sem.id, sem.name]));
+
+    setTotalStudentCount(storedProfiles.filter((p) => p.role === "student").length);
+    setTotalSubjectCount(storedSubjects.length);
 
     setAllFaculty(
       storedProfiles
@@ -139,26 +145,30 @@ export default function AdminDepartmentsPage() {
           .join("")
           .toUpperCase() || existing?.initials || "HD";
 
+      const deptStudentCount = storedProfiles.filter(
+        (p) => p.role === "student" && p.department_id === d.id
+      ).length;
+
       return {
         id: d.id,
         code: d.code,
         codeNumber: existing?.codeNumber || `CODE ${d.code}`,
-        division: existing?.division || "4-Year Undergraduate Program",
+        division: d.faculty || existing?.division || "4-Year Undergraduate Program",
         name: d.name,
         initials,
-        hodName: d.head_teacher_name || existing?.hodName || "Dean Appointee",
-        hodRole: existing?.hodRole || "Head of Department",
-        hodBadge: existing?.hodBadge || "HOD",
+        hodName: d.head_teacher_name || d.dept_admin_name || "Unassigned",
+        hodRole: "Head of Department",
+        hodBadge: "HOD",
         headTeacherId: d.head_teacher_id,
         deptAdminId: d.dept_admin_id,
         deptAdminName: d.dept_admin_name,
         deptAdminEmail: d.dept_admin_email,
-        office: existing?.office || "Academic Wing, Room 301",
-        totalStudents: d.stats?.students ?? existing?.totalStudents ?? 0,
-        totalFaculty: d.stats?.teachers ?? (deptFaculty.length || existing?.totalFaculty || 0),
-        activePrograms: existing?.activePrograms || ["B.Sc. (4-Year / 8-Sem)"],
-        status: (existing?.status as "Accredited • Active" | "Pending Review") || "Accredited • Active",
-        facultyList: deptFaculty.length > 0 ? deptFaculty : existing?.facultyList || [],
+        office: existing?.office || "Academic Wing",
+        totalStudents: deptStudentCount,
+        totalFaculty: deptFaculty.length,
+        activePrograms: existing?.activePrograms || ["4-Year / 8-Semester"],
+        status: "Accredited • Active" as const,
+        facultyList: deptFaculty,
         curriculumList: deptSubjects,
       };
     });
@@ -170,6 +180,18 @@ export default function AdminDepartmentsPage() {
     queueMicrotask(() => {
       loadDepartmentsData();
     });
+    void adminService
+      .hydrateFromSupabase()
+      .then((hydrated) => {
+        if (hydrated) loadDepartmentsData();
+      })
+      .finally(() => {
+        setIsHydrating(false);
+      });
+    window.addEventListener("unicampus:departments-updated", loadDepartmentsData);
+    return () => {
+      window.removeEventListener("unicampus:departments-updated", loadDepartmentsData);
+    };
   }, [loadDepartmentsData]);
 
   const filteredDepartments = useMemo(() => {
@@ -393,7 +415,7 @@ export default function AdminDepartmentsPage() {
           <div className="min-w-0">
             <div className="text-xs font-sans text-fg-muted">Total Enrolled Students</div>
             <div className="text-2xl font-sans font-bold text-fg mt-1 tabular-nums">
-              {CAMPUS_METRICS.students.toLocaleString()}
+              {totalStudentCount.toLocaleString()}
             </div>
           </div>
           <div className="w-10 h-10 rounded-xl bg-surface-2 border border-line flex items-center justify-center text-success shrink-0">
@@ -405,7 +427,7 @@ export default function AdminDepartmentsPage() {
           <div className="min-w-0">
             <div className="text-xs font-sans text-fg-muted">Accredited Faculty</div>
             <div className="text-2xl font-sans font-bold text-fg mt-1 tabular-nums">
-              {CAMPUS_METRICS.faculty.toLocaleString()}{" "}
+              {allFaculty.length.toLocaleString()}{" "}
               <span className="text-xs font-normal text-fg-muted">Members</span>
             </div>
           </div>
@@ -416,11 +438,17 @@ export default function AdminDepartmentsPage() {
 
         <div className="bg-surface border border-line rounded-2xl p-4 flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <div className="text-xs font-sans text-fg-muted">Curriculum Sync Status</div>
-            <div className="text-sm font-sans font-semibold text-success mt-1.5 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-success shrink-0" />
-              <span>100% Verified</span>
-            </div>
+            <div className="text-xs font-sans text-fg-muted">Curriculum Subjects</div>
+            {totalSubjectCount > 0 ? (
+              <div className="text-2xl font-sans font-bold text-fg mt-1 tabular-nums">
+                {totalSubjectCount.toLocaleString()}{" "}
+                <span className="text-xs font-normal text-fg-muted">Courses</span>
+              </div>
+            ) : (
+              <div className="text-sm font-sans font-semibold text-fg-muted mt-1.5">
+                Ready to configure
+              </div>
+            )}
           </div>
           <div className="w-10 h-10 rounded-xl bg-surface-2 border border-line flex items-center justify-center text-brand shrink-0">
             <BookOpen className="w-5 h-5" />
@@ -429,19 +457,45 @@ export default function AdminDepartmentsPage() {
       </div>
 
       {/* DEPARTMENT CARD BENTO GRID */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-1">
-        {filteredDepartments.map((dept) => (
-          <DepartmentCard
-            key={dept.id}
-            dept={dept}
-            isSuperAdmin={!isDeptAdmin}
-            onSelectRoster={(d) => setSelectedRosterDeptId(d.id)}
-            onSelectCurriculum={(d) => setSelectedCurriculumDeptId(d.id)}
-            onSelectSettings={(d) => setSelectedSettingsDeptId(d.id)}
-            onAssignHod={(d) => setSelectedSettingsDeptId(d.id)}
-          />
-        ))}
-      </div>
+      {isHydrating && departments.length === 0 ? (
+        <DepartmentCardsSkeleton count={2} />
+      ) : filteredDepartments.length === 0 ? (
+        <div className="p-10 rounded-2xl bg-surface border border-line text-center space-y-3">
+          <div className="w-12 h-12 rounded-2xl bg-brand-soft text-brand flex items-center justify-center mx-auto">
+            <Building2 className="w-6 h-6" />
+          </div>
+          <div className="space-y-1">
+            <h2 className="text-base font-semibold text-fg">No departments yet</h2>
+            <p className="text-xs sm:text-sm text-fg-muted max-w-sm mx-auto">
+              Create your first academic department to configure its 4-Year / 8-Semester curriculum and subjects.
+            </p>
+          </div>
+          {!isDeptAdmin && (
+            <button
+              type="button"
+              onClick={() => setIsAddModalOpen(true)}
+              className="inline-flex items-center gap-1.5 h-10 px-4 rounded-xl bg-brand text-on-brand text-xs font-semibold hover:opacity-95 transition-opacity cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Create First Department</span>
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-1">
+          {filteredDepartments.map((dept) => (
+            <DepartmentCard
+              key={dept.id}
+              dept={dept}
+              isSuperAdmin={!isDeptAdmin}
+              onSelectRoster={(d) => setSelectedRosterDeptId(d.id)}
+              onSelectCurriculum={(d) => setSelectedCurriculumDeptId(d.id)}
+              onSelectSettings={(d) => setSelectedSettingsDeptId(d.id)}
+              onAssignHod={(d) => setSelectedSettingsDeptId(d.id)}
+            />
+          ))}
+        </div>
+      )}
 
       {/* BOTTOM ENTERPRISE AUDIT LEDGER */}
       <div className="flex flex-col sm:flex-row items-center justify-between text-xs text-fg-muted px-2 font-sans gap-2 pt-2 border-t border-line">
@@ -449,18 +503,22 @@ export default function AdminDepartmentsPage() {
           UniCampus Academic Council · Curriculum Registry · Active Semesters
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            onClick={() => showToast("Exported complete Curriculum Matrix PDF report.")}
-            className="flex items-center gap-1 text-brand hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded-md px-1"
-          >
-            <Download className="w-3 h-3" />
-            <span>Export Curriculum Matrix</span>
-          </button>
-          <span>•</span>
+          {departments.length > 0 && (
+            <>
+              <button
+                type="button"
+                onClick={() => showToast("Exported complete Curriculum Matrix PDF report.")}
+                className="flex items-center gap-1 text-brand hover:underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded-md px-1"
+              >
+                <Download className="w-3 h-3" />
+                <span>Export Curriculum Matrix</span>
+              </button>
+              <span>•</span>
+            </>
+          )}
           <span className="flex items-center gap-1">
             <ShieldCheck className="w-3.5 h-3.5 text-success" />
-            <span>Academic Department Directory</span>
+            <span>Live Supabase Registry</span>
           </span>
         </div>
       </div>

@@ -86,21 +86,34 @@ export function getInitials(name: string): string {
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
 
+function formatProfileDate(iso?: string | null): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  const now = new Date();
+  const isToday =
+    d.getFullYear() === now.getFullYear() &&
+    d.getMonth() === now.getMonth() &&
+    d.getDate() === now.getDate();
+  if (isToday) return "Today";
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
 export function mapProfileToUserRecord(profile: Profile, index: number): UserRecord {
   const deptKey = resolveDeptKey(profile);
-  const displayId =
-    profile.student_id ||
-    profile.teacher_code ||
-    profile.id.toUpperCase();
-  const loginWindows = [
-    "2 mins ago",
-    "14 mins ago",
-    "38 mins ago",
-    "1 hour ago",
-    "3 hours ago",
-    "Yesterday",
-  ];
-  const isOnline = profile.id === "user-stud-1";
+  const shortCode = profile.id.replace(/-/g, "").slice(0, 4).toUpperCase();
+  const fallbackId =
+    profile.role === "admin"
+      ? `ADM-${shortCode || String(index + 1).padStart(4, "0")}`
+      : profile.role === "teacher"
+        ? `FAC-${shortCode}`
+        : `STU-${shortCode}`;
+  const displayId = profile.student_id || profile.teacher_code || fallbackId;
+  const isOnline = false;
 
   const rawStatus = profile.account_status;
   const status: "active" | "pending" | "suspended" | "rejected" =
@@ -149,9 +162,7 @@ export function mapProfileToUserRecord(profile: Profile, index: number): UserRec
         ? "Awaiting re-application"
         : status === "pending"
         ? "Pending verification"
-        : isOnline
-        ? "Online now"
-        : loginWindows[index % loginWindows.length],
+        : formatProfileDate(profile.created_at),
     isOnlineNow: isOnline && status === "active",
     status,
     statusLabel,

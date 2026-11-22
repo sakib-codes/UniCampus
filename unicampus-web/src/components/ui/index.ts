@@ -99,3 +99,9 @@ export {
   type AvatarProps,
   type AvatarSize,
 } from "./Avatar";
+
+export {
+  Select,
+  type SelectProps,
+  type SelectOption,
+} from "./Select";

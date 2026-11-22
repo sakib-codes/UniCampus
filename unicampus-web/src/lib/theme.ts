@@ -90,10 +90,10 @@ export const themeTokens = {
   btnDangerSecondary: 'bg-danger-light hover:bg-danger/15 text-danger border border-danger/25 text-xs font-medium rounded-xl transition-colors cursor-pointer',
 
   // Inputs, Selects & Forms
-  input: 'bg-surface border border-line text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 rounded-xl text-sm transition-all duration-150',
-  inputSolid: 'bg-surface border border-line text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 rounded-xl text-sm transition-all duration-150',
-  select: 'bg-surface border border-line text-fg focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 rounded-xl text-sm transition-all duration-150',
-  selectSolid: 'bg-surface border border-line text-fg focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 rounded-xl text-sm transition-all duration-150 cursor-pointer',
+  input: 'bg-surface border border-line text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 rounded-xl text-sm transition-colors duration-150',
+  inputSolid: 'bg-surface border border-line text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 rounded-xl text-sm transition-colors duration-150',
+  select: 'bg-surface border border-line text-fg focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 rounded-xl text-sm transition-colors duration-150',
+  selectSolid: 'bg-surface border border-line text-fg focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 rounded-xl text-sm transition-colors duration-150 cursor-pointer',
 
   // Segmented Tabs / Navigation Tracks
   tabTrack: 'bg-surface-2 p-1 border border-line rounded-xl',

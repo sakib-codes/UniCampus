@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { checkRateLimit, getClientRateLimitKey } from "@/lib/scalability/rateLimiter";
 
 export async function POST(req: NextRequest) {
   return handleCallback(req);
@@ -10,6 +11,16 @@ export async function GET(req: NextRequest) {
 
 async function handleCallback(req: NextRequest) {
   try {
+    const rl = await checkRateLimit(getClientRateLimitKey(req, "pay:sslcz:callback"), {
+      capacity: 25,
+      refillPerSecond: 1,
+    });
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: "Too many gateway callbacks." },
+        { status: 429, headers: rl.headers }
+      );
+    }
     let status = "VALID";
     let tran_id = "";
     let val_id = "";

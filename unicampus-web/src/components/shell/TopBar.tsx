@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   Building2,
@@ -46,6 +47,7 @@ export function TopBar({
     effectiveDeptId,
   } = useAdminAuth();
 
+  const pathname = usePathname();
   const mounted = useSyncExternalStore(
     emptySubscribe,
     () => true,
@@ -113,8 +115,8 @@ export function TopBar({
 
       {/* Right Controls */}
       <div className="flex items-center gap-1 sm:gap-2.5 shrink-0">
-        {/* Admin Department Scope Switcher (hidden < sm to prevent 390px crowding; available in MoreSheet on mobile) */}
-        {role === "admin" && (
+        {/* Admin Department Scope Switcher (only shown when departments exist and not on global Settings) */}
+        {role === "admin" && departments.length > 0 && !pathname?.startsWith("/admin/settings") && (
           <div className="hidden sm:block relative" ref={scopeRef}>
             {isSuperAdmin ? (
               <>

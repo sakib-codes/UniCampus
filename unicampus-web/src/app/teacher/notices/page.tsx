@@ -172,7 +172,7 @@ export default function TeacherNoticesPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search circulars..."
-              className="w-full min-h-[44px] sm:min-h-[38px] pl-8.5 pr-8 py-2 bg-canvas border border-line text-fg placeholder:text-fg-muted rounded-xl text-xs font-sans focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-all duration-150"
+              className="w-full min-h-[44px] sm:min-h-[38px] pl-8.5 pr-8 py-2 bg-canvas border border-line text-fg placeholder:text-fg-muted rounded-xl text-xs font-sans focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors duration-150"
             />
             {searchQuery.length > 0 && (
               <button

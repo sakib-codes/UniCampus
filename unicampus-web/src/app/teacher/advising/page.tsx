@@ -139,7 +139,7 @@ export default function TeacherAdvisingPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by student name, ID, or course code..."
-            className="w-full min-h-[44px] pl-10 pr-9 rounded-xl bg-surface-2 border border-line text-xs sm:text-sm text-fg placeholder:text-fg-muted focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-all duration-150"
+            className="w-full min-h-[44px] pl-10 pr-9 rounded-xl bg-surface-2 border border-line text-xs sm:text-sm text-fg placeholder:text-fg-muted focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors duration-150"
           />
           {searchQuery && (
             <button

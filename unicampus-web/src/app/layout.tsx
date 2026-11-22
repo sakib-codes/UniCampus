@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AppShell } from "@/components/layout/AppShell";
+import { TopRouteProgressBar } from "@/components/common/TopRouteProgressBar";
 import { Providers } from "@/components/providers";
 
 const inter = Inter({
@@ -76,6 +77,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-dvh bg-canvas text-fg antialiased selection:bg-brand selection:text-on-brand">
+        <TopRouteProgressBar />
         <Providers>
           <AppShell>{children}</AppShell>
         </Providers>

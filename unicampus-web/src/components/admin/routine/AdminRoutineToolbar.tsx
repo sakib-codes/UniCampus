@@ -1,8 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { Select } from "@/components/ui";
 import { Switch } from "@/components/common/Switch";
-import { CANONICAL_DEPARTMENTS } from "@/lib/canonicalCampus";
+import type { Department } from "@/types/admin";
 import type { BuildingType } from "./adminRoutineData";
 
 interface AdminRoutineToolbarProps {
@@ -10,10 +11,12 @@ interface AdminRoutineToolbarProps {
   onBuildingChange: (b: BuildingType) => void;
   selectedDay: string;
   onDayChange: (day: string) => void;
+  workingDays?: string[];
   capacityFilter: string;
   onCapacityFilterChange: (v: string) => void;
   deptFilter: string;
   onDeptFilterChange: (v: string) => void;
+  departments?: Department[];
   highlightConflicts: boolean;
   onHighlightConflictsChange: (v: boolean) => void;
   showUtilization: boolean;
@@ -26,10 +29,12 @@ export function AdminRoutineToolbar({
   onBuildingChange,
   selectedDay,
   onDayChange,
+  workingDays = ["Sun", "Mon", "Tue", "Wed", "Thu"],
   capacityFilter,
   onCapacityFilterChange,
   deptFilter,
   onDeptFilterChange,
+  departments = [],
   highlightConflicts,
   onHighlightConflictsChange,
   showUtilization,
@@ -56,14 +61,14 @@ export function AdminRoutineToolbar({
                     key={b.id}
                     type="button"
                     onClick={() => onBuildingChange(b.id)}
-                    className={`relative px-3 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer whitespace-nowrap z-10 min-h-[36px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
-                      isActive ? "text-on-brand" : "text-fg-muted hover:text-fg"
+                    className={`relative px-3 h-8 rounded-lg font-semibold transition-colors cursor-pointer whitespace-nowrap z-10 inline-flex items-center justify-center focus:outline-none ${
+                      isActive ? "text-fg" : "text-fg-muted hover:text-fg"
                     }`}
                   >
                     {isActive && (
                       <motion.div
                         layoutId="admin-routine-bldg-pill"
-                        className="absolute inset-0 bg-brand rounded-lg -z-10"
+                        className="absolute inset-0 bg-surface border border-line/80 rounded-lg shadow-2xs -z-10"
                         transition={{ type: "spring", stiffness: 450, damping: 32 }}
                       />
                     )}
@@ -79,21 +84,21 @@ export function AdminRoutineToolbar({
           {/* Day Picker */}
           <div className="w-full sm:w-auto overflow-x-auto max-w-full [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <div className="inline-flex items-center gap-1 p-1 bg-surface-2 rounded-xl border border-line relative min-w-max">
-              {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => {
+              {workingDays.map((day) => {
                 const isActive = selectedDay === day;
                 return (
                   <button
                     key={day}
                     type="button"
                     onClick={() => onDayChange(day)}
-                    className={`relative w-10 h-9 rounded-lg font-sans text-xs font-semibold flex items-center justify-center transition-colors cursor-pointer z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
-                      isActive ? "text-on-brand" : "text-fg-muted hover:text-fg"
+                    className={`relative w-10 h-8 rounded-lg font-sans text-xs font-semibold flex items-center justify-center transition-colors cursor-pointer z-10 focus:outline-none ${
+                      isActive ? "text-fg" : "text-fg-muted hover:text-fg"
                     }`}
                   >
                     {isActive && (
                       <motion.div
                         layoutId="admin-routine-day-pill"
-                        className="absolute inset-0 bg-brand rounded-lg -z-10"
+                        className="absolute inset-0 bg-surface border border-line/80 rounded-lg shadow-2xs -z-10"
                         transition={{ type: "spring", stiffness: 450, damping: 32 }}
                       />
                     )}
@@ -105,34 +110,35 @@ export function AdminRoutineToolbar({
           </div>
         </div>
 
-        {/* Dropdowns & Toggles */}
+        {/* Custom Designed Dropdowns & Toggles */}
         <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2.5 w-full xl:w-auto">
-          <select
+          <Select
             value={capacityFilter}
-            onChange={(e) => onCapacityFilterChange(e.target.value)}
-            aria-label="Filter by room capacity"
-            className="w-full sm:w-auto min-h-[40px] bg-surface-2 border border-line text-fg text-xs font-sans rounded-xl px-3 py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand cursor-pointer"
-          >
-            <option value="all">Room Capacity: All (40 - 120 seats)</option>
-            <option value="40-60">Tier 1: 40 - 60 seats</option>
-            <option value="60-100">Tier 2: 60 - 100 seats</option>
-            <option value="120+">Auditorium (120+ seats)</option>
-          </select>
+            onChange={onCapacityFilterChange}
+            ariaLabel="Filter by room capacity"
+            className="w-full sm:w-auto min-w-[190px]"
+            options={[
+              { value: "all", label: "Room Capacity: All (40–120)" },
+              { value: "40-60", label: "Tier 1: 40–60 seats" },
+              { value: "60-100", label: "Tier 2: 60–100 seats" },
+              { value: "120+", label: "Auditorium (120+ seats)" },
+            ]}
+          />
 
-          <select
+          <Select
             value={deptFilter}
-            onChange={(e) => onDeptFilterChange(e.target.value)}
+            onChange={onDeptFilterChange}
             disabled={isDeptAdmin}
-            aria-label="Filter by department"
-            className="w-full sm:w-auto min-h-[40px] bg-surface-2 border border-line text-fg text-xs font-sans rounded-xl px-3 py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {!isDeptAdmin && <option value="all">Department: All Departments</option>}
-            {CANONICAL_DEPARTMENTS.map((d) => (
-              <option key={d.id} value={d.code.toLowerCase()}>
-                {d.code} — {d.name}
-              </option>
-            ))}
-          </select>
+            ariaLabel="Filter by department"
+            className="w-full sm:w-auto min-w-[175px]"
+            options={[
+              ...(!isDeptAdmin ? [{ value: "all", label: "All Departments" }] : []),
+              ...departments.map((d) => ({
+                value: d.code.toLowerCase(),
+                label: `${d.code} — ${d.name}`,
+              })),
+            ]}
+          />
 
           <div className="flex flex-wrap items-center gap-4 pt-1 sm:pt-0">
             <div className="flex items-center gap-2 select-none">

@@ -233,10 +233,46 @@ button, [role="button"], a, input, select, textarea, [role="tablist"] {
   transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
 }
 
-/* Focus indicator */
-:focus-visible {
+/* Focus indicator — reserve offset outline for non-input controls so inputs never show a double focus ring */
+:where(a, button, [role="button"], [tabindex]):focus-visible {
   outline: 2px solid var(--brand);
   outline-offset: 2px;
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+}
+
+/* YouTube / Facebook / Meta smooth horizontal skeleton shimmer */
+@keyframes ucShimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.uc-shimmer {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--surface-2);
+}
+
+.uc-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--fg) 6%, transparent) 50%,
+    transparent 100%
+  );
+  animation: ucShimmer 1.45s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 /* Reduced motion preference */

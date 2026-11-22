@@ -1,9 +1,9 @@
 "use client";
 
-import { Search, FilterX, ChevronDown, X } from "lucide-react";
-import { Tabs } from "@/components/ui";
-import { CANONICAL_DEPARTMENTS } from "@/lib/canonicalCampus";
-import { DEPT_META, type DeptKey, type RoleTab } from "./usersData";
+import { Search, FilterX, X } from "lucide-react";
+import { Select, Tabs } from "@/components/ui";
+import type { Department } from "@/types/admin";
+import type { RoleTab } from "./usersData";
 
 interface RoleTabOption {
   id: RoleTab;
@@ -21,6 +21,7 @@ interface UsersFilterBarProps {
   activeTab: RoleTab;
   onTabChange: (tab: RoleTab) => void;
   roleTabs: RoleTabOption[];
+  departments?: Department[];
   onClearFilters: () => void;
   isDeptAdmin?: boolean;
 }
@@ -35,85 +36,14 @@ export function UsersFilterBar({
   activeTab,
   onTabChange,
   roleTabs,
+  departments = [],
   onClearFilters,
   isDeptAdmin = false,
 }: UsersFilterBarProps) {
   return (
-    <div className="bg-surface rounded-2xl p-4 border border-line flex flex-col gap-3">
-      {/* Row 1: Search + Department + Status + Reset */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-        <div className="relative w-full md:w-72">
-          <Search className="w-4 h-4 text-fg-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          <input
-            type="text"
-            aria-label="Search users by name, email, or ID"
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search by name, email, or ID..."
-            className="w-full min-h-[44px] bg-surface-2 border border-line focus:border-brand rounded-xl pl-10 pr-9 py-2 text-xs text-fg placeholder:text-fg-muted focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-all duration-150"
-          />
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={() => onSearchChange("")}
-              aria-label="Clear search"
-              className="min-w-[36px] min-h-[36px] inline-flex items-center justify-center absolute right-1.5 top-1/2 -translate-y-1/2 text-fg-muted hover:text-fg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded-lg"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          )}
-        </div>
-
-        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5">
-          <div className="relative flex-1 sm:flex-none">
-            <select
-              value={selectedDept}
-              onChange={(e) => onDeptChange(e.target.value)}
-              disabled={isDeptAdmin}
-              aria-label="Filter by department"
-              className="w-full min-h-[44px] appearance-none bg-surface-2 border border-line text-fg rounded-xl pl-3.5 pr-8 py-2 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand cursor-pointer transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {!isDeptAdmin && <option value="all">All Departments</option>}
-              {CANONICAL_DEPARTMENTS.map((d) => (
-                <option key={d.id} value={d.code.toLowerCase()}>
-                  {DEPT_META[d.code.toLowerCase() as DeptKey].shortLabel}
-                </option>
-              ))}
-              {!isDeptAdmin && <option value="it">Central Administration</option>}
-            </select>
-            <ChevronDown className="w-3.5 h-3.5 text-fg-muted absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
-
-          <div className="relative flex-1 sm:flex-none">
-            <select
-              value={selectedStatus}
-              onChange={(e) => onStatusChange(e.target.value)}
-              aria-label="Filter by status"
-              className="w-full min-h-[44px] appearance-none bg-surface-2 border border-line text-fg rounded-xl pl-3.5 pr-8 py-2 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand cursor-pointer transition-colors"
-            >
-              <option value="all">Status: All Accounts</option>
-              <option value="active">Active Only</option>
-              <option value="pending">Pending Verification</option>
-              <option value="rejected">Rejected (Needs Re-apply)</option>
-              <option value="suspended">Suspended</option>
-            </select>
-            <ChevronDown className="w-3.5 h-3.5 text-fg-muted absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
-
-          <button
-            type="button"
-            onClick={onClearFilters}
-            className="min-w-[44px] min-h-[44px] inline-flex items-center justify-center rounded-xl bg-surface-2 border border-line text-fg-muted hover:text-fg transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-            title="Reset Filters to Default"
-            aria-label="Reset filters"
-          >
-            <FilterX className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
-      {/* Row 2: Role Filter Tabs */}
-      <div className="w-full overflow-x-auto max-w-full">
+    <div className="bg-surface rounded-2xl p-3.5 border border-line flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+      {/* Left: Role Filter Tabs */}
+      <div className="w-full lg:w-auto overflow-x-auto max-w-full shrink-0">
         <Tabs
           tabs={roleTabs}
           value={activeTab}
@@ -122,6 +52,74 @@ export function UsersFilterBar({
           size="sm"
           ariaLabel="Filter users by role"
         />
+      </div>
+
+      {/* Right: Search + Live Department + Status + Reset */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 flex-1 lg:justify-end min-w-0">
+        <div className="relative flex-1 sm:max-w-xs min-w-0">
+          <Search className="w-4 h-4 text-fg-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            aria-label="Search users by name, email, or ID"
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder="Search name, email, or ID..."
+            className="w-full h-10 bg-surface-2 border border-line rounded-xl pl-9 pr-8 text-xs text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => onSearchChange("")}
+              aria-label="Clear search"
+              className="w-8 h-8 inline-flex items-center justify-center absolute right-1 top-1/2 -translate-y-1/2 text-fg-muted hover:text-fg cursor-pointer rounded-lg"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <Select
+            value={selectedDept}
+            onChange={onDeptChange}
+            disabled={isDeptAdmin}
+            ariaLabel="Filter by department"
+            className="min-w-[155px]"
+            options={[
+              ...(!isDeptAdmin ? [{ value: "all", label: "All Departments" }] : []),
+              ...departments.map((d) => ({
+                value: d.code.toLowerCase(),
+                label: `${d.name} (${d.code})`,
+              })),
+              ...(!isDeptAdmin ? [{ value: "it", label: "Central Administration" }] : []),
+            ]}
+          />
+
+          <Select
+            value={selectedStatus}
+            onChange={onStatusChange}
+            ariaLabel="Filter by status"
+            className="min-w-[140px]"
+            menuAlign="right"
+            options={[
+              { value: "all", label: "All Statuses" },
+              { value: "active", label: "Active" },
+              { value: "pending", label: "Pending" },
+              { value: "rejected", label: "Rejected" },
+              { value: "suspended", label: "Suspended" },
+            ]}
+          />
+
+          <button
+            type="button"
+            onClick={onClearFilters}
+            className="w-10 h-10 inline-flex items-center justify-center rounded-xl bg-surface-2 border border-line text-fg-muted hover:text-fg transition-colors cursor-pointer shrink-0"
+            title="Reset Filters"
+            aria-label="Reset filters"
+          >
+            <FilterX className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </div>
   );

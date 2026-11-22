@@ -104,7 +104,7 @@ export function SelectedCoursesBasket({
 
         <div className="w-full h-2 rounded-full bg-surface-2 overflow-hidden border border-line">
           <div
-            className={`h-full transition-all duration-300 rounded-full ${
+            className={`h-full transition-[width] duration-300 rounded-full ${
               isCreditOverload
                 ? "bg-danger"
                 : isBelowMin

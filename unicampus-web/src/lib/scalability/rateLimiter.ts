@@ -1,8 +1,9 @@
 /**
  * Production Token Bucket Rate Limiter with Bounded LRU Memory Guard
  *
- * - Prevents request floods on sensitive routes (/api/payments/*, /register, /advising).
- * - Uses Upstash Redis REST (distributed across serverless/K8s replicas) when configured,
+ * - Prevents request floods on sensitive routes (/api/payments/*, /api/*, /register, /advising).
+ * - Uses Upstash Redis REST (distributed across serverless/K8s replicas) when
+ *   UPSTASH_REDIS_REST_URL & UPSTASH_REDIS_REST_TOKEN are configured,
  *   and automatically falls back to a bounded in-memory Token Bucket in dev/single-node.
  */
 
@@ -17,7 +18,15 @@ export interface RateLimitResult {
   allowed: boolean;
   remaining: number;
   retryAfterSeconds: number;
+  backend: "upstash-redis" | "in-memory-lru";
   headers: Record<string, string>;
+}
+
+export interface RateLimiterBackendStatus {
+  backend: "upstash-redis" | "in-memory-lru";
+  configured: boolean;
+  activeMemoryBuckets: number;
+  maxMemoryBuckets: number;
 }
 
 interface BucketState {
@@ -27,6 +36,46 @@ interface BucketState {
 
 const MAX_IN_MEMORY_BUCKETS = 10_000;
 const memoryBuckets = new Map<string, BucketState>();
+
+function isUpstashConfigured(): boolean {
+  return Boolean(
+    process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+  );
+}
+
+export function getRateLimiterBackendStatus(): RateLimiterBackendStatus {
+  const configured = isUpstashConfigured();
+  return {
+    backend: configured ? "upstash-redis" : "in-memory-lru",
+    configured,
+    activeMemoryBuckets: memoryBuckets.size,
+    maxMemoryBuckets: MAX_IN_MEMORY_BUCKETS,
+  };
+}
+
+/** Health-check ping for Upstash Redis REST when configured */
+export async function pingUpstashRedis(): Promise<{
+  reachable: boolean | null;
+  latencyMs: number | null;
+}> {
+  const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
+  const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!redisUrl || !redisToken) {
+    return { reachable: null, latencyMs: null };
+  }
+
+  const start = Date.now();
+  try {
+    const res = await fetch(`${redisUrl}/ping`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${redisToken}` },
+      cache: "no-store",
+    });
+    return { reachable: res.ok, latencyMs: Date.now() - start };
+  } catch {
+    return { reachable: false, latencyMs: Date.now() - start };
+  }
+}
 
 function pruneMemoryBucketsIfNeeded(): void {
   if (memoryBuckets.size < MAX_IN_MEMORY_BUCKETS) return;
@@ -60,9 +109,11 @@ function checkInMemoryBucket(key: string, config: RateLimitConfig): RateLimitRes
       allowed: true,
       remaining: Math.floor(nextTokens),
       retryAfterSeconds: 0,
+      backend: "in-memory-lru",
       headers: {
         "X-RateLimit-Limit": String(config.capacity),
         "X-RateLimit-Remaining": String(Math.floor(nextTokens)),
+        "X-RateLimit-Backend": "in-memory-lru",
       },
     };
   }
@@ -74,9 +125,11 @@ function checkInMemoryBucket(key: string, config: RateLimitConfig): RateLimitRes
     allowed: false,
     remaining: 0,
     retryAfterSeconds,
+    backend: "in-memory-lru",
     headers: {
       "X-RateLimit-Limit": String(config.capacity),
       "X-RateLimit-Remaining": "0",
+      "X-RateLimit-Backend": "in-memory-lru",
       "Retry-After": String(retryAfterSeconds),
     },
   };
@@ -119,9 +172,11 @@ export async function checkRateLimit(
           allowed,
           remaining,
           retryAfterSeconds: allowed ? 0 : windowSec,
+          backend: "upstash-redis",
           headers: {
             "X-RateLimit-Limit": String(config.capacity),
             "X-RateLimit-Remaining": String(remaining),
+            "X-RateLimit-Backend": "upstash-redis",
             ...(allowed ? {} : { "Retry-After": String(windowSec) }),
           },
         };

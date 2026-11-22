@@ -5,6 +5,8 @@ import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Bell, CheckCheck } from "lucide-react";
 import { ACTIVE_TERM } from "@/lib/canonicalCampus";
+import { supabaseSyncBridge } from "@/lib/supabase/syncBridge";
+import { adminService } from "@/lib/services/adminService";
 import type { PortalRole } from "@/lib/navigation";
 
 interface NotificationsMenuProps {
@@ -27,10 +29,26 @@ export function NotificationsMenu({
   isSuperAdmin = false,
   activeScopeLabel = "All Departments",
 }: NotificationsMenuProps) {
+  const isLive = supabaseSyncBridge.isLive();
   const [open, setOpen] = useState(false);
-  const [hasUnread, setHasUnread] = useState(true);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [hasUnread, setHasUnread] = useState(!isLive);
   const containerRef = useRef<HTMLDivElement>(null);
   const reduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    if (!isLive || role !== "admin") return;
+    const syncPending = () => {
+      const pending = adminService
+        .getProfiles()
+        .filter((p) => !p.is_approved && p.account_status !== "rejected" && p.account_status !== "suspended").length;
+      setPendingCount(pending);
+      setHasUnread(pending > 0);
+    };
+    queueMicrotask(syncPending);
+    window.addEventListener("unicampus:profiles-updated", syncPending);
+    return () => window.removeEventListener("unicampus:profiles-updated", syncPending);
+  }, [isLive, role]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -62,10 +80,29 @@ export function NotificationsMenu({
       : "Notifications";
 
   const unreadLabel =
-    role === "admin" ? "2 New" : role === "teacher" ? "1 New" : "3 New";
+    isLive && role === "admin"
+      ? `${pendingCount} New`
+      : role === "admin"
+      ? "2 New"
+      : role === "teacher"
+      ? "1 New"
+      : "3 New";
 
   const items: NotificationItem[] =
-    role === "admin"
+    isLive && role === "admin"
+      ? pendingCount > 0
+        ? [
+            {
+              id: "adm-live-pending",
+              category: "Registration",
+              tone: "warning",
+              time: "Live",
+              title: `${pendingCount} pending ${pendingCount === 1 ? "registration" : "registrations"} awaiting review.`,
+              href: "/admin/users",
+            },
+          ]
+        : []
+      : role === "admin"
       ? [
           {
             id: "adm-1",

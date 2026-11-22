@@ -23,12 +23,13 @@ import {
   ORDINAL_SEMESTERS
 } from '@/lib/mockData';
 import { getSupabaseClient } from '@/lib/supabase/client';
+import { supabaseSyncBridge } from '@/lib/supabase/syncBridge';
 import {
   generateStudentAcademicId,
   generateTeacherAcademicId,
 } from '@/lib/academicIdGenerator';
 
-const ADMIN_SCHEMA_VERSION = 'v2';
+const ADMIN_SCHEMA_VERSION = 'v4-blank';
 const SCHEMA_VERSION_KEY = 'unicampus_admin_schema_version';
 
 const STORAGE_KEYS = {
@@ -152,15 +153,18 @@ function ensureSchemaVersion(): void {
 }
 
 function getStoredItem<T>(key: string, fallback: T): T {
-  if (typeof window === 'undefined') return fallback;
+  const effectiveFallback = supabaseSyncBridge.isLive()
+    ? ((Array.isArray(fallback) ? [] : {}) as T)
+    : fallback;
+  if (typeof window === 'undefined') return effectiveFallback;
   ensureSchemaVersion();
   try {
     const raw = localStorage.getItem(key);
-    if (!raw) return fallback;
+    if (!raw) return effectiveFallback;
     return JSON.parse(raw);
   } catch (e) {
     console.error(`Error loading ${key} from storage:`, e);
-    return fallback;
+    return effectiveFallback;
   }
 }
 
@@ -175,9 +179,59 @@ function setStoredItem<T>(key: string, data: T): void {
 }
 
 class AdminService {
+  private hydratePromise: Promise<boolean> | null = null;
+
+  /**
+   * Hydrates local reactive cache with live Supabase Postgres rows (departments,
+   * semesters, subjects, and profiles) while preserving demo metadata & offline fallback.
+   */
+  async hydrateFromSupabase(force: boolean = false): Promise<boolean> {
+    if (typeof window === 'undefined' || !supabaseSyncBridge.isLive()) return false;
+    if (this.hydratePromise && !force) return this.hydratePromise;
+
+    this.hydratePromise = (async () => {
+      try {
+        const [liveDepts, liveSemesters, liveSubjects, liveProfilesPage] = await Promise.all([
+          supabaseSyncBridge.fetchDepartments(() => []),
+          supabaseSyncBridge.fetchSemesters(() => []),
+          supabaseSyncBridge.fetchSubjects(undefined, () => []),
+          supabaseSyncBridge.fetchProfilesPage({ limit: 100 }, () => []),
+        ]);
+
+        let changedDepts = false;
+        let changedProfiles = false;
+
+        // Strictly mirror live Supabase state (supports 0 departments / blank slate)
+        setStoredItem(STORAGE_KEYS.DEPARTMENTS, liveDepts);
+        setStoredItem(STORAGE_KEYS.SEMESTERS, liveSemesters);
+        setStoredItem(STORAGE_KEYS.SUBJECTS, liveSubjects);
+        setStoredItem(STORAGE_KEYS.PROFILES, liveProfilesPage.items);
+        changedDepts = true;
+        changedProfiles = true;
+
+        if (changedDepts) {
+          window.dispatchEvent(new Event('unicampus:departments-updated'));
+        }
+        if (changedProfiles) {
+          window.dispatchEvent(new Event('unicampus:profiles-updated'));
+        }
+        return changedDepts || changedProfiles;
+      } catch {
+        return false;
+      } finally {
+        this.hydratePromise = null;
+      }
+    })();
+
+    return this.hydratePromise;
+  }
+
   // ===================== PROFILES =====================
   getProfiles(): Profile[] {
-    return getStoredItem<Profile[]>(STORAGE_KEYS.PROFILES, INITIAL_PROFILES);
+    return getStoredItem<Profile[]>(
+      STORAGE_KEYS.PROFILES,
+      supabaseSyncBridge.isLive() ? [] : INITIAL_PROFILES
+    );
   }
 
   approveProfile(id: string, actorName: string = 'Academic Administration'): Profile[] {
@@ -209,6 +263,13 @@ class AdminService {
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new Event('unicampus:profiles-updated'));
     }
+    void supabaseSyncBridge.updateProfileStatus(id, {
+      is_approved: true,
+      account_status: 'active',
+      rejection_reason: null,
+      reviewed_at: new Date().toISOString(),
+      reviewed_by: actorName,
+    });
     return updated;
   }
 
@@ -219,6 +280,10 @@ class AdminService {
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new Event('unicampus:profiles-updated'));
     }
+    void supabaseSyncBridge.updateProfileStatus(id, {
+      is_approved: false,
+      account_status: 'suspended',
+    });
     return updated;
   }
 
@@ -229,6 +294,10 @@ class AdminService {
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new Event('unicampus:profiles-updated'));
     }
+    void supabaseSyncBridge.updateProfileStatus(id, {
+      is_approved: true,
+      account_status: 'active',
+    });
     return updated;
   }
 
@@ -281,6 +350,13 @@ class AdminService {
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new Event('unicampus:profiles-updated'));
     }
+    void supabaseSyncBridge.updateProfileStatus(id, {
+      is_approved: false,
+      account_status: 'rejected',
+      rejection_reason: trimmedReason,
+      reviewed_at: new Date().toISOString(),
+      reviewed_by: actorName,
+    });
     return updated;
   }
 
@@ -321,6 +397,28 @@ class AdminService {
       window.dispatchEvent(new Event('unicampus:profiles-updated'));
     }
     return finalProfile;
+  }
+
+  deleteProfile(id: string, actorName: string = 'Admin'): Profile[] {
+    const profiles = this.getProfiles();
+    const target = profiles.find((p) => p.id === id);
+    const updated = profiles.filter((p) => p.id !== id);
+    setStoredItem(STORAGE_KEYS.PROFILES, updated);
+    if (target) {
+      this.logAction({
+        category: 'Access',
+        title: 'Account Permanently Deleted',
+        description: `Removed ${target.role} account ${target.full_name} (${target.email}).`,
+        actor_name: actorName,
+        department_id: target.department_id,
+        department_name: target.department_name,
+      });
+    }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('unicampus:profiles-updated'));
+    }
+    void supabaseSyncBridge.deleteProfile(id);
+    return updated;
   }
 
   updateProfile(id: string, updates: Partial<Profile>): Profile[] {
@@ -365,11 +463,17 @@ class AdminService {
 
   // ===================== DEPARTMENTS & CURRICULUM =====================
   getDepartments(): Department[] {
-    return getStoredItem<Department[]>(STORAGE_KEYS.DEPARTMENTS, INITIAL_DEPARTMENTS);
+    return getStoredItem<Department[]>(
+      STORAGE_KEYS.DEPARTMENTS,
+      supabaseSyncBridge.isLive() ? [] : INITIAL_DEPARTMENTS
+    );
   }
 
   getSemesters(deptId?: string): Semester[] {
-    const all = getStoredItem<Semester[]>(STORAGE_KEYS.SEMESTERS, INITIAL_SEMESTERS);
+    const all = getStoredItem<Semester[]>(
+      STORAGE_KEYS.SEMESTERS,
+      supabaseSyncBridge.isLive() ? [] : INITIAL_SEMESTERS
+    );
     if (!deptId) return all;
     return all.filter((s) => s.department_id === deptId);
   }
@@ -396,6 +500,7 @@ class AdminService {
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new Event('unicampus:departments-updated'));
     }
+    void supabaseSyncBridge.updateDepartmentHod(target?.code || deptId, headTeacherId, headTeacherName);
     return updated;
   }
 
@@ -454,11 +559,15 @@ class AdminService {
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new Event('unicampus:departments-updated'));
     }
+    void supabaseSyncBridge.createDepartmentWithSemesters(data);
     return newDept;
   }
 
   getSubjects(departmentId?: string, semesterId?: string): Subject[] {
-    let subjects = getStoredItem<Subject[]>(STORAGE_KEYS.SUBJECTS, INITIAL_SUBJECTS);
+    let subjects = getStoredItem<Subject[]>(
+      STORAGE_KEYS.SUBJECTS,
+      supabaseSyncBridge.isLive() ? [] : INITIAL_SUBJECTS
+    );
     if (departmentId) {
       subjects = subjects.filter((s) => s.department_id === departmentId);
     }
@@ -476,6 +585,7 @@ class AdminService {
     };
     const updated = [...subjects, newSubject];
     setStoredItem(STORAGE_KEYS.SUBJECTS, updated);
+    void supabaseSyncBridge.createSubject(data);
     return newSubject;
   }
 
@@ -483,6 +593,7 @@ class AdminService {
     const subjects = this.getSubjects();
     const updated = subjects.map((s) => (s.id === id ? { ...s, ...data } : s));
     setStoredItem(STORAGE_KEYS.SUBJECTS, updated);
+    void supabaseSyncBridge.updateSubject(id, data);
     return updated;
   }
 
@@ -490,6 +601,7 @@ class AdminService {
     const subjects = this.getSubjects();
     const updated = subjects.filter((s) => s.id !== id);
     setStoredItem(STORAGE_KEYS.SUBJECTS, updated);
+    void supabaseSyncBridge.deleteSubject(id);
     return updated;
   }
 

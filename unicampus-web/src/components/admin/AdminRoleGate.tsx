@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { ShieldAlert, ArrowLeft, LogOut, UserX } from 'lucide-react';
 import { useAdminAuth } from '@/context/AdminAuthContext';
 import { Button } from '@/components/ui';
+import { InlineSpinner } from '@/components/ui/Skeleton';
 
 export function AdminRoleGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -36,11 +37,11 @@ export function AdminRoleGate({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
-  // Before auth context is loaded, render smooth placeholder to avoid flash
+  // Before auth context is loaded, render centered circular loader
   if (!isLoaded) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center p-6">
-        <div className="w-8 h-8 rounded-full border-2 border-brand border-t-transparent animate-spin" />
+      <div className="min-h-[60dvh] w-full flex flex-col items-center justify-center gap-3 p-6">
+        <InlineSpinner size="lg" label="Loading admin workspace" />
       </div>
     );
   }

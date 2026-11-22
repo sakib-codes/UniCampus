@@ -366,7 +366,7 @@ export function MessagingDrawer({
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search chats, faculty..."
                 aria-label="Search chats, faculty"
-                className="w-full pl-9 pr-3 py-2 text-sm bg-surface border border-line rounded-xl text-fg placeholder:text-fg-muted focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-all duration-150"
+                className="w-full pl-9 pr-3 py-2 text-sm bg-surface border border-line rounded-xl text-fg placeholder:text-fg-muted focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors duration-150"
               />
             </div>
           </div>

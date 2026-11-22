@@ -18,6 +18,7 @@ export default function ProfileAvatar({
 }: ProfileAvatarProps) {
   return (
     <Avatar
+      name={alt || undefined}
       alt={alt}
       size={size}
       src={src}

@@ -26,9 +26,9 @@ export interface TabsProps<T extends string = string> {
 }
 
 const sizeClasses: Record<"sm" | "md" | "lg", string> = {
-  sm: "min-h-[44px] px-3 py-2 text-xs",
-  md: "min-h-[44px] px-4 py-2 text-sm",
-  lg: "min-h-[44px] px-5 py-2.5 text-sm",
+  sm: "h-8 px-3 text-xs",
+  md: "h-9 px-3.5 text-sm",
+  lg: "h-10 px-4 text-sm",
 };
 
 export function Tabs<T extends string = string>({
@@ -61,7 +61,7 @@ export function Tabs<T extends string = string>({
       className={cn(
         isUnderline
           ? "flex items-center gap-1 border-b border-line overflow-x-auto max-w-full [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          : "inline-flex items-center gap-1 p-1 rounded-2xl bg-surface-2 border border-line overflow-x-auto max-w-full [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+          : "inline-flex items-center gap-1 p-1 rounded-xl bg-surface-2 border border-line overflow-x-auto max-w-full [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
         className
       )}
     >
@@ -77,9 +77,9 @@ export function Tabs<T extends string = string>({
             disabled={tab.disabled}
             onClick={() => !tab.disabled && onChange(tab.id)}
             className={cn(
-              "relative inline-flex items-center justify-center gap-2 font-medium whitespace-nowrap shrink-0 transition-colors duration-150 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-50 disabled:cursor-not-allowed",
+              "relative inline-flex items-center justify-center gap-2 font-medium whitespace-nowrap shrink-0 transition-colors duration-150 cursor-pointer select-none focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 disabled:opacity-50 disabled:cursor-not-allowed",
               sizeClasses[size],
-              isUnderline ? "rounded-t-xl" : "rounded-xl",
+              isUnderline ? "rounded-t-xl" : "rounded-lg",
               isActive
                 ? "text-fg font-semibold"
                 : "text-fg-muted hover:text-fg",
@@ -93,7 +93,7 @@ export function Tabs<T extends string = string>({
                 className={cn(
                   isUnderline
                     ? "absolute bottom-0 left-0 right-0 h-0.5 bg-brand rounded-full"
-                    : "absolute inset-0 bg-surface border border-line rounded-xl z-0",
+                    : "absolute inset-0 bg-surface border border-line/80 rounded-lg shadow-2xs z-0",
                   activeTabClassName
                 )}
               />

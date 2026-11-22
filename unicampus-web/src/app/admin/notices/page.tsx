@@ -10,8 +10,8 @@ import {
   Trash2,
   Eye,
   Check,
-  ChevronDown,
 } from "lucide-react";
+import { Select } from "@/components/ui";
 import { adminService } from "@/lib/services/adminService";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { Notice, NoticeTargetRole, Department } from "@/types/admin";
@@ -414,26 +414,25 @@ export default function AdminNoticesPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search announcements..."
-              className="w-full min-h-[40px] pl-9 pr-3.5 py-2 rounded-xl bg-canvas border border-line text-fg placeholder:text-fg-muted text-xs focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-all duration-150"
+              className="w-full min-h-[40px] pl-9 pr-3.5 py-2 rounded-xl bg-canvas border border-line text-fg placeholder:text-fg-muted text-xs focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors duration-150"
             />
           </div>
 
-          <div className="relative w-full sm:w-44">
-            <select
-              aria-label="Filter notices by category"
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full min-h-[40px] pl-3 pr-8 py-2 rounded-xl bg-canvas border border-line text-fg text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand cursor-pointer appearance-none"
-            >
-              <option value="all">All Categories</option>
-              <option value="Academics">Academics</option>
-              <option value="Administrative">Administrative</option>
-              <option value="Exams">Exams</option>
-              <option value="Events">Events</option>
-              <option value="Emergency">Emergency</option>
-            </select>
-            <ChevronDown className="w-3.5 h-3.5 text-fg-muted absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
+          <Select
+            ariaLabel="Filter notices by category"
+            value={selectedCategory}
+            onChange={setSelectedCategory}
+            className="w-full sm:w-44"
+            menuAlign="right"
+            options={[
+              { value: "all", label: "All Categories" },
+              { value: "Academics", label: "Academics" },
+              { value: "Administrative", label: "Administrative" },
+              { value: "Exams", label: "Exams" },
+              { value: "Events", label: "Events" },
+              { value: "Emergency", label: "Emergency" },
+            ]}
+          />
         </div>
       </div>
 

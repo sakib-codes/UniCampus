@@ -352,7 +352,7 @@ export function NoticeboardContent({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search notices, ref no, or dept..."
-            className="w-full h-9 pl-9 pr-9 bg-surface-2/70 border border-line rounded-lg text-xs sm:text-sm text-fg placeholder:text-fg-muted focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-all duration-150"
+            className="w-full h-9 pl-9 pr-9 bg-surface-2/70 border border-line rounded-lg text-xs sm:text-sm text-fg placeholder:text-fg-muted focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors duration-150"
           />
           {searchQuery ? (
             <button

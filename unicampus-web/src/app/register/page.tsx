@@ -1,20 +1,22 @@
 "use client";
 
-import React, { useMemo, useState, useSyncExternalStore } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
   ArrowLeft,
-  ShieldCheck,
-  GraduationCap,
-  Building2,
+  Camera,
   CheckCircle2,
   Clock,
-  Check,
-  ShieldAlert,
+  Eye,
+  EyeOff,
   FileSearch,
+  ShieldAlert,
+  Upload,
 } from "lucide-react";
 import { adminService } from "@/lib/services/adminService";
+import { supabaseSyncBridge } from "@/lib/supabase/syncBridge";
 import {
   type BoardExamRecord,
   type Department,
@@ -27,6 +29,7 @@ import { getAcademicYearForSemester } from "@/lib/canonicalCampus";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { Button, buttonVariants } from "@/components/ui/Button";
 import { AcademicIdCard } from "@/components/common/AcademicIdCard";
+import { CampusLottie, type CampusAnimationName } from "@/components/common/CampusLottie";
 import {
   INITIAL_STUDENT_FORM,
   INITIAL_TEACHER_FORM,
@@ -35,38 +38,201 @@ import {
 } from "@/components/register/registerConstants";
 import { StudentRegistrationSteps } from "@/components/register/StudentRegistrationSteps";
 import { TeacherRegistrationSteps } from "@/components/register/TeacherRegistrationSteps";
+import { ContactVerificationStep } from "@/components/register/ContactVerificationStep";
 import { ApplicationStatusPanel } from "@/components/register/ApplicationStatusPanel";
 
-const emptySubscribe = () => () => {};
+interface StepMeta {
+  title: string;
+  subtitle: string;
+  animation: CampusAnimationName;
+}
+
+function getStepMeta(step: number, role: "student" | "teacher"): StepMeta {
+  if (step === 0) {
+    return {
+      title: "Join UniCampus",
+      subtitle: "Choose how you will use the university portal.",
+      animation: "rocket",
+    };
+  }
+  if (step === 1) {
+    return {
+      title: "Let's start with your basics",
+      subtitle: "Tell us your name, email, and mobile number.",
+      animation: "rocket",
+    };
+  }
+  if (step === 2) {
+    return {
+      title: "Verify your email & phone",
+      subtitle: "Confirm both with a 6-digit OTP so we can protect your account.",
+      animation: "rocket",
+    };
+  }
+  if (step === 3) {
+    return {
+      title: "Verify your identity",
+      subtitle: "Used for your official Academic ID Card and registry records.",
+      animation: "routine",
+    };
+  }
+  if (step === 4) {
+    return role === "student"
+      ? {
+          title: "Guardian & address details",
+          subtitle: "Required for student safety and institutional records.",
+          animation: "routine",
+        }
+      : {
+          title: "Emergency contact & address",
+          subtitle: "Kept private for faculty HR and campus administration.",
+          animation: "routine",
+        };
+  }
+  if (step === 5) {
+    return role === "student"
+      ? {
+          title: "Choose your department & program",
+          subtitle: "Select your department, degree program, and 4-Year / 8-Semester track.",
+          animation: "routine",
+        }
+      : {
+          title: "Department & academic rank",
+          subtitle: "Select your teaching department and specialization.",
+          animation: "teacher",
+        };
+  }
+  if (step === 6) {
+    return role === "student"
+      ? {
+          title: "Your board exam results",
+          subtitle: "Fill SSC and HSC details one tab at a time (JSC is optional).",
+          animation: "teacher",
+        }
+      : {
+          title: "Academic degrees & CV",
+          subtitle: "Add your undergraduate degree, postgraduate (optional), and CV.",
+          animation: "teacher",
+        };
+  }
+  if (role === "student" && step === 7) {
+    return {
+      title: "Admission payment verification",
+      subtitle: "Enter your TrxID and upload your admission pay slip screenshot or PDF.",
+      animation: "routine",
+    };
+  }
+  return {
+    title: "Add a photo & secure your account",
+    subtitle: "Your photo appears on your ID card. You can also skip it for now.",
+    animation: "rocket",
+  };
+}
 
 export default function RegisterPage() {
-  const mounted = useSyncExternalStore(
-    emptySubscribe,
-    () => true,
-    () => false
+  const [departments, setDepartments] = useState<Department[]>(() =>
+    supabaseSyncBridge.isLive() ? [] : INITIAL_DEPARTMENTS
   );
 
-  const departments = useMemo<Department[]>(() => {
-    if (!mounted) return INITIAL_DEPARTMENTS;
-    try {
-      const loaded = adminService.getDepartments();
-      return loaded.length > 0 ? loaded : INITIAL_DEPARTMENTS;
-    } catch {
-      return INITIAL_DEPARTMENTS;
-    }
-  }, [mounted]);
+  useEffect(() => {
+    const syncDepts = () => {
+      try {
+        const loaded = adminService.getDepartments();
+        if (supabaseSyncBridge.isLive() || loaded.length > 0) {
+          setDepartments(loaded);
+        }
+      } catch {
+        // ignore storage error
+      }
+    };
+    queueMicrotask(() => syncDepts());
+    void adminService.hydrateFromSupabase().then((hydrated) => {
+      if (hydrated) syncDepts();
+    });
+    window.addEventListener("unicampus:departments-updated", syncDepts);
+    return () => {
+      window.removeEventListener("unicampus:departments-updated", syncDepts);
+    };
+  }, []);
 
   const [viewMode, setViewMode] = useState<"register" | "status">("register");
   const [resubmittingProfile, setResubmittingProfile] = useState<Profile | null>(null);
-  const [step, setStep] = useState<number>(1);
+  const [step, setStep] = useState<number>(0); // 0 = Role Picker, 1..6 = Micro-steps
   const [role, setRole] = useState<"student" | "teacher">("student");
   const [studentForm, setStudentForm] = useState<StudentRegistrationForm>(INITIAL_STUDENT_FORM);
   const [teacherForm, setTeacherForm] = useState<TeacherRegistrationForm>(INITIAL_TEACHER_FORM);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [agreedPolicy, setAgreedPolicy] = useState(false);
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [phoneVerified, setPhoneVerified] = useState(false);
+  const [isGoogleOAuth, setIsGoogleOAuth] = useState(false);
   const [createdProfile, setCreatedProfile] = useState<Profile | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
+
+  // Auto-detect Google OAuth handoff (/register?oauth=google) — pre-fill email/name & skip asking email!
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("oauth") !== "google") return;
+
+    void supabaseSyncBridge.getOAuthUserMeta().then((meta) => {
+      if (!meta) return;
+      setIsGoogleOAuth(true);
+      setEmailVerified(true);
+      setStudentForm((prev) => ({
+        ...prev,
+        email: meta.email,
+        firstName: prev.firstName || meta.firstName,
+        lastName: prev.lastName || meta.lastName,
+        photoUrl: prev.photoUrl || meta.avatarUrl,
+      }));
+      setTeacherForm((prev) => ({
+        ...prev,
+        email: meta.email,
+        firstName: prev.firstName || meta.firstName,
+        lastName: prev.lastName || meta.lastName,
+        photoUrl: prev.photoUrl || meta.avatarUrl,
+      }));
+    });
+  }, []);
+
+  const updateStudent = <K extends keyof StudentRegistrationForm>(
+    key: K,
+    value: StudentRegistrationForm[K]
+  ) => {
+    setStudentForm((prev) => ({ ...prev, [key]: value }));
+    if (key === "email") setEmailVerified(false);
+    if (key === "phone") setPhoneVerified(false);
+    if (errorMsg) setErrorMsg("");
+  };
+
+  const updateTeacher = <K extends keyof TeacherRegistrationForm>(
+    key: K,
+    value: TeacherRegistrationForm[K]
+  ) => {
+    setTeacherForm((prev) => ({ ...prev, [key]: value }));
+    if (key === "email") setEmailVerified(false);
+    if (key === "phone") setPhoneVerified(false);
+    if (errorMsg) setErrorMsg("");
+  };
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        if (role === "student") {
+          updateStudent("photoUrl", reader.result);
+        } else {
+          updateTeacher("photoUrl", reader.result);
+        }
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleStartReapply = (profile: Profile) => {
     setResubmittingProfile(profile);
@@ -75,12 +241,17 @@ export default function RegisterPage() {
     setStep(1);
     setViewMode("register");
 
+    const nameParts = (profile.full_name || "").trim().split(/\s+/);
+    const parsedFirstName = nameParts[0] || "";
+    const parsedLastName = nameParts.slice(1).join(" ");
+
     if (profile.role === "teacher") {
       setRole("teacher");
       const q = profile.teacher_qualifications;
       setTeacherForm({
         ...INITIAL_TEACHER_FORM,
-        fullName: profile.full_name || "",
+        firstName: parsedFirstName,
+        lastName: parsedLastName,
         email: profile.email || "",
         phone: profile.phone || "",
         emergencyPhone: profile.emergency_phone || "",
@@ -115,7 +286,8 @@ export default function RegisterPage() {
       const hsc = profile.board_exams?.find((b) => b.exam === "HSC");
       setStudentForm({
         ...INITIAL_STUDENT_FORM,
-        fullName: profile.full_name || "",
+        firstName: parsedFirstName,
+        lastName: parsedLastName,
         email: profile.email || "",
         phone: profile.phone || "",
         photoUrl: profile.avatar_url || "",
@@ -133,6 +305,7 @@ export default function RegisterPage() {
         presentAddress: profile.present_address || "",
         permanentAddress: profile.permanent_address || "",
         deptId: profile.department_id || "dept-cse",
+        programName: profile.program_name || INITIAL_STUDENT_FORM.programName,
         semesterName: (profile.semester_name as OrdinalSemesterName) || "1st Semester",
         jscBoard: jsc?.board || "Dhaka",
         jscYear: jsc?.passing_year || "2019",
@@ -154,81 +327,70 @@ export default function RegisterPage() {
         hscRegNo: hsc?.registration_number || "",
         hscGpa: hsc?.gpa || "",
         hscMarksheetName: hsc?.marksheet_filename || "",
+        paymentMethod: profile.admission_payment?.method || "bKash",
+        paymentTrxId: profile.admission_payment?.trx_id || "",
+        paymentAmount: profile.admission_payment?.amount || "15000",
+        paymentDate: profile.admission_payment?.paid_date || "",
+        paymentSlipName: profile.admission_payment?.slip_filename || "",
+        paymentSlipPreviewUrl: profile.admission_payment?.slip_preview_url || "",
       });
     }
   };
 
-  const updateStudentField = <K extends keyof StudentRegistrationForm>(
-    key: K,
-    value: StudentRegistrationForm[K]
-  ) => {
-    setStudentForm((prev) => ({ ...prev, [key]: value }));
-  };
+  const totalFormSteps = role === "student" ? 8 : 7;
 
-  const updateTeacherField = <K extends keyof TeacherRegistrationForm>(
-    key: K,
-    value: TeacherRegistrationForm[K]
-  ) => {
-    setTeacherForm((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const stepLabels =
-    role === "student"
-      ? [
-          "Personal & Guardian Info",
-          "Department & 4-Year Semester",
-          "JSC, SSC & HSC Board Records",
-          "Security & ID Issuance",
-        ]
-      : [
-          "Personal & NID Details",
-          "Department & Designation",
-          "Academic Qualifications & CV",
-          "Security & ID Issuance",
-        ];
-
-  const handleNext = () => {
+  const validateAndAdvance = () => {
     setErrorMsg("");
 
+    // Step 2 is shared OTP verification for both Student and Teacher
+    if (step === 2) {
+      if (!emailVerified || !phoneVerified) {
+        setErrorMsg("Please verify both your email address and mobile number via 6-digit OTP before continuing.");
+        return;
+      }
+      setStep(3);
+      return;
+    }
+
+    const innerStep = step >= 3 ? step - 1 : step;
+
     if (role === "student") {
-      if (step === 1) {
-        if (!studentForm.fullName.trim() || !studentForm.email.trim() || !studentForm.phone.trim()) {
-          setErrorMsg("Please enter your full name, email address, and mobile number.");
+      if (innerStep === 1) {
+        if (
+          !studentForm.firstName.trim() ||
+          !studentForm.lastName.trim() ||
+          !studentForm.email.trim() ||
+          !studentForm.phone.trim()
+        ) {
+          setErrorMsg("Please enter your first name, last name, email address, and mobile number.");
           return;
         }
         if (!studentForm.email.includes("@")) {
           setErrorMsg("Please enter a valid email address.");
           return;
         }
-        if (!studentForm.dateOfBirth) {
-          setErrorMsg("Please enter your date of birth.");
+      } else if (innerStep === 2) {
+        if (!studentForm.dateOfBirth || !studentForm.nidOrBirthCert.trim()) {
+          setErrorMsg("Please enter your date of birth and NID / Birth Certificate number.");
           return;
         }
-        if (!studentForm.nidOrBirthCert.trim()) {
-          setErrorMsg(`Please enter your ${studentForm.idDocumentType} number.`);
-          return;
-        }
+      } else if (innerStep === 3) {
         if (
           !studentForm.fatherName.trim() ||
           !studentForm.fatherPhone.trim() ||
           !studentForm.motherName.trim() ||
-          !studentForm.motherPhone.trim()
+          !studentForm.motherPhone.trim() ||
+          !studentForm.presentAddress.trim()
         ) {
-          setErrorMsg("Please provide Father's and Mother's names and phone numbers.");
+          setErrorMsg("Please enter both parents' names, phone numbers, and your present address.");
           return;
         }
-        if (!studentForm.presentAddress.trim()) {
-          setErrorMsg("Please provide your present address.");
+      } else if (innerStep === 4) {
+        if (!studentForm.deptId || !studentForm.programName.trim() || !studentForm.semesterName) {
+          setErrorMsg("Please select your department, academic program, and semester.");
           return;
         }
-        setStep(2);
-      } else if (step === 2) {
-        if (!studentForm.deptId) {
-          setErrorMsg("Please select an academic department.");
-          return;
-        }
-        setStep(3);
-      } else if (step === 3) {
+      } else if (innerStep === 5) {
         if (
           !studentForm.sscRoll.trim() ||
           !studentForm.sscRegNo.trim() ||
@@ -242,41 +404,50 @@ export default function RegisterPage() {
           !studentForm.hscRegNo.trim() ||
           !studentForm.hscGpa.trim()
         ) {
-          setErrorMsg("Please complete your HSC Roll, Registration Number, and GPA.");
+          setErrorMsg("Please switch to the HSC tab and enter your HSC Roll, Registration Number, and GPA.");
           return;
         }
-        setStep(4);
+      } else if (innerStep === 6) {
+        if (!studentForm.paymentTrxId.trim()) {
+          setErrorMsg("Please enter your Admission Fee Transaction ID (TrxID) or Bank Slip number.");
+          return;
+        }
+        if (!studentForm.paymentSlipName.trim()) {
+          setErrorMsg("Please upload your Admission Pay Slip screenshot or PDF for verification.");
+          return;
+        }
       }
     } else {
-      if (step === 1) {
+      if (innerStep === 1) {
         if (
-          !teacherForm.fullName.trim() ||
+          !teacherForm.firstName.trim() ||
+          !teacherForm.lastName.trim() ||
           !teacherForm.email.trim() ||
           !teacherForm.phone.trim()
         ) {
-          setErrorMsg("Please enter your full name, email address, and mobile number.");
+          setErrorMsg("Please enter your first name, last name, email address, and mobile number.");
           return;
         }
         if (!teacherForm.email.includes("@")) {
           setErrorMsg("Please enter a valid email address.");
           return;
         }
-        if (!teacherForm.nidNumber.trim() || !teacherForm.dateOfBirth) {
-          setErrorMsg("Please provide your National ID (NID) number and date of birth.");
+      } else if (innerStep === 2) {
+        if (!teacherForm.dateOfBirth || !teacherForm.nidNumber.trim()) {
+          setErrorMsg("Please provide your date of birth and National ID (NID) number.");
           return;
         }
+      } else if (innerStep === 3) {
         if (!teacherForm.emergencyPhone.trim() || !teacherForm.presentAddress.trim()) {
           setErrorMsg("Please provide an emergency contact number and present address.");
           return;
         }
-        setStep(2);
-      } else if (step === 2) {
+      } else if (innerStep === 4) {
         if (!teacherForm.deptId || !teacherForm.specialization.trim()) {
           setErrorMsg("Please select a department and enter your research specialization.");
           return;
         }
-        setStep(3);
-      } else if (step === 3) {
+      } else if (innerStep === 5) {
         if (
           !teacherForm.undergradDegree.trim() ||
           !teacherForm.undergradUniversity.trim() ||
@@ -286,22 +457,30 @@ export default function RegisterPage() {
           setErrorMsg("Please fill in your Undergraduate degree, university, passing year, and CGPA.");
           return;
         }
-        setStep(4);
       }
     }
+
+    setStep((prev) => Math.min(totalFormSteps, prev + 1));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMsg("");
-
-    if (!password.trim() || password.length < 6) {
-      setErrorMsg("Password must be at least 6 characters.");
+    if (step < totalFormSteps) {
+      validateAndAdvance();
       return;
     }
-    if (password !== confirmPassword) {
-      setErrorMsg("Passwords do not match.");
-      return;
+
+    setErrorMsg("");
+
+    if (!isGoogleOAuth) {
+      if (!password.trim() || password.length < 6) {
+        setErrorMsg("Password must be at least 6 characters.");
+        return;
+      }
+      if (password !== confirmPassword) {
+        setErrorMsg("Passwords do not match.");
+        return;
+      }
     }
     if (!agreedPolicy) {
       setErrorMsg("Please confirm the academic accuracy declaration to proceed.");
@@ -346,12 +525,13 @@ export default function RegisterPage() {
       ];
 
       const studentPayload: Omit<Profile, "id" | "created_at"> = {
-        full_name: studentForm.fullName.trim(),
+        full_name: `${studentForm.firstName.trim()} ${studentForm.lastName.trim()}`.trim(),
         email: studentForm.email.trim().toLowerCase(),
         phone: studentForm.phone.trim(),
         role: "student" as UserRoleType,
         department_id: studentForm.deptId,
         department_name: selectedDept?.name || "Computer Science & Engineering",
+        program_name: studentForm.programName.trim(),
         student_id: resubmittingProfile?.student_id || null,
         teacher_code: null,
         semester_name: studentForm.semesterName,
@@ -375,18 +555,46 @@ export default function RegisterPage() {
         present_address: studentForm.presentAddress.trim(),
         permanent_address: studentForm.permanentAddress.trim() || studentForm.presentAddress.trim(),
         board_exams: boardExams,
+        admission_payment: {
+          method: studentForm.paymentMethod,
+          trx_id: studentForm.paymentTrxId.trim(),
+          amount: studentForm.paymentAmount.trim() || "15000",
+          paid_date: studentForm.paymentDate || new Date().toISOString().slice(0, 10),
+          slip_filename: studentForm.paymentSlipName || undefined,
+          slip_preview_url: studentForm.paymentSlipPreviewUrl || undefined,
+        },
+        email_verified: emailVerified,
+        phone_verified: phoneVerified,
       };
 
       const profile = resubmittingProfile
         ? adminService.resubmitProfile(resubmittingProfile.id, studentPayload) ||
           adminService.createProfile(studentPayload)
         : adminService.createProfile(studentPayload);
+
+      if (!resubmittingProfile && supabaseSyncBridge.isLive()) {
+        const deptCode = selectedDept?.code || deptSlug.toUpperCase();
+        if (isGoogleOAuth) {
+          void supabaseSyncBridge.completeOAuthProfile(
+            { ...studentPayload, student_id: profile.student_id },
+            deptCode
+          );
+        } else {
+          void supabaseSyncBridge.signUpWithProfile(
+            studentPayload.email,
+            password,
+            { ...studentPayload, student_id: profile.student_id },
+            deptCode
+          );
+        }
+      }
+
       setResubmittingProfile(null);
       setCreatedProfile(profile);
     } else {
       const selectedDept = departments.find((d) => d.id === teacherForm.deptId);
       const teacherPayload: Omit<Profile, "id" | "created_at"> = {
-        full_name: teacherForm.fullName.trim(),
+        full_name: `${teacherForm.firstName.trim()} ${teacherForm.lastName.trim()}`.trim(),
         email: teacherForm.email.trim().toLowerCase(),
         phone: teacherForm.phone.trim(),
         role: "teacher" as UserRoleType,
@@ -424,12 +632,32 @@ export default function RegisterPage() {
           cv_filename: teacherForm.cvFilename || undefined,
           certificate_filename: teacherForm.certificateFilename || undefined,
         },
+        email_verified: emailVerified,
+        phone_verified: phoneVerified,
       };
 
       const profile = resubmittingProfile
         ? adminService.resubmitProfile(resubmittingProfile.id, teacherPayload) ||
           adminService.createProfile(teacherPayload)
         : adminService.createProfile(teacherPayload);
+
+      if (!resubmittingProfile && supabaseSyncBridge.isLive()) {
+        const deptCode = selectedDept?.code || teacherForm.deptId.replace(/^dept-/, "").toUpperCase();
+        if (isGoogleOAuth) {
+          void supabaseSyncBridge.completeOAuthProfile(
+            { ...teacherPayload, teacher_code: profile.teacher_code },
+            deptCode
+          );
+        } else {
+          void supabaseSyncBridge.signUpWithProfile(
+            teacherPayload.email,
+            password,
+            { ...teacherPayload, teacher_code: profile.teacher_code },
+            deptCode
+          );
+        }
+      }
+
       setResubmittingProfile(null);
       setCreatedProfile(profile);
     }
@@ -438,431 +666,467 @@ export default function RegisterPage() {
   const resetAll = () => {
     setCreatedProfile(null);
     setResubmittingProfile(null);
-    setStep(1);
+    setStep(0);
     setStudentForm(INITIAL_STUDENT_FORM);
     setTeacherForm(INITIAL_TEACHER_FORM);
     setPassword("");
     setConfirmPassword("");
     setAgreedPolicy(false);
+    setEmailVerified(false);
+    setPhoneVerified(false);
     setErrorMsg("");
   };
 
   const activeDept = departments.find(
-    (d) => d.id === (createdProfile?.department_id || (role === "student" ? studentForm.deptId : teacherForm.deptId))
+    (d) =>
+      d.id ===
+      (createdProfile?.department_id || (role === "student" ? studentForm.deptId : teacherForm.deptId))
   );
+  const currentPhotoUrl = role === "student" ? studentForm.photoUrl : teacherForm.photoUrl;
+  const stepMeta = getStepMeta(step, role);
+  const progressPct = step === 0 ? 8 : Math.round((step / totalFormSteps) * 100);
 
   return (
-    <div className="min-h-dvh flex bg-canvas text-fg">
-      {/* LEFT BRAND VALUE PANEL (DESKTOP ONLY) */}
-      <div className="hidden lg:flex lg:w-[42%] xl:w-[44%] bg-surface border-r border-line p-10 xl:p-14 flex-col justify-between relative overflow-hidden print:hidden">
-        <div className="relative z-10">
-          <Link href="/" className="inline-flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-brand text-on-brand flex items-center justify-center font-bold text-sm">
-              U
-            </div>
-            <span className="font-semibold text-lg text-fg tracking-tight">UniCampus</span>
-          </Link>
-        </div>
+    <div className="min-h-dvh flex flex-col justify-between bg-canvas text-fg px-4 py-5 sm:py-7">
+      {/* Clean Minimal Top Bar (Google / Discord / X pattern) */}
+      <header className="w-full max-w-[540px] mx-auto flex items-center justify-between gap-3 print:hidden">
+        <Link href="/" className="inline-flex items-center gap-2.5 group">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/unicampus_logo.png"
+            alt="UniCampus"
+            className="w-8 h-8 rounded-xl object-contain"
+          />
+          <span className="font-semibold text-base text-fg tracking-tight">UniCampus</span>
+        </Link>
 
-        <div className="relative z-10 max-w-md space-y-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-soft text-brand text-xs font-semibold">
-            <span>4-Year / 8-Semester Academic Admission</span>
-          </div>
-
-          <h2 className="text-3xl xl:text-4xl font-semibold text-fg tracking-tight leading-tight">
-            Official University Admission &amp; Faculty Registry
-          </h2>
-
-          <p className="text-sm text-fg-muted leading-relaxed">
-            Complete your academic dossier with verified Bangladeshi board credentials (JSC, SSC, HSC) or faculty qualifications. Your official Academic ID is issued automatically upon submission.
-          </p>
-
-          <div className="space-y-3 pt-2">
-            <div className="flex items-center gap-3 text-sm text-fg">
-              <div className="w-5 h-5 rounded-full bg-brand-soft text-brand flex items-center justify-center shrink-0">
-                <Check className="w-3.5 h-3.5" />
-              </div>
-              <span>Automatic Academic ID &amp; printable Digital ID Card.</span>
-            </div>
-            <div className="flex items-center gap-3 text-sm text-fg">
-              <div className="w-5 h-5 rounded-full bg-brand-soft text-brand flex items-center justify-center shrink-0">
-                <Check className="w-3.5 h-3.5" />
-              </div>
-              <span>4-Year / 8-Semester structured undergraduate system.</span>
-            </div>
-            <div className="flex items-center gap-3 text-sm text-fg">
-              <div className="w-5 h-5 rounded-full bg-brand-soft text-brand flex items-center justify-center shrink-0">
-                <Check className="w-3.5 h-3.5" />
-              </div>
-              <span>Verified SSC/HSC transcripts &amp; NID / Birth Certificate records.</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="relative z-10 flex items-center justify-between text-xs text-fg-muted border-t border-line/60 pt-6">
-          <span>Office of the Registrar · UniCampus</span>
-          <Link href="/login" className="hover:text-fg underline">
-            Already registered? Sign in
-          </Link>
-        </div>
-      </div>
-
-      {/* RIGHT REGISTRATION FORM CONTAINER */}
-      <div className="flex-1 flex flex-col justify-between px-4 py-4 sm:p-8 lg:p-10 overflow-y-auto">
-        <div className="hidden lg:flex justify-end print:hidden">
+        <div className="flex items-center gap-2">
+          {!createdProfile && (
+            <button
+              type="button"
+              onClick={() => {
+                setViewMode((prev) => (prev === "register" ? "status" : "register"));
+                setErrorMsg("");
+              }}
+              className={`min-h-[38px] px-3 rounded-xl border text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer ${
+                viewMode === "status"
+                  ? "bg-brand-soft border-brand text-brand"
+                  : "bg-surface border-line text-fg-muted hover:text-fg"
+              }`}
+            >
+              <FileSearch className="w-3.5 h-3.5" />
+              <span>{viewMode === "status" ? "New Application" : "Check Status"}</span>
+            </button>
+          )}
           <ThemeToggle />
         </div>
+      </header>
 
-        {/* Compact Mobile Top Bar */}
-        <header className="lg:hidden space-y-2 pb-3 border-b border-line print:hidden">
-          <div className="flex items-center justify-between gap-2">
-            <Link href="/" className="inline-flex items-center gap-2 min-h-[44px] pr-2">
-              <div className="w-7 h-7 rounded-lg bg-brand text-on-brand flex items-center justify-center font-bold text-xs">
-                U
-              </div>
-              <span className="font-semibold text-fg text-sm tracking-tight">UniCampus</span>
-            </Link>
-            <ThemeToggle size="sm" />
-          </div>
-          <div className="flex items-center justify-between gap-2 text-xs text-fg-muted">
-            <span>Already have an account?</span>
-            <Link href="/login" className="text-brand font-semibold hover:underline whitespace-nowrap">
-              Sign in
-            </Link>
-          </div>
-        </header>
-
-        {/* Center Form Container */}
-        <div className="w-full max-w-2xl mx-auto pt-5 pb-6 lg:my-auto lg:py-6 space-y-6">
-          {/* Top Mode Switcher: New Registration vs Check Status / Re-Apply */}
-          {!createdProfile && (
-            <div className="flex items-center justify-between gap-2 p-1 rounded-xl bg-surface-2 border border-line print:hidden">
-              <button
-                type="button"
-                onClick={() => setViewMode("register")}
-                className={`flex-1 min-h-[38px] px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
-                  viewMode === "register"
-                    ? "bg-surface text-fg shadow-2xs"
-                    : "text-fg-muted hover:text-fg"
-                }`}
-              >
-                {resubmittingProfile ? "Re-Applying with Corrections" : "New Registration"}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setViewMode("status");
-                  setErrorMsg("");
-                }}
-                className={`flex-1 min-h-[38px] px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors inline-flex items-center justify-center gap-1.5 cursor-pointer ${
-                  viewMode === "status"
-                    ? "bg-surface text-fg shadow-2xs"
-                    : "text-fg-muted hover:text-fg"
-                }`}
-              >
-                <FileSearch className="w-3.5 h-3.5 text-brand" />
-                <span>Check Status / Re-Apply</span>
-              </button>
-            </div>
-          )}
-
-          {viewMode === "status" && !createdProfile ? (
+      {/* Main Centered Onboarding Card */}
+      <main className="w-full max-w-[540px] mx-auto my-auto py-5">
+        {viewMode === "status" && !createdProfile ? (
+          <div className="p-6 sm:p-8 rounded-2xl bg-surface border border-line shadow-sm">
             <ApplicationStatusPanel
               departments={departments}
               onStartReapply={handleStartReapply}
               onBackToRegister={() => setViewMode("register")}
             />
-          ) : createdProfile ? (
-            /* Confirmation State + Official Auto-Issued Academic ID Card */
-            <div className="space-y-6 text-center">
-              <div className="space-y-2 print:hidden">
-                <div className="w-14 h-14 rounded-2xl bg-success-light text-success border border-success/30 flex items-center justify-center mx-auto">
-                  <CheckCircle2 className="w-7 h-7" />
-                </div>
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-success-light text-success text-xs font-semibold">
-                  <Clock className="w-3.5 h-3.5" /> Application Recorded • ID Issued
-                </div>
-                <h2 className="text-2xl font-semibold text-fg tracking-tight">
-                  Registration Submitted!
-                </h2>
-                <p className="text-xs sm:text-sm text-fg-muted leading-relaxed max-w-lg mx-auto">
-                  Your official Academic ID{" "}
-                  <strong className="font-mono text-brand">
-                    {createdProfile.role === "student"
-                      ? createdProfile.student_id
-                      : createdProfile.teacher_code}
-                  </strong>{" "}
-                  has been automatically assigned to{" "}
-                  <strong className="text-fg">{createdProfile.full_name}</strong>. Your department administrator will verify your documents to activate portal access.
-                </p>
-              </div>
-
-              {/* Official Printable Academic ID Card */}
-              <AcademicIdCard
-                role={createdProfile.role === "teacher" ? "teacher" : "student"}
-                academicId={
-                  (createdProfile.role === "student"
-                    ? createdProfile.student_id
-                    : createdProfile.teacher_code) || "PENDING"
-                }
-                fullName={createdProfile.full_name}
-                departmentName={createdProfile.department_name || activeDept?.name || "CSE"}
-                departmentCode={activeDept?.code || "CSE"}
-                photoUrl={createdProfile.avatar_url || null}
-                semesterName={createdProfile.semester_name}
-                designation={createdProfile.teacher_qualifications?.designation}
-                bloodGroup={createdProfile.blood_group}
-                phone={createdProfile.phone}
-                emergencyPhone={createdProfile.emergency_phone}
-                dateOfBirth={createdProfile.date_of_birth}
+          </div>
+        ) : createdProfile ? (
+          /* Success Screen + Printable Official Academic ID Card */
+          <div className="p-6 sm:p-8 rounded-2xl bg-surface border border-line shadow-sm space-y-6">
+            <div className="text-center space-y-2 print:hidden">
+              <CampusLottie
+                name="rocket"
+                className="w-28 h-28 mx-auto"
+                ariaLabel="Application submitted celebration"
               />
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-success-light text-success text-xs font-semibold">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>Application Submitted</span>
+              </div>
+              <h1 className="text-2xl font-semibold tracking-tight text-fg">
+                Welcome to UniCampus!
+              </h1>
+              <p className="text-xs sm:text-sm text-fg-muted max-w-md mx-auto">
+                Your Academic ID has been generated automatically. Once Academic Administration verifies your dossier, you can sign in immediately.
+              </p>
+            </div>
 
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 max-w-md mx-auto print:hidden">
-                <Link
-                  href="/login"
-                  className={buttonVariants({ variant: "primary", size: "lg", fullWidth: true })}
-                >
-                  Proceed to Sign In
-                  <ArrowRight className="w-4 h-4 shrink-0" aria-hidden="true" />
-                </Link>
-                <button
-                  type="button"
-                  onClick={resetAll}
-                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl font-medium text-xs text-fg-muted hover:text-fg border border-line hover:bg-surface-2 cursor-pointer transition-colors whitespace-nowrap"
-                >
-                  New Registration
-                </button>
+            <AcademicIdCard
+              role={createdProfile.role === "teacher" ? "teacher" : "student"}
+              academicId={
+                createdProfile.student_id ||
+                createdProfile.teacher_code ||
+                "PENDING-ID"
+              }
+              fullName={createdProfile.full_name}
+              departmentName={
+                createdProfile.department_name ||
+                activeDept?.name ||
+                "Computer Science & Engineering"
+              }
+              departmentCode={activeDept?.code || "CSE"}
+              photoUrl={createdProfile.avatar_url}
+              semesterName={createdProfile.semester_name}
+              designation={createdProfile.teacher_qualifications?.designation}
+              bloodGroup={createdProfile.blood_group}
+              phone={createdProfile.phone}
+              emergencyPhone={createdProfile.emergency_phone}
+              dateOfBirth={createdProfile.date_of_birth}
+              showPrintButton
+            />
+
+            <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-warning-light border border-warning/25 text-xs text-fg print:hidden">
+              <Clock className="w-4 h-4 text-warning shrink-0 mt-0.5" />
+              <div>
+                <span className="font-semibold">Status: Pending Verification</span>
+                <p className="text-fg-muted mt-0.5">
+                  You can track approval or re-apply anytime using <span className="font-medium text-fg">Check Status</span>.
+                </p>
               </div>
             </div>
-          ) : (
-            /* 4-Step Registration Form */
-            <div className="space-y-5">
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-semibold text-fg tracking-tight">
-                  Create an academic account
+
+            <div className="flex flex-col sm:flex-row gap-2.5 print:hidden">
+              <Link
+                href="/login"
+                className={buttonVariants({ variant: "primary", size: "lg", fullWidth: true })}
+              >
+                Go to Sign In
+              </Link>
+              <Button variant="secondary" size="lg" fullWidth onClick={resetAll}>
+                New Application
+              </Button>
+            </div>
+          </div>
+        ) : (
+          /* Progressive Micro-Step Card */
+          <div className="rounded-2xl bg-surface border border-line shadow-sm overflow-hidden">
+            {/* Thin Top Progress Bar */}
+            <div className="h-1 w-full bg-surface-2">
+              <div
+                className="h-full bg-brand transition-[width] duration-200 ease-out"
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
+
+            <div className="p-6 sm:p-8 space-y-5">
+              {/* Top Step Navigation Bar */}
+              <div className="flex items-center justify-between min-h-[32px]">
+                {step > 0 ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setErrorMsg("");
+                      setStep((prev) => Math.max(0, prev - 1));
+                    }}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-fg-muted hover:text-fg min-h-[36px] -ml-1 px-1.5 rounded-lg cursor-pointer transition-colors"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    <span>Back</span>
+                  </button>
+                ) : (
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-brand">
+                    Admissions &amp; Onboarding
+                  </span>
+                )}
+
+                {step > 0 && (
+                  <span className="text-xs font-medium text-fg-muted tabular-nums">
+                    Step {step} of {totalFormSteps}
+                  </span>
+                )}
+              </div>
+
+              {/* Re-Apply Banner */}
+              {resubmittingProfile && (
+                <div className="p-3 rounded-xl bg-warning-light border border-warning/25 text-xs flex items-start gap-2.5">
+                  <ShieldAlert className="w-4 h-4 text-warning shrink-0 mt-0.5" />
+                  <div className="space-y-0.5 min-w-0">
+                    <div className="font-semibold text-fg">
+                      Updating Rejected Application ({resubmittingProfile.student_id || resubmittingProfile.teacher_code})
+                    </div>
+                    {resubmittingProfile.rejection_reason && (
+                      <p className="text-fg-muted">
+                        Admin Note: &ldquo;{resubmittingProfile.rejection_reason}&rdquo;
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Contextual Lottie + Conversational Heading */}
+              <div className="text-center space-y-1.5">
+                <CampusLottie
+                  name={stepMeta.animation}
+                  className="w-24 h-24 mx-auto"
+                />
+                <h1 className="text-xl sm:text-2xl font-semibold text-fg tracking-tight">
+                  {stepMeta.title}
                 </h1>
-                <p className="text-xs sm:text-sm text-fg-muted mt-1">
-                  Step {step} of 4: {stepLabels[step - 1]}
+                <p className="text-xs sm:text-sm text-fg-muted">
+                  {stepMeta.subtitle}
                 </p>
               </div>
 
-              {/* 4-Step Progress Bar */}
-              <div className="grid grid-cols-4 gap-2">
-                {[1, 2, 3, 4].map((s) => (
-                  <div
-                    key={s}
-                    className={`h-1.5 rounded-full transition-colors duration-150 ${
-                      s <= step ? "bg-brand" : "bg-surface-2"
-                    }`}
-                  />
-                ))}
-              </div>
-
-              {/* Role Selector (visible on Step 1) */}
-              {step === 1 && (
-                <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-surface-2 border border-line">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setRole("student");
-                      setErrorMsg("");
-                    }}
-                    className={`min-h-[44px] px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer ${
-                      role === "student"
-                        ? "bg-surface text-fg shadow-2xs"
-                        : "text-fg-muted hover:text-fg"
-                    }`}
+              {/* Animated Step Body */}
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`${role}-${step}`}
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                    transition={{ duration: 0.16, ease: "easeOut" }}
                   >
-                    <GraduationCap className="w-4 h-4 text-brand" />
-                    <span>Student Admission</span>
-                  </button>
+                    {step === 0 ? (
+                      /* Step 0: Visual Role Picker (using Mobile's role_student.png & role_teacher.png) */
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setRole("student");
+                            setErrorMsg("");
+                            setStep(1);
+                          }}
+                          className="group p-5 rounded-2xl bg-surface-2 border border-line hover:border-brand text-left flex flex-col items-center text-center gap-3 transition-colors cursor-pointer"
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src="/images/role_student.png"
+                            alt="Student Portal"
+                            className="w-20 h-20 object-contain group-hover:scale-105 transition-transform"
+                          />
+                          <div>
+                            <div className="text-sm font-semibold text-fg">I&apos;m a Student</div>
+                            <p className="text-xs text-fg-muted mt-0.5">
+                              4-Year / 8-Semester admission &amp; Student ID Card
+                            </p>
+                          </div>
+                        </button>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setRole("teacher");
-                      setErrorMsg("");
-                    }}
-                    className={`min-h-[44px] px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer ${
-                      role === "teacher"
-                        ? "bg-surface text-fg shadow-2xs"
-                        : "text-fg-muted hover:text-fg"
-                    }`}
-                  >
-                    <Building2 className="w-4 h-4 text-success" />
-                    <span>Faculty Onboarding</span>
-                  </button>
-                </div>
-              )}
-
-              {resubmittingProfile?.rejection_reason && (
-                <div className="p-3.5 rounded-xl bg-warning-light border border-warning/30 space-y-1 text-xs">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-semibold text-warning flex items-center gap-1.5">
-                      <ShieldAlert className="w-4 h-4 shrink-0" />
-                      <span>Admin Correction Note (Re-Applying)</span>
-                    </span>
-                    <button
-                      type="button"
-                      onClick={resetAll}
-                      className="text-[11px] font-semibold text-fg-muted hover:text-fg underline cursor-pointer"
-                    >
-                      Cancel Re-Apply
-                    </button>
-                  </div>
-                  <p className="text-fg leading-relaxed">
-                    {resubmittingProfile.rejection_reason}
-                  </p>
-                </div>
-              )}
-
-              {errorMsg && (
-                <div className="p-3 rounded-xl bg-danger-light border border-danger/25 text-danger text-xs font-semibold">
-                  {errorMsg}
-                </div>
-              )}
-
-              {/* Steps 1-3: Role-Specific Fields */}
-              {step < 4 && (
-                <div className="space-y-5">
-                  {role === "student" ? (
-                    <StudentRegistrationSteps
-                      step={step}
-                      form={studentForm}
-                      onChange={updateStudentField}
-                      departments={departments}
-                    />
-                  ) : (
-                    <TeacherRegistrationSteps
-                      step={step}
-                      form={teacherForm}
-                      onChange={updateTeacherField}
-                      departments={departments}
-                    />
-                  )}
-
-                  <div className="flex items-center gap-3 pt-2 border-t border-line">
-                    {step > 1 && (
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="lg"
-                        onClick={() => {
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setRole("teacher");
+                            setErrorMsg("");
+                            setStep(1);
+                          }}
+                          className="group p-5 rounded-2xl bg-surface-2 border border-line hover:border-brand text-left flex flex-col items-center text-center gap-3 transition-colors cursor-pointer"
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src="/images/role_teacher.png"
+                            alt="Faculty Portal"
+                            className="w-20 h-20 object-contain group-hover:scale-105 transition-transform"
+                          />
+                          <div>
+                            <div className="text-sm font-semibold text-fg">I&apos;m Faculty</div>
+                            <p className="text-xs text-fg-muted mt-0.5">
+                              Academic appointment &amp; Faculty ID Card
+                            </p>
+                          </div>
+                        </button>
+                      </div>
+                    ) : step === 2 ? (
+                      <ContactVerificationStep
+                        email={role === "student" ? studentForm.email : teacherForm.email}
+                        phone={role === "student" ? studentForm.phone : teacherForm.phone}
+                        emailVerified={emailVerified}
+                        phoneVerified={phoneVerified}
+                        onEmailVerified={() => {
+                          setEmailVerified(true);
                           setErrorMsg("");
-                          setStep((s) => s - 1);
                         }}
-                        leftIcon={<ArrowLeft className="w-4 h-4" />}
-                      >
-                        Back
-                      </Button>
-                    )}
-                    <Button
-                      type="button"
-                      variant="primary"
-                      size="lg"
-                      fullWidth
-                      onClick={handleNext}
-                      rightIcon={<ArrowRight className="w-4 h-4" />}
-                    >
-                      Continue to {stepLabels[step]}
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* Step 4: Security, Review & Auto-ID Issuance */}
-              {step === 4 && (
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label htmlFor="register-password" className="text-xs font-semibold text-fg block mb-1">
-                        Choose Password *
-                      </label>
-                      <input
-                        id="register-password"
-                        type="password"
-                        required
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Minimum 6 characters"
-                        className="w-full min-h-[42px] px-3 py-2 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-all duration-150"
+                        onPhoneVerified={() => {
+                          setPhoneVerified(true);
+                          setErrorMsg("");
+                        }}
                       />
-                    </div>
-                    <div>
-                      <label htmlFor="register-confirm-password" className="text-xs font-semibold text-fg block mb-1">
-                        Confirm Password *
-                      </label>
-                      <input
-                        id="register-confirm-password"
-                        type="password"
-                        required
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder="Re-enter password"
-                        className="w-full min-h-[42px] px-3 py-2 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-all duration-150"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Application Summary */}
-                  <div className="p-4 rounded-xl bg-surface-2 border border-line space-y-2 text-xs">
-                    <div className="flex items-center gap-2 font-semibold text-fg">
-                      <ShieldCheck className="w-4 h-4 text-brand" />
-                      <span>Dossier Summary &amp; Automatic ID Generation</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-fg-muted pt-1">
-                      <span>Applicant: <strong className="text-fg">{role === "student" ? studentForm.fullName : teacherForm.fullName}</strong></span>
-                      <span>Department: <strong className="text-fg">{activeDept?.code || "CSE"}</strong></span>
-                      {role === "student" ? (
-                        <>
-                          <span>SSC / HSC GPA: <strong className="text-fg font-mono">{studentForm.sscGpa} / {studentForm.hscGpa}</strong></span>
-                          <span>Semester: <strong className="text-fg">{studentForm.semesterName}</strong></span>
-                        </>
+                    ) : step >= 1 && step < totalFormSteps ? (
+                      role === "student" ? (
+                        <StudentRegistrationSteps
+                          step={step >= 3 ? step - 1 : step}
+                          form={studentForm}
+                          onChange={updateStudent}
+                          departments={departments}
+                          hideEmailField={isGoogleOAuth}
+                        />
                       ) : (
-                        <>
-                          <span>Designation: <strong className="text-fg">{teacherForm.designation}</strong></span>
-                          <span>Highest Degree: <strong className="text-fg">{teacherForm.highestDegree}</strong></span>
-                        </>
-                      )}
-                    </div>
-                  </div>
+                        <TeacherRegistrationSteps
+                          step={step >= 3 ? step - 1 : step}
+                          form={teacherForm}
+                          onChange={updateTeacher}
+                          departments={departments}
+                          hideEmailField={isGoogleOAuth}
+                        />
+                      )
+                    ) : (
+                      /* Step 6: Optional Photo + Password + Policy */
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-4 p-3.5 rounded-xl bg-surface-2 border border-line">
+                          <div className="w-16 h-16 rounded-full bg-surface border border-line overflow-hidden flex items-center justify-center shrink-0">
+                            {currentPhotoUrl ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={currentPhotoUrl}
+                                alt="Profile preview"
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <Camera className="w-5 h-5 text-fg-muted" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0 space-y-1">
+                            <div className="text-xs font-semibold text-fg">
+                              ID Card Photo <span className="text-fg-muted font-normal">(Optional)</span>
+                            </div>
+                            <p className="text-[11px] text-fg-muted">
+                              Front-facing JPG/PNG printed on your digital ID card.
+                            </p>
+                            <label className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface border border-line hover:border-brand text-xs font-semibold text-fg cursor-pointer transition-colors">
+                              <Upload className="w-3.5 h-3.5 text-brand" />
+                              <span>{currentPhotoUrl ? "Change Photo" : "Upload Photo"}</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handlePhotoUpload}
+                                className="hidden"
+                              />
+                            </label>
+                          </div>
+                        </div>
 
-                  <label className="flex items-start gap-2.5 p-3 rounded-xl bg-surface border border-line cursor-pointer text-xs text-fg-muted">
-                    <input
-                      type="checkbox"
-                      checked={agreedPolicy}
-                      onChange={(e) => setAgreedPolicy(e.target.checked)}
-                      className="mt-0.5 w-4 h-4 rounded text-brand focus:ring-brand"
-                    />
-                    <span>
-                      I certify that all personal, identity, and academic examination records provided above are authentic and accurate. I understand my official Academic ID will be verified by the Registrar.
-                    </span>
-                  </label>
+                        {!isGoogleOAuth ? (
+                          <>
+                            <div>
+                              <div className="flex items-center justify-between mb-1.5">
+                                <label htmlFor="reg-password" className="text-xs font-semibold text-fg">
+                                  Create Password *
+                                </label>
+                                {password.length > 0 && (
+                                  <span
+                                    className={`text-[11px] font-semibold ${
+                                      password.length >= 10 && /[0-9]/.test(password)
+                                        ? "text-success"
+                                        : password.length >= 6
+                                          ? "text-warning"
+                                          : "text-danger"
+                                    }`}
+                                  >
+                                    {password.length >= 10 && /[0-9]/.test(password)
+                                      ? "Strong"
+                                      : password.length >= 6
+                                        ? "Fair"
+                                        : "Too short"}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="relative">
+                                <input
+                                  id="reg-password"
+                                  type={showPassword ? "text" : "password"}
+                                  required
+                                  value={password}
+                                  onChange={(e) => setPassword(e.target.value)}
+                                  placeholder="Minimum 6 characters"
+                                  className="w-full h-11 pl-3.5 pr-11 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowPassword((prev) => !prev)}
+                                  className="absolute right-0 top-1/2 -translate-y-1/2 min-w-[44px] min-h-[44px] flex items-center justify-center text-fg-muted hover:text-fg cursor-pointer"
+                                  aria-label={showPassword ? "Hide password" : "Show password"}
+                                >
+                                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </button>
+                              </div>
+                            </div>
 
-                  <div className="flex items-center gap-3 pt-1">
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="lg"
-                      onClick={() => setStep(3)}
-                      leftIcon={<ArrowLeft className="w-4 h-4" />}
-                    >
-                      Back
-                    </Button>
-                    <Button type="submit" variant="primary" size="lg" fullWidth>
-                      Submit &amp; Issue Academic ID Card
-                    </Button>
+                            <div>
+                              <label htmlFor="reg-confirm-password" className="text-xs font-semibold text-fg block mb-1.5">
+                                Confirm Password *
+                              </label>
+                              <input
+                                id="reg-confirm-password"
+                                type={showPassword ? "text" : "password"}
+                                required
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                placeholder="Re-enter your password"
+                                className="w-full h-11 px-3.5 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
+                              />
+                              {confirmPassword.length > 0 && password !== confirmPassword && (
+                                <p className="text-[11px] text-danger mt-1">
+                                  Passwords do not match yet.
+                                </p>
+                              )}
+                            </div>
+                          </>
+                        ) : (
+                          <div className="p-3.5 rounded-xl bg-success-light/60 border border-success/30 text-xs text-fg">
+                            <span className="font-semibold text-success">Google Authentication Linked</span>
+                            <p className="text-fg-muted mt-0.5">
+                              No separate password required — you will sign in using your verified Google account.
+                            </p>
+                          </div>
+                        )}
+
+                        <label className="flex items-start gap-2.5 text-xs text-fg-muted cursor-pointer select-none pt-1">
+                          <input
+                            type="checkbox"
+                            checked={agreedPolicy}
+                            onChange={(e) => setAgreedPolicy(e.target.checked)}
+                            className="w-4 h-4 mt-0.5 rounded text-brand border-line focus:ring-brand cursor-pointer shrink-0"
+                          />
+                          <span>
+                            I confirm all personal, guardian, and academic credentials are accurate and match my official documents.
+                          </span>
+                        </label>
+                      </div>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+
+                {/* Inline Validation Error */}
+                {errorMsg && (
+                  <div
+                    role="alert"
+                    className="p-3 rounded-xl bg-danger-light border border-danger/25 text-xs text-danger"
+                  >
+                    {errorMsg}
                   </div>
-                </form>
-              )}
+                )}
+
+                {/* Primary CTA (hidden on Step 0 since tapping either card advances immediately) */}
+                {step > 0 && (
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    size="lg"
+                    fullWidth
+                    rightIcon={<ArrowRight className="w-4 h-4" />}
+                  >
+                    {step < totalFormSteps
+                      ? "Continue"
+                      : resubmittingProfile
+                        ? "Re-Submit Application"
+                        : "Submit Application"}
+                  </Button>
+                )}
+              </form>
             </div>
-          )}
-        </div>
+          </div>
+        )}
+      </main>
 
-        <div className="text-center text-xs text-fg-subtle print:hidden">
-          <span>Need enrollment assistance? Contact Office of the Registrar</span>
-        </div>
-      </div>
+      {/* Minimal Footer */}
+      <footer className="w-full max-w-[540px] mx-auto text-center text-xs text-fg-muted pt-3 print:hidden">
+        Already have an account?{" "}
+        <Link href="/login" className="font-semibold text-brand hover:underline">
+          Sign in
+        </Link>
+      </footer>
     </div>
   );
 }
