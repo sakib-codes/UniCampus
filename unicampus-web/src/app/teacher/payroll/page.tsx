@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { Download, FileSpreadsheet, ShieldCheck } from "lucide-react";
+import { Download } from "lucide-react";
 import { TeacherRoleGate } from "@/components/teacher/TeacherRoleGate";
 import { Tabs } from "@/components/ui/Tabs";
 import { Toast } from "@/components/ui/Toast";
@@ -62,7 +62,9 @@ function TeacherPayrollContent() {
   }, []);
 
   useEffect(() => {
-    reloadWages();
+    queueMicrotask(() => {
+      reloadWages();
+    });
 
     // Live sync with Admin finance disbursements and cross-tab/local-storage updates
     const handleSync = () => {

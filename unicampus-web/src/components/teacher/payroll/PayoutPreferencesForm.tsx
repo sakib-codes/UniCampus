@@ -51,9 +51,11 @@ export function PayoutPreferencesForm({
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          setInitialPrefs(parsed);
-          setFormData(parsed);
-          onSaved(parsed);
+          queueMicrotask(() => {
+            setInitialPrefs(parsed);
+            setFormData(parsed);
+            onSaved(parsed);
+          });
         }
       } catch (e) {
         console.error("Failed to parse faculty payout preferences:", e);

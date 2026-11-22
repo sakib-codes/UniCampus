@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Filter, RotateCcw, Search, X } from "lucide-react";
+import { RotateCcw, Search, X } from "lucide-react";
 
 interface PayrollFilterToolbarProps {
   searchQuery: string;

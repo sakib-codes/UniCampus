@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { CheckCircle2, Download, Landmark, Printer, ShieldCheck, Wallet, X } from "lucide-react";
+import { Download, Printer, ShieldCheck } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import type { TeacherWage } from "@/types/admin";
 

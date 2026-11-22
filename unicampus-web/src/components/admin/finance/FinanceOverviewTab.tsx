@@ -13,7 +13,6 @@ import {
   ShieldCheck,
   Building,
 } from "lucide-react";
-import CountUp from "@/components/bits/CountUp";
 import type { Department, PaymentTransaction } from "@/types/admin";
 
 export interface DeptProgressItem {
@@ -26,9 +25,10 @@ export interface DeptProgressItem {
 
 interface FinanceOverviewTabProps {
   totalInflow: number;
+  totalOutflow: number;
+  totalDues: number;
   totalPendingDues: number;
   totalOverdueAmount: number;
-  totalOutflow: number;
   netBalance: number;
   deptProgressList: DeptProgressItem[];
   recentTransactions: PaymentTransaction[];
@@ -81,9 +81,10 @@ const GATEWAY_CONFIG: Record<
 
 export function FinanceOverviewTab({
   totalInflow,
+  totalOutflow,
+  totalDues,
   totalPendingDues,
   totalOverdueAmount,
-  totalOutflow,
   netBalance,
   deptProgressList,
   recentTransactions,
@@ -123,11 +124,47 @@ export function FinanceOverviewTab({
   }, [allTransactions]);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 w-full max-w-full min-w-0">
       {/* 5 Executive KPI Cards Strip */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
-        {/* KPI 1: Total Collected */}
-        <div className="p-4 rounded-2xl bg-surface border border-line flex flex-col justify-between">
+        {/* KPI 1: Inflow vs Outflow Net Cash Flow */}
+        <div className="p-4 rounded-2xl bg-surface border border-line flex flex-col justify-between min-w-0">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-fg-muted">Net Cash Flow</span>
+              <span className="w-7 h-7 rounded-xl bg-surface-2 border border-line flex items-center justify-center text-fg">
+                <CreditCard className="w-3.5 h-3.5" />
+              </span>
+            </div>
+            <div className="space-y-1 my-1 text-xs">
+              <div className="flex items-center justify-between font-medium">
+                <span className="text-success flex items-center gap-1">
+                  <ArrowDownLeft className="w-3 h-3" /> Inflow:
+                </span>
+                <span className="font-semibold text-fg tabular-nums">
+                  ৳{totalInflow.toLocaleString()}
+                </span>
+              </div>
+              <div className="flex items-center justify-between font-medium">
+                <span className="text-danger flex items-center gap-1">
+                  <ArrowUpRight className="w-3 h-3" /> Outflow:
+                </span>
+                <span className="font-semibold text-fg tabular-nums">
+                  ৳{totalOutflow.toLocaleString()}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="mt-2 pt-2 border-t border-line flex items-center justify-between text-xs font-semibold">
+            <span className="text-fg-muted">Net Balance:</span>
+            <span className="text-brand tabular-nums font-semibold">
+              ৳{netBalance.toLocaleString()}
+            </span>
+          </div>
+        </div>
+
+        {/* KPI 2: Total Collected (Tuition Collections) */}
+        <div className="p-4 rounded-2xl bg-surface border border-line flex flex-col justify-between min-w-0">
           <div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-semibold text-fg-muted">Total Collected</span>
@@ -136,7 +173,7 @@ export function FinanceOverviewTab({
               </span>
             </div>
             <h3 className="text-xl font-semibold mb-1 text-fg tabular-nums">
-              ৳<CountUp to={totalInflow} duration={0.8} />
+              ৳{totalInflow.toLocaleString()}
             </h3>
           </div>
           <p className="text-xs text-success font-medium flex items-center gap-1 mt-2">
@@ -144,71 +181,58 @@ export function FinanceOverviewTab({
           </p>
         </div>
 
-        {/* KPI 2: Total Pending Dues */}
-        <div className="p-4 rounded-2xl bg-surface border border-line flex flex-col justify-between">
+        {/* KPI 3: Faculty Payroll (Outflow) */}
+        <div className="p-4 rounded-2xl bg-surface border border-line flex flex-col justify-between min-w-0">
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-fg-muted">Pending Dues</span>
-              <span className="w-7 h-7 rounded-xl bg-warning-light border border-warning/20 flex items-center justify-center text-warning">
-                <Clock className="w-3.5 h-3.5" />
-              </span>
-            </div>
-            <h3 className="text-xl font-semibold mb-1 text-fg tabular-nums">
-              ৳<CountUp to={totalPendingDues} duration={0.8} />
-            </h3>
-          </div>
-          <p className="text-xs text-warning font-medium mt-2">
-            Invoices awaiting clearing
-          </p>
-        </div>
-
-        {/* KPI 3: Overdue Amount */}
-        <div className="p-4 rounded-2xl bg-surface border border-line flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-fg-muted">Overdue Amount</span>
-              <span className="w-7 h-7 rounded-xl bg-danger-light border border-danger/20 flex items-center justify-center text-danger">
-                <AlertCircle className="w-3.5 h-3.5" />
-              </span>
-            </div>
-            <h3 className="text-xl font-semibold text-danger mb-1 tabular-nums">
-              ৳<CountUp to={totalOverdueAmount} duration={0.8} />
-            </h3>
-          </div>
-          <p className="text-xs text-danger font-medium mt-2">
-            Subject to late penalty fines
-          </p>
-        </div>
-
-        {/* KPI 4: Payroll Outflow */}
-        <div className="p-4 rounded-2xl bg-surface border border-line flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-fg-muted">Payroll Outflow</span>
+              <span className="text-xs font-semibold text-fg-muted">Faculty Payroll</span>
               <span className="w-7 h-7 rounded-xl bg-brand-soft border border-brand/20 flex items-center justify-center text-brand">
                 <ArrowUpRight className="w-3.5 h-3.5" />
               </span>
             </div>
             <h3 className="text-xl font-semibold mb-1 text-fg tabular-nums">
-              ৳<CountUp to={totalOutflow} duration={0.8} />
+              ৳{totalOutflow.toLocaleString()}
             </h3>
           </div>
           <p className="text-xs text-fg-muted font-medium mt-2">
-            Disbursed faculty salaries
+            Disbursed across academic faculty
           </p>
         </div>
 
-        {/* KPI 5: Net Balance */}
-        <div className="p-4 rounded-2xl bg-surface border border-line flex flex-col justify-between">
+        {/* KPI 4: Total Outstanding Dues */}
+        <div className="p-4 rounded-2xl bg-surface border border-line flex flex-col justify-between min-w-0">
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-fg-muted">Net Balance</span>
+              <span className="text-xs font-semibold text-fg-muted">Total Outstanding Dues</span>
+              <span className="w-7 h-7 rounded-xl bg-danger-light border border-danger/20 flex items-center justify-center text-danger">
+                <AlertCircle className="w-3.5 h-3.5" />
+              </span>
+            </div>
+            <h3 className="text-xl font-semibold text-danger mb-1 tabular-nums">
+              ৳{totalDues.toLocaleString()}
+            </h3>
+          </div>
+          <div className="flex items-center justify-between text-xs text-fg-muted pt-2 border-t border-line tabular-nums">
+            <span className="flex items-center gap-1 text-warning">
+              <Clock className="w-3 h-3" /> Pending: ৳{totalPendingDues.toLocaleString()}
+            </span>
+            <span className="text-danger">
+              Overdue: ৳{totalOverdueAmount.toLocaleString()}
+            </span>
+          </div>
+        </div>
+
+        {/* KPI 5: Net Treasury Balance */}
+        <div className="p-4 rounded-2xl bg-surface border border-line flex flex-col justify-between min-w-0">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-fg-muted">Treasury Net Balance</span>
               <span className="w-7 h-7 rounded-xl bg-surface-2 border border-line flex items-center justify-center text-fg">
                 <CreditCard className="w-3.5 h-3.5" />
               </span>
             </div>
             <h3 className="text-xl font-semibold mb-1 text-brand tabular-nums">
-              ৳<CountUp to={netBalance} duration={0.8} />
+              ৳{netBalance.toLocaleString()}
             </h3>
           </div>
           <p className="text-xs text-fg-muted font-medium mt-2">
@@ -218,7 +242,7 @@ export function FinanceOverviewTab({
       </div>
 
       {/* Gateway Collection Split Section */}
-      <div className="p-5 rounded-2xl bg-surface border border-line">
+      <div className="p-5 rounded-2xl bg-surface border border-line min-w-0">
         <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
           <div>
             <div className="flex items-center gap-2">
@@ -246,7 +270,7 @@ export function FinanceOverviewTab({
             return (
               <div
                 key={item.gateway}
-                className="p-3.5 rounded-xl bg-canvas border border-line space-y-2.5 flex flex-col justify-between"
+                className="p-3.5 rounded-xl bg-canvas border border-line space-y-2.5 flex flex-col justify-between min-w-0"
               >
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-1.5">
@@ -285,7 +309,7 @@ export function FinanceOverviewTab({
       </div>
 
       {/* Department Fee Collection Progress */}
-      <div className="p-5 rounded-2xl bg-surface border border-line">
+      <div className="p-5 rounded-2xl bg-surface border border-line min-w-0">
         <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
           <div>
             <h3 className="text-sm font-semibold text-fg">
@@ -308,7 +332,7 @@ export function FinanceOverviewTab({
           {deptProgressList.map((dp) => (
             <div
               key={dp.department.id}
-              className="p-3.5 rounded-xl bg-canvas border border-line space-y-2"
+              className="p-3.5 rounded-xl bg-canvas border border-line space-y-2 min-w-0"
             >
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
@@ -347,7 +371,7 @@ export function FinanceOverviewTab({
       </div>
 
       {/* Recent Transactions Preview */}
-      <div className="overflow-hidden rounded-2xl bg-surface border border-line">
+      <div className="overflow-hidden rounded-2xl bg-surface border border-line min-w-0">
         <div className="p-4 border-b border-line flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Layers className="w-4 h-4 text-brand" />
@@ -364,7 +388,44 @@ export function FinanceOverviewTab({
           </button>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* Mobile View: Compact rows */}
+        <div className="block md:hidden divide-y divide-line">
+          {recentTransactions.map((t) => (
+            <div
+              key={t.id}
+              onClick={() => onViewReceipt(t)}
+              className="p-3.5 space-y-1.5 hover:bg-surface-2/60 transition-colors cursor-pointer"
+            >
+              <div className="flex items-center justify-between text-xs gap-2">
+                <span className="font-mono font-semibold text-brand">
+                  {t.transaction_id}
+                </span>
+                <span
+                  className={`px-2 py-0.5 rounded-md text-xs font-semibold border ${
+                    t.status === "Paid"
+                      ? "bg-success-light text-success border-success/20"
+                      : "bg-danger-light text-danger border-danger/20"
+                  }`}
+                >
+                  {t.status}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-semibold text-fg truncate">{t.user_name}</span>
+                <span className="font-semibold tabular-nums text-fg">
+                  ৳{t.amount.toLocaleString()}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs text-fg-muted">
+                <span>{formatTransactionType(t.type)}</span>
+                <span>{t.payment_method}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop View: Table */}
+        <div className="hidden md:block overflow-x-auto min-w-0">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-canvas text-xs font-semibold text-fg-muted border-b border-line">

@@ -153,6 +153,14 @@ export default function AdminFinancePage() {
     [transactions]
   );
 
+  const totalDues = useMemo(
+    () =>
+      transactions
+        .filter((t) => t.type === "student_fee" && (t.status === "Pending" || t.status === "Overdue"))
+        .reduce((acc, t) => acc + t.amount, 0),
+    [transactions]
+  );
+
   const totalPendingDues = useMemo(
     () =>
       transactions
@@ -268,7 +276,7 @@ export default function AdminFinancePage() {
   );
 
   return (
-    <div className="w-full max-w-[1600px] mx-auto space-y-5 pb-12">
+    <div className="w-full max-w-[1600px] mx-auto space-y-5 pb-12 min-w-0 max-w-full overflow-x-clip">
       {/* Toast Alert */}
       {toastMessage && (
         <div className="fixed top-6 right-8 z-50 bg-success text-on-brand px-4 py-2.5 rounded-xl flex items-center gap-2 text-xs font-semibold border border-success/30">
@@ -277,7 +285,7 @@ export default function AdminFinancePage() {
       )}
 
       {/* Header Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-surface border border-line">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-surface border border-line min-w-0">
         <div>
           <div className="flex items-center gap-2.5 flex-wrap">
             <h1 className="text-xl md:text-2xl font-semibold tracking-tight text-fg">
@@ -294,7 +302,7 @@ export default function AdminFinancePage() {
       </div>
 
       {/* 5 Core Tabs Segmented Dock */}
-      <div className="p-1.5 flex items-center gap-1.5 overflow-x-auto scrollbar-none rounded-2xl bg-surface border border-line relative">
+      <div className="p-1.5 flex items-center gap-1.5 overflow-x-auto scrollbar-none rounded-2xl bg-surface border border-line relative w-full max-w-full min-w-0">
         {[
           { id: "overview" as const, label: "Financial Overview", icon: Receipt },
           {
@@ -347,9 +355,10 @@ export default function AdminFinancePage() {
       {activeTab === "overview" && (
         <FinanceOverviewTab
           totalInflow={totalInflow}
+          totalOutflow={totalOutflow}
+          totalDues={totalDues}
           totalPendingDues={totalPendingDues}
           totalOverdueAmount={totalOverdueAmount}
-          totalOutflow={totalOutflow}
           netBalance={netBalance}
           deptProgressList={deptProgressList}
           recentTransactions={transactions.slice(0, 5)}
