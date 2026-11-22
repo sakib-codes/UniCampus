@@ -5,6 +5,7 @@ import type { Notice } from "@/types/admin";
 
 interface AdminNoticeDetailModalProps {
   notice: Notice | null;
+  canModify?: boolean;
   onClose: () => void;
   onEdit: (notice: Notice) => void;
   onDelete: (id: string) => void;
@@ -12,6 +13,7 @@ interface AdminNoticeDetailModalProps {
 
 export function AdminNoticeDetailModal({
   notice,
+  canModify = true,
   onClose,
   onEdit,
   onDelete,
@@ -91,23 +93,35 @@ export function AdminNoticeDetailModal({
         )}
 
         <div className="flex justify-end gap-2.5 pt-4 border-t border-line mt-4">
-          <button
-            type="button"
-            onClick={() => {
-              onClose();
-              onEdit(notice);
-            }}
-            className="min-h-[40px] px-4 py-2 bg-canvas hover:bg-surface-2 text-fg border border-line rounded-xl font-semibold text-xs flex items-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-          >
-            <Edit3 className="w-3.5 h-3.5" /> Edit Notice
-          </button>
-          <button
-            type="button"
-            onClick={() => onDelete(notice.id)}
-            className="min-h-[40px] px-4 py-2 bg-danger hover:opacity-90 text-on-brand rounded-xl text-xs font-semibold transition-opacity flex items-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-          >
-            <Trash2 className="w-3.5 h-3.5" /> Delete
-          </button>
+          {canModify ? (
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onEdit(notice);
+                }}
+                className="min-h-[40px] px-4 py-2 bg-canvas hover:bg-surface-2 text-fg border border-line rounded-xl font-semibold text-xs flex items-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+              >
+                <Edit3 className="w-3.5 h-3.5" /> Edit Notice
+              </button>
+              <button
+                type="button"
+                onClick={() => onDelete(notice.id)}
+                className="min-h-[40px] px-4 py-2 bg-danger hover:opacity-90 text-on-brand rounded-xl text-xs font-semibold transition-opacity flex items-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+              >
+                <Trash2 className="w-3.5 h-3.5" /> Delete
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={onClose}
+              className="min-h-[40px] px-4 py-2 bg-canvas hover:bg-surface-2 text-fg border border-line rounded-xl font-semibold text-xs flex items-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+            >
+              Close
+            </button>
+          )}
         </div>
       </div>
     </div>

@@ -82,7 +82,7 @@ export function Modal({
 
   const transition = shouldReduceMotion
     ? { duration: 0 }
-    : { duration: 0.18, ease: [0.16, 1, 0.3, 1] as const };
+    : ({ type: "spring", stiffness: 430, damping: 28, mass: 0.8 } as const);
 
   return (
     <AnimatePresence>
@@ -110,9 +110,9 @@ export function Modal({
             aria-labelledby={title ? titleId : undefined}
             aria-describedby={description ? descriptionId : undefined}
             tabIndex={-1}
-            initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.98, y: 6 }}
+            initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.93, y: -10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.98, y: 4 }}
+            exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96, y: -6, transition: { duration: 0.14, ease: "easeIn" } }}
             transition={transition}
             className={cn(
               "relative z-10 w-full bg-surface border border-line rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand",

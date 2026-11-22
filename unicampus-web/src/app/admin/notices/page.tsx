@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   Plus,
@@ -53,6 +53,15 @@ export default function AdminNoticesPage() {
   const [formAttachments, setFormAttachments] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const canModifyNotice = useCallback(
+    (notice: Notice) => {
+      if (!isDeptAdmin) return true;
+      if (!currentUser?.department_id) return true;
+      return notice.department_id === currentUser.department_id;
+    },
+    [isDeptAdmin, currentUser]
+  );
+
   const loadNotices = useCallback(() => {
     setNotices(adminService.getNotices());
   }, []);
@@ -62,6 +71,16 @@ export default function AdminNoticesPage() {
       loadNotices();
       setDepartments(adminService.getDepartments());
     });
+
+    const handleUpdate = () => {
+      loadNotices();
+    };
+    window.addEventListener("unicampus:notices-updated", handleUpdate);
+    window.addEventListener("storage", handleUpdate);
+    return () => {
+      window.removeEventListener("unicampus:notices-updated", handleUpdate);
+      window.removeEventListener("storage", handleUpdate);
+    };
   }, [loadNotices]);
 
   const showToast = useCallback((msg: string) => {
@@ -71,30 +90,48 @@ export default function AdminNoticesPage() {
 
   const handleTogglePin = useCallback(
     (id: string) => {
+      const targetNotice = notices.find((n) => n.id === id);
+      if (targetNotice && !canModifyNotice(targetNotice)) {
+        showToast("Campus-wide notices are read-only for department administrators.");
+        return;
+      }
       const updated = adminService.togglePinNotice(id);
       setNotices(updated);
       showToast("Notice priority pinned status updated.");
     },
-    [showToast]
+    [canModifyNotice, notices, showToast]
   );
 
   const handleDeleteNotice = useCallback(
     (id: string) => {
+      const targetNotice = notices.find((n) => n.id === id);
+      if (targetNotice && !canModifyNotice(targetNotice)) {
+        showToast("Campus-wide notices cannot be deleted by department administrators.");
+        return;
+      }
       const updated = adminService.deleteNotice(id);
       setNotices(updated);
       setConfirmDeleteId(null);
       setViewingNotice((prev) => (prev?.id === id ? null : prev));
       showToast("Notice removed from university broadcasts.");
     },
-    [showToast]
+    [canModifyNotice, notices, showToast]
   );
 
   const handleBulkDelete = () => {
     if (selectedNoticeIds.length === 0) return;
-    const updated = adminService.bulkDeleteNotices(selectedNoticeIds);
+    const modifiableIds = selectedNoticeIds.filter((id) => {
+      const n = notices.find((item) => item.id === id);
+      return n ? canModifyNotice(n) : true;
+    });
+    if (modifiableIds.length === 0) {
+      showToast("Selected notices are campus-wide and cannot be deleted.");
+      return;
+    }
+    const updated = adminService.bulkDeleteNotices(modifiableIds);
     setNotices(updated);
     setSelectedNoticeIds([]);
-    showToast(`Bulk removed ${selectedNoticeIds.length} notices.`);
+    showToast(`Bulk removed ${modifiableIds.length} notices.`);
   };
 
   const toggleSelectNotice = useCallback((id: string) => {
@@ -103,27 +140,34 @@ export default function AdminNoticesPage() {
     );
   }, []);
 
-  const filteredNotices = notices.filter((notice) => {
-    if (isDeptAdmin && currentUser?.department_id) {
-      if (notice.department_id && notice.department_id !== currentUser.department_id)
-        return false;
-    } else if (effectiveDeptId !== "all") {
-      if (notice.department_id && notice.department_id !== effectiveDeptId) return false;
-    }
+  const scopedNotices = useMemo(() => {
+    return notices.filter((notice) => {
+      if (isDeptAdmin && currentUser?.department_id) {
+        if (notice.department_id && notice.department_id !== currentUser.department_id)
+          return false;
+      } else if (effectiveDeptId !== "all") {
+        if (notice.department_id && notice.department_id !== effectiveDeptId) return false;
+      }
+      return true;
+    });
+  }, [notices, isDeptAdmin, currentUser, effectiveDeptId]);
 
-    if (activeTab === "pinned" && !notice.pinned) return false;
-    if (selectedCategory !== "all" && notice.category !== selectedCategory) return false;
+  const filteredNotices = useMemo(() => {
+    return scopedNotices.filter((notice) => {
+      if (activeTab === "pinned" && !notice.pinned) return false;
+      if (selectedCategory !== "all" && notice.category !== selectedCategory) return false;
 
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      const matchesTitle = notice.title.toLowerCase().includes(q);
-      const matchesBody = notice.body.toLowerCase().includes(q);
-      const matchesCat = notice.category.toLowerCase().includes(q);
-      if (!matchesTitle && !matchesBody && !matchesCat) return false;
-    }
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchesTitle = notice.title.toLowerCase().includes(q);
+        const matchesBody = notice.body.toLowerCase().includes(q);
+        const matchesCat = notice.category.toLowerCase().includes(q);
+        if (!matchesTitle && !matchesBody && !matchesCat) return false;
+      }
 
-    return true;
-  });
+      return true;
+    });
+  }, [scopedNotices, activeTab, selectedCategory, searchQuery]);
 
   const toggleSelectAll = useCallback(() => {
     setSelectedNoticeIds((prev) =>
@@ -144,6 +188,10 @@ export default function AdminNoticesPage() {
   };
 
   const handleOpenEdit = useCallback((notice: Notice) => {
+    if (!canModifyNotice(notice)) {
+      showToast("Campus-wide notices are read-only for department administrators.");
+      return;
+    }
     setEditingNotice(notice);
     setFormTitle(notice.title);
     setFormBody(notice.body);
@@ -153,7 +201,7 @@ export default function AdminNoticesPage() {
     setFormPinned(notice.pinned);
     setFormAttachments(notice.attachments || []);
     setIsComposeOpen(true);
-  }, []);
+  }, [canModifyNotice, showToast]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -179,6 +227,11 @@ export default function AdminNoticesPage() {
   const handleSaveNotice = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formTitle.trim() || !formBody.trim()) return;
+
+    if (editingNotice && !canModifyNotice(editingNotice)) {
+      showToast("Campus-wide notices cannot be modified by department administrators.");
+      return;
+    }
 
     const targetDeptId =
       isDeptAdmin && currentUser?.department_id
@@ -221,8 +274,8 @@ export default function AdminNoticesPage() {
     setIsComposeOpen(false);
   };
 
-  const pinnedCount = notices.filter((n) => n.pinned).length;
-  const totalViews = notices.reduce((sum, n) => sum + (n.views || 142), 0);
+  const pinnedCount = scopedNotices.filter((n) => n.pinned).length;
+  const totalViews = scopedNotices.reduce((sum, n) => sum + (n.views || 142), 0);
 
   return (
     <div className="w-full space-y-6 pb-12">
@@ -280,7 +333,7 @@ export default function AdminNoticesPage() {
           <div>
             <p className="text-xs font-semibold text-fg-muted mb-0.5">Active Notices</p>
             <h3 className="text-xl font-bold text-fg tabular-nums">
-              <CountUp to={notices.length} duration={0.8} />
+              <CountUp to={scopedNotices.length} duration={0.8} />
             </h3>
           </div>
         </div>
@@ -329,7 +382,7 @@ export default function AdminNoticesPage() {
                 transition={{ type: "spring", stiffness: 450, damping: 32 }}
               />
             )}
-            All Broadcasts ({notices.length})
+            All Broadcasts ({scopedNotices.length})
           </button>
           <button
             type="button"
@@ -361,7 +414,7 @@ export default function AdminNoticesPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search announcements..."
-              className="w-full min-h-[40px] pl-9 pr-3.5 py-2 rounded-xl bg-canvas border border-line text-fg placeholder:text-fg-muted text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand"
+              className="w-full min-h-[40px] pl-9 pr-3.5 py-2 rounded-xl bg-canvas border border-line text-fg placeholder:text-fg-muted text-xs focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-all duration-150"
             />
           </div>
 
@@ -395,10 +448,12 @@ export default function AdminNoticesPage() {
         onEdit={handleOpenEdit}
         onRequestDelete={setConfirmDeleteId}
         onToggleMenu={setActiveActionMenuId}
+        canModifyNotice={canModifyNotice}
       />
 
       <AdminNoticeDetailModal
         notice={viewingNotice}
+        canModify={viewingNotice ? canModifyNotice(viewingNotice) : true}
         onClose={() => setViewingNotice(null)}
         onEdit={handleOpenEdit}
         onDelete={handleDeleteNotice}

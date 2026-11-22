@@ -18,6 +18,7 @@ interface AdminRoutineToolbarProps {
   onHighlightConflictsChange: (v: boolean) => void;
   showUtilization: boolean;
   onShowUtilizationChange: (v: boolean) => void;
+  isDeptAdmin?: boolean;
 }
 
 export function AdminRoutineToolbar({
@@ -33,6 +34,7 @@ export function AdminRoutineToolbar({
   onHighlightConflictsChange,
   showUtilization,
   onShowUtilizationChange,
+  isDeptAdmin = false,
 }: AdminRoutineToolbarProps) {
   return (
     <div className="bg-surface rounded-2xl p-3.5 border border-line flex flex-col gap-3">
@@ -120,10 +122,11 @@ export function AdminRoutineToolbar({
           <select
             value={deptFilter}
             onChange={(e) => onDeptFilterChange(e.target.value)}
+            disabled={isDeptAdmin}
             aria-label="Filter by department"
-            className="w-full sm:w-auto min-h-[40px] bg-surface-2 border border-line text-fg text-xs font-sans rounded-xl px-3 py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand cursor-pointer"
+            className="w-full sm:w-auto min-h-[40px] bg-surface-2 border border-line text-fg text-xs font-sans rounded-xl px-3 py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            <option value="all">Department: All Departments</option>
+            {!isDeptAdmin && <option value="all">Department: All Departments</option>}
             {CANONICAL_DEPARTMENTS.map((d) => (
               <option key={d.id} value={d.code.toLowerCase()}>
                 {d.code} — {d.name}

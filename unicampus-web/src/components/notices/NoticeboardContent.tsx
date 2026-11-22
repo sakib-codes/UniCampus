@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Search, X } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { adminService } from "@/lib/services/adminService";
+import type { Notice } from "@/types/admin";
 import {
   OFFICIAL_NOTICES,
   resolveNoticeById,
@@ -11,6 +13,81 @@ import {
 } from "./noticeData";
 import { NoticeInboxRow } from "./NoticeInboxRow";
 import { NoticeCircularCanvas } from "./NoticeCircularCanvas";
+
+function mapAdminNoticeToNoticeItem(notice: Notice): NoticeItem {
+  let category: NoticeItem["category"] = "ACADEMIC";
+  let categoryKey: NoticeItem["categoryKey"] = "academic";
+  let categoryColor = {
+    bg: "bg-brand-soft",
+    text: "text-brand",
+    border: "border-brand/30",
+  };
+
+  const catLower = (notice.category || "").toLowerCase();
+  if (catLower.includes("exam")) {
+    category = "EXAM SCHEDULE";
+    categoryKey = "exam";
+    categoryColor = {
+      bg: "bg-brand-soft",
+      text: "text-brand",
+      border: "border-brand/30",
+    };
+  } else if (catLower.includes("event")) {
+    category = "EVENTS";
+    categoryKey = "events";
+    categoryColor = {
+      bg: "bg-success-light",
+      text: "text-success",
+      border: "border-success/30",
+    };
+  } else if (catLower.includes("admin") || catLower.includes("emergency")) {
+    category = "ADMINISTRATION";
+    categoryKey = "admin";
+    categoryColor = {
+      bg: "bg-warning-light",
+      text: "text-warning",
+      border: "border-warning/30",
+    };
+  }
+
+  const d = new Date(notice.created_at);
+  const dateStr = isNaN(d.getTime())
+    ? "October 24, 2026"
+    : d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  const timeStr = isNaN(d.getTime())
+    ? "10:00 AM"
+    : d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+
+  let attachmentName: string | undefined;
+  if (notice.attachments && notice.attachments.length > 0) {
+    const first = notice.attachments[0];
+    attachmentName = first.includes("::") ? first.split("::")[0] : first.split("/").pop();
+  }
+
+  const paragraphs = notice.body.split("\n\n").map((p) => p.trim()).filter(Boolean);
+
+  return {
+    id: notice.id,
+    refNo: `UC/NOT/${notice.id.slice(-6).toUpperCase()}`,
+    category,
+    categoryKey,
+    categoryColor,
+    title: notice.title,
+    summary: notice.body.slice(0, 140) + (notice.body.length > 140 ? "..." : ""),
+    body: paragraphs.length > 0 ? paragraphs : [notice.body],
+    author: notice.author_name || "Central Administration",
+    authorDesignation: "Authorized Registrar",
+    authorCouncil: "UniCampus Academic Council & Exam Directorate",
+    department: notice.department_name || "Campus Wide",
+    dateStr,
+    timeStr,
+    academicSession: "Spring Semester 2026",
+    targetAudience: notice.target_role === "all" ? "All Campus" : "Undergraduate Scholars",
+    pinnedUrgent: notice.pinned,
+    attachmentName,
+    sha256: `sha256-${notice.id.slice(0, 8)}`,
+  };
+}
 
 interface NoticeboardContentProps {
   initialNoticeId?: string;
@@ -31,9 +108,53 @@ export function NoticeboardContent({
   const searchParams = useSearchParams();
   const rawId = initialNoticeId || searchParams.get("id") || undefined;
 
+  const [adminNotices, setAdminNotices] = useState<Notice[]>([]);
+
+  const loadAdminNotices = useCallback(() => {
+    try {
+      const all = adminService.getNotices();
+      const studentNotices = all.filter(
+        (n) => n.target_role === "student" || n.target_role === "all"
+      );
+      setAdminNotices(studentNotices);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      loadAdminNotices();
+    });
+
+    const handleUpdate = () => {
+      loadAdminNotices();
+    };
+    window.addEventListener("unicampus:notices-updated", handleUpdate);
+    window.addEventListener("storage", handleUpdate);
+    return () => {
+      window.removeEventListener("unicampus:notices-updated", handleUpdate);
+      window.removeEventListener("storage", handleUpdate);
+    };
+  }, [loadAdminNotices]);
+
+  const allNotices: NoticeItem[] = useMemo(() => {
+    const mappedAdmin = adminNotices.map(mapAdminNoticeToNoticeItem);
+    const officialFiltered = OFFICIAL_NOTICES.filter(
+      (off) => !mappedAdmin.some((adm) => adm.id === off.id)
+    );
+    return [...mappedAdmin, ...officialFiltered];
+  }, [adminNotices]);
+
   const defaultResolved = useMemo(
-    () => resolveNoticeById(rawId),
-    [rawId]
+    () => {
+      if (rawId) {
+        const found = allNotices.find((n) => n.id === rawId);
+        if (found) return found;
+      }
+      return resolveNoticeById(rawId);
+    },
+    [rawId, allNotices]
   );
 
   const [selectedId, setSelectedId] = useState<string>(defaultResolved.id);
@@ -48,20 +169,21 @@ export function NoticeboardContent({
   React.useEffect(() => {
     if (initialNoticeId) {
       queueMicrotask(() => {
-        const resolved = resolveNoticeById(initialNoticeId);
+        const found = allNotices.find((n) => n.id === initialNoticeId);
+        const resolved = found || resolveNoticeById(initialNoticeId);
         setSelectedId(resolved.id);
         setMobileView("reader");
       });
     }
-  }, [initialNoticeId]);
+  }, [initialNoticeId, allNotices]);
 
   // Active notice item
   const activeNotice: NoticeItem = useMemo(() => {
     return (
-      OFFICIAL_NOTICES.find((n) => n.id === selectedId) ||
+      allNotices.find((n) => n.id === selectedId) ||
       resolveNoticeById(selectedId)
     );
-  }, [selectedId]);
+  }, [allNotices, selectedId]);
 
   const isBookmarked = useMemo(() => {
     return bookmarkedIds.includes(activeNotice.id);
@@ -77,7 +199,7 @@ export function NoticeboardContent({
 
   // Filter and sort notices
   const filteredNotices = useMemo(() => {
-    return OFFICIAL_NOTICES.filter((notice) => {
+    return allNotices.filter((notice) => {
       // Category filter
       if (selectedCategory === "SAVED") {
         if (!bookmarkedIds.includes(notice.id)) return false;
@@ -112,7 +234,7 @@ export function NoticeboardContent({
       if (!a.pinnedUrgent && b.pinnedUrgent) return 1;
       return 0;
     });
-  }, [selectedCategory, searchQuery, bookmarkedIds]);
+  }, [allNotices, selectedCategory, searchQuery, bookmarkedIds]);
 
   const handleSelectNotice = useCallback((id: string) => {
     setSelectedId(id);
@@ -145,7 +267,7 @@ export function NoticeboardContent({
                 : "font-medium text-fg-muted hover:text-fg hover:bg-surface-2"
             }`}
           >
-            All ({OFFICIAL_NOTICES.length})
+            All ({allNotices.length})
           </button>
 
           <button
@@ -230,7 +352,7 @@ export function NoticeboardContent({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search notices, ref no, or dept..."
-            className="w-full h-9 pl-9 pr-9 bg-surface-2/70 border border-line rounded-lg text-xs sm:text-sm text-fg placeholder:text-fg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:border-brand transition-colors"
+            className="w-full h-9 pl-9 pr-9 bg-surface-2/70 border border-line rounded-lg text-xs sm:text-sm text-fg placeholder:text-fg-muted focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-all duration-150"
           />
           {searchQuery ? (
             <button

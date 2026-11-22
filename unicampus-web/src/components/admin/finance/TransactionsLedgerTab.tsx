@@ -327,6 +327,8 @@ export function OfficialReceiptModal({
 interface TransactionsLedgerTabProps {
   transactions: PaymentTransaction[];
   departments: Department[];
+  isDeptAdmin?: boolean;
+  defaultDepartment?: string;
   formatTransactionType: (type: string) => string;
   onExportCsv: (filtered: PaymentTransaction[]) => void;
   onViewReceipt: (t: PaymentTransaction) => void;
@@ -337,6 +339,8 @@ interface TransactionsLedgerTabProps {
 export function TransactionsLedgerTab({
   transactions,
   departments,
+  isDeptAdmin = false,
+  defaultDepartment,
   formatTransactionType,
   onExportCsv,
   onViewReceipt,
@@ -348,7 +352,9 @@ export function TransactionsLedgerTab({
   const [selectedType, setSelectedType] = useState<string>("all");
   const [selectedGateway, setSelectedGateway] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
-  const [selectedDeptFilter, setSelectedDeptFilter] = useState<string>("all");
+  const [selectedDeptFilter, setSelectedDeptFilter] = useState<string>(
+    isDeptAdmin && defaultDepartment ? defaultDepartment : "all"
+  );
   const [selectedSemesterFilter, setSelectedSemesterFilter] = useState<string>("all");
   const [dateRangePreset, setDateRangePreset] = useState<string>("all");
   const [fromDate, setFromDate] = useState<string>("");
@@ -358,7 +364,11 @@ export function TransactionsLedgerTab({
   const [isCollectModalOpen, setIsCollectModalOpen] = useState(false);
   const [counterStudentName, setCounterStudentName] = useState("");
   const [counterStudentId, setCounterStudentId] = useState("");
-  const [counterDept, setCounterDept] = useState(departments[0]?.name || "Computer Science & Engineering");
+  const [counterDept, setCounterDept] = useState(
+    isDeptAdmin && defaultDepartment
+      ? defaultDepartment
+      : departments[0]?.name || "Computer Science & Engineering"
+  );
   const [counterSemester, setCounterSemester] = useState<OrdinalSemesterName>("1st Semester");
   const [counterFeeType, setCounterFeeType] = useState<TransactionType>("student_fee");
   const [counterAmount, setCounterAmount] = useState<string>("15000");
@@ -532,7 +542,7 @@ export function TransactionsLedgerTab({
               value={txnSearch}
               onChange={(e) => setTxnSearch(e.target.value)}
               placeholder="Search Txn ID, student name, student ID, receipt..."
-              className="w-full min-h-[40px] pl-9 pr-8 py-2 font-medium rounded-xl bg-canvas border border-line text-fg placeholder:text-fg-muted text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand"
+              className="w-full min-h-[40px] pl-9 pr-8 py-2 font-medium rounded-xl bg-canvas border border-line text-fg placeholder:text-fg-muted text-xs focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-all duration-150"
             />
             {txnSearch && (
               <button
@@ -647,9 +657,12 @@ export function TransactionsLedgerTab({
             </label>
             <select
               id="finance-filter-dept"
-              value={selectedDeptFilter}
+              value={isDeptAdmin && defaultDepartment ? defaultDepartment : selectedDeptFilter}
               onChange={(e) => setSelectedDeptFilter(e.target.value)}
-              className="w-full min-h-[40px] px-3 py-1.5 font-semibold cursor-pointer rounded-xl bg-canvas border border-line text-fg text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand"
+              disabled={isDeptAdmin}
+              className={`w-full min-h-[40px] px-3 py-1.5 font-semibold rounded-xl bg-canvas border border-line text-fg text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand ${
+                isDeptAdmin ? "opacity-75 cursor-not-allowed" : "cursor-pointer"
+              }`}
             >
               <option value="all">All Departments</option>
               {departments.map((d) => (
@@ -914,9 +927,12 @@ export function TransactionsLedgerTab({
               </label>
               <select
                 id="counter-dept"
-                value={counterDept}
+                value={isDeptAdmin && defaultDepartment ? defaultDepartment : counterDept}
                 onChange={(e) => setCounterDept(e.target.value)}
-                className="w-full min-h-[40px] px-3 py-2 rounded-xl bg-canvas border border-line text-xs font-semibold text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                disabled={isDeptAdmin}
+                className={`w-full min-h-[40px] px-3 py-2 rounded-xl bg-canvas border border-line text-xs font-semibold text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
+                  isDeptAdmin ? "opacity-75 cursor-not-allowed" : ""
+                }`}
               >
                 {departments.map((d) => (
                   <option key={d.id} value={d.name}>

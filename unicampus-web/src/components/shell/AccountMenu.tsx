@@ -146,7 +146,7 @@ export function AccountMenu({ role, onOpenShortcuts }: AccountMenuProps) {
         aria-label="Account menu"
         aria-expanded={open}
         aria-haspopup="menu"
-        className="min-w-[44px] min-h-[44px] sm:min-w-[40px] sm:min-h-[40px] rounded-xl flex items-center justify-center hover:bg-surface-2 transition-colors cursor-pointer"
+        className="w-11 h-11 min-w-[44px] min-h-[44px] sm:w-9 sm:h-9 sm:min-w-0 sm:min-h-0 rounded-lg flex items-center justify-center hover:bg-surface-2 transition-colors cursor-pointer"
       >
         <ProfileAvatar
           alt={displayName}
@@ -160,11 +160,20 @@ export function AccountMenu({ role, onOpenShortcuts }: AccountMenuProps) {
           <motion.div
             role="menu"
             aria-label="Account options"
-            initial={reduceMotion ? { opacity: 1 } : { opacity: 0, y: 6, scale: 0.98 }}
+            initial={reduceMotion ? { opacity: 1 } : { opacity: 0, y: -10, scale: 0.92 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 4, scale: 0.98 }}
-            transition={{ duration: 0.16, ease: "easeOut" }}
-            className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-72 max-w-[320px] rounded-2xl border border-line bg-surface shadow-lg p-4 text-fg z-50"
+            exit={
+              reduceMotion
+                ? { opacity: 0 }
+                : { opacity: 0, y: -6, scale: 0.95, transition: { duration: 0.14, ease: "easeIn" } }
+            }
+            transition={{
+              type: "spring",
+              stiffness: 420,
+              damping: 26,
+              mass: 0.8,
+            }}
+            className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-72 max-w-[320px] origin-top-right rounded-2xl border border-line bg-surface shadow-lg p-4 text-fg z-50"
           >
             {/* User Header */}
             <div className="flex items-center gap-3 pb-3.5 border-b border-line">

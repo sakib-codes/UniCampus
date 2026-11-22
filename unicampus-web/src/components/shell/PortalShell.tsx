@@ -5,6 +5,10 @@ import { usePathname } from "next/navigation";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { adminService } from "@/lib/services/adminService";
 import { getPortalTitle, type PortalRole } from "@/lib/navigation";
+import {
+  ADMIN_SETTINGS_UPDATED_EVENT,
+  syncAdminDensityFromStorage,
+} from "@/lib/adminSettings";
 import { PageTransition } from "@/components/common/PageTransition";
 import { SideNav } from "@/components/shell/SideNav";
 import { TopBar } from "@/components/shell/TopBar";
@@ -21,6 +25,9 @@ const WIDE_WORKSPACE_ROUTES = new Set([
   "/routine",
   "/dashboard/progress",
   "/payments",
+  "/advising",
+  "/admin/dashboard",
+  "/admin/settings",
   "/admin/finance",
   "/admin/routine",
   "/admin/users",
@@ -101,10 +108,11 @@ export function PortalShell({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // Refresh pending count on cross-tab storage, window focus, visibility change, or profile updates
+  // Refresh pending count and density on cross-tab storage, window focus, visibility change, or profile/settings updates
   useEffect(() => {
     function refreshStorage() {
       setStorageVersion((v) => v + 1);
+      syncAdminDensityFromStorage();
     }
     function handleVisibilityChange() {
       if (document.visibilityState === "visible") {
@@ -114,11 +122,13 @@ export function PortalShell({
     window.addEventListener("storage", refreshStorage);
     window.addEventListener("focus", refreshStorage);
     window.addEventListener("unicampus:profiles-updated", refreshStorage);
+    window.addEventListener(ADMIN_SETTINGS_UPDATED_EVENT, syncAdminDensityFromStorage);
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => {
       window.removeEventListener("storage", refreshStorage);
       window.removeEventListener("focus", refreshStorage);
       window.removeEventListener("unicampus:profiles-updated", refreshStorage);
+      window.removeEventListener(ADMIN_SETTINGS_UPDATED_EVENT, syncAdminDensityFromStorage);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
@@ -144,15 +154,19 @@ export function PortalShell({
     }
   }, [mounted, role, storageVersion, currentUser, isDeptAdmin, effectiveDeptId]);
 
-  // Close MoreSheet when route changes
+  // Close MoreSheet and sync persisted data-density when route changes
   useEffect(() => {
+    syncAdminDensityFromStorage();
     onCloseMore();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
   const { section, title, homeHref } = getPortalTitle(role, pathname);
   const isWideWorkspace = Boolean(
-    pathname && WIDE_WORKSPACE_ROUTES.has(pathname.replace(/\/$/, ""))
+    pathname && (
+      pathname.startsWith("/admin") ||
+      WIDE_WORKSPACE_ROUTES.has(pathname.replace(/\/$/, ""))
+    )
   );
 
   return (

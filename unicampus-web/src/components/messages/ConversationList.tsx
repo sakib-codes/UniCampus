@@ -87,7 +87,7 @@ export const ConversationList = memo(function ConversationList({
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search Messenger"
             aria-label="Search Messenger"
-            className="w-full pl-10 pr-3.5 py-2 text-xs sm:text-sm rounded-full bg-surface-2 border border-transparent focus:border-brand focus-visible:ring-2 focus-visible:ring-brand text-fg placeholder:text-fg-muted outline-none transition-colors"
+            className="w-full pl-10 pr-3.5 py-2 text-xs sm:text-sm rounded-full bg-surface-2 border border-line focus:border-brand focus:ring-2 focus:ring-brand/15 text-fg placeholder:text-fg-muted outline-none transition-all duration-150"
           />
         </div>
 

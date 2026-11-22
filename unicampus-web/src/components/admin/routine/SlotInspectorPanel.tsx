@@ -4,6 +4,7 @@ import {
   Calendar,
   Clock,
   CheckCircle2,
+  AlertCircle,
   X,
   Monitor,
   Video,
@@ -19,6 +20,7 @@ import { COURSE_OPTIONS, type SlotData } from "./adminRoutineData";
 
 interface SlotInspectorPanelProps {
   activeSlot: SlotData | null;
+  conflictInfo?: { hasConflict: boolean; message: string; conflicts: string[] };
   onCourseChange: (newCode: string) => void;
   onSectionChange: (newSection: string) => void;
   onUpdateSlot: () => void;
@@ -29,6 +31,7 @@ interface SlotInspectorPanelProps {
 
 export function SlotInspectorPanel({
   activeSlot,
+  conflictInfo,
   onCourseChange,
   onSectionChange,
   onUpdateSlot,
@@ -163,10 +166,17 @@ export function SlotInspectorPanel({
                     </div>
                   </div>
                   <div className="pt-2 border-t border-line flex items-center justify-between gap-2">
-                    <span className="inline-flex items-center gap-1 font-sans text-xs text-success font-semibold">
-                      <CheckCircle2 className="w-3 h-3 shrink-0" />
-                      <span>No Conflict</span>
-                    </span>
+                    {conflictInfo?.hasConflict ? (
+                      <span className="inline-flex items-center gap-1 font-sans text-xs text-danger font-semibold">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                        <span>Conflict Detected</span>
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 font-sans text-xs text-success font-semibold">
+                        <CheckCircle2 className="w-3 h-3 shrink-0" />
+                        <span>No Conflict</span>
+                      </span>
+                    )}
                     <button
                       type="button"
                       onClick={() => onReassignClick(activeSlot.courseCode)}
@@ -176,6 +186,18 @@ export function SlotInspectorPanel({
                     </button>
                   </div>
                 </div>
+
+                {conflictInfo?.hasConflict && (
+                  <div className="p-3 rounded-xl bg-danger-light border border-danger/30 text-danger text-xs space-y-1">
+                    <div className="font-semibold flex items-center gap-1.5">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      <span>Scheduling Conflict:</span>
+                    </div>
+                    {conflictInfo.conflicts.map((c, i) => (
+                      <p key={i} className="text-xs leading-relaxed">{c}</p>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Room & Capacity Status */}

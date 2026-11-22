@@ -89,7 +89,7 @@ export function TopBar({
     : departments.find((d) => d.id === activeScopeDeptId)?.code || "Department";
 
   return (
-    <header className="h-16 sticky top-0 z-30 bg-surface/85 backdrop-blur-md border-b border-line px-3 sm:px-4 md:px-6 flex items-center justify-between gap-1.5 sm:gap-2 shrink-0 select-none">
+    <header className="h-14 sticky top-0 z-30 bg-surface/85 backdrop-blur-md border-b border-line px-3 sm:px-4 md:px-6 flex items-center justify-between gap-1.5 sm:gap-2 shrink-0 select-none">
       {/* Left: Mobile Brand Icon + Clean Title */}
       <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0 flex-1">
         <Link
@@ -124,7 +124,7 @@ export function TopBar({
                   aria-label="Department scope"
                   aria-expanded={scopeOpen}
                   aria-haspopup="listbox"
-                  className="min-h-[40px] px-3 rounded-xl bg-surface-2 border border-line text-sm font-medium text-fg hover:border-brand/40 flex items-center gap-1.5 transition-colors cursor-pointer"
+                  className="h-9 px-3 rounded-lg bg-surface-2 border border-line text-sm font-medium text-fg hover:border-brand/40 flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
                   {activeScopeDeptId === "all" ? (
                     <Globe className="w-4 h-4 text-brand shrink-0" />
@@ -132,7 +132,11 @@ export function TopBar({
                     <Building2 className="w-4 h-4 text-brand shrink-0" />
                   )}
                   <span className="max-w-[96px] lg:max-w-[160px] truncate">{activeScopeLabel}</span>
-                  <ChevronDown className="w-3.5 h-3.5 text-fg-muted shrink-0" />
+                  <ChevronDown
+                    className={`w-3.5 h-3.5 text-fg-muted shrink-0 transition-transform duration-200 ${
+                      scopeOpen ? "rotate-180 text-brand" : ""
+                    }`}
+                  />
                 </button>
 
                 <AnimatePresence>
@@ -141,14 +145,21 @@ export function TopBar({
                       role="listbox"
                       aria-label="Select department scope"
                       initial={
-                        reduceMotion ? { opacity: 1 } : { opacity: 0, y: 6, scale: 0.98 }
+                        reduceMotion ? { opacity: 1 } : { opacity: 0, y: -8, scale: 0.92 }
                       }
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={
-                        reduceMotion ? { opacity: 0 } : { opacity: 0, y: 4, scale: 0.98 }
+                        reduceMotion
+                          ? { opacity: 0 }
+                          : { opacity: 0, y: -6, scale: 0.95, transition: { duration: 0.14, ease: "easeIn" } }
                       }
-                      transition={{ duration: 0.16, ease: "easeOut" }}
-                      className="absolute right-0 top-full mt-2 w-64 rounded-2xl border border-line bg-surface shadow-lg p-2 z-50"
+                      transition={{
+                        type: "spring",
+                        stiffness: 420,
+                        damping: 26,
+                        mass: 0.8,
+                      }}
+                      className="absolute right-0 top-full mt-2 w-64 origin-top-right rounded-2xl border border-line bg-surface shadow-lg p-2 z-50"
                     >
                       <button
                         type="button"
@@ -210,7 +221,7 @@ export function TopBar({
                 </AnimatePresence>
               </>
             ) : (
-              <span className="inline-flex items-center gap-1.5 min-h-[40px] px-3 rounded-xl bg-surface-2 border border-line text-sm font-medium text-fg-muted">
+              <span className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg bg-surface-2 border border-line text-sm font-medium text-fg-muted">
                 <Building2 className="w-4 h-4 text-brand shrink-0" />
                 <span className="max-w-[96px] lg:max-w-[160px] truncate">{activeScopeLabel}</span>
               </span>
@@ -218,12 +229,12 @@ export function TopBar({
           </div>
         )}
 
-        {/* Search Trigger: 44x44 icon button below lg, clean pill on lg+ */}
+        {/* Search Trigger: 44x44 below sm, 36x36 on sm-lg, clean pill on lg+ */}
         <button
           type="button"
           onClick={onOpenCommand}
           aria-label="Search commands and routes"
-          className="lg:hidden min-w-[44px] min-h-[44px] rounded-xl bg-surface-2 border border-line text-fg-muted hover:text-fg flex items-center justify-center transition-colors cursor-pointer"
+          className="lg:hidden w-11 h-11 min-w-[44px] min-h-[44px] sm:w-9 sm:h-9 sm:min-h-9 sm:min-w-9 rounded-lg bg-surface-2 border border-line text-fg-muted hover:text-fg flex items-center justify-center transition-colors cursor-pointer"
         >
           <Search className="w-[18px] h-[18px]" />
         </button>
@@ -232,7 +243,7 @@ export function TopBar({
           type="button"
           onClick={onOpenCommand}
           aria-label="Open command palette"
-          className="hidden lg:flex items-center justify-between gap-3 h-10 w-44 xl:w-64 px-3 rounded-xl bg-surface-2 border border-line text-fg-muted hover:text-fg hover:border-fg-subtle/50 transition-colors cursor-pointer"
+          className="hidden lg:flex items-center justify-between gap-3 h-9 w-44 xl:w-64 px-3 rounded-lg bg-surface-2 border border-line text-fg-muted hover:text-fg hover:border-fg-subtle/50 transition-colors cursor-pointer"
         >
           <span className="flex items-center gap-2 min-w-0">
             <Search className="w-4 h-4 shrink-0" />
@@ -250,6 +261,8 @@ export function TopBar({
         />
 
         <ThemeToggle size="sm" />
+
+        <div className="hidden sm:block h-5 w-px bg-line shrink-0" aria-hidden="true" />
 
         <AccountMenu role={role} onOpenShortcuts={onOpenShortcuts} />
       </div>

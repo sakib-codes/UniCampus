@@ -148,8 +148,10 @@ async function run() {
     // Check all student routes
     const studentRoutes = [
       { path: "/dashboard", label: "Dashboard" },
+      { path: "/advising", label: "Course Advising" },
       { path: "/routine", label: "Routine" },
       { path: "/dashboard/progress", label: "Progress" },
+      { path: "/payments", label: "Payments" },
       { path: "/notices", label: "Notices" },
       { path: "/notices/not-exam-108", label: "Notice Detail" },
       { path: "/students", label: "Classmates" },

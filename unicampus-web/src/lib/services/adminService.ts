@@ -7,7 +7,9 @@ import {
   PaymentTransaction, 
   TeacherWage, 
   PaymentMethod,
-  Semester
+  Semester,
+  AuditLogItem,
+  GradebookPolicy
 } from '@/types/admin';
 import { 
   INITIAL_PROFILES, 
@@ -34,6 +36,100 @@ const STORAGE_KEYS = {
   NOTICES: 'unicampus_admin_notices',
   TRANSACTIONS: 'unicampus_admin_transactions',
   WAGES: 'unicampus_admin_wages',
+  AUDIT_LOGS: 'unicampus_admin_audit_logs',
+  GRADEBOOK_POLICIES: 'unicampus_admin_gradebook_policies',
+};
+
+const INITIAL_AUDIT_LOGS: AuditLogItem[] = [
+  {
+    id: "log-1",
+    time: "12m ago",
+    timestamp: new Date(Date.now() - 12 * 60000).toISOString(),
+    category: "Access",
+    title: "Role Assignment",
+    description: "Faculty portal role assigned to dr.farhana@unicampus.edu.",
+    actor_name: "Super Admin",
+    department_id: "dept-cse",
+    department_name: "Computer Science & Engineering",
+    iconBg: "bg-brand-soft",
+    iconColor: "text-brand",
+  },
+  {
+    id: "log-2",
+    time: "24m ago",
+    timestamp: new Date(Date.now() - 24 * 60000).toISOString(),
+    category: "Gradebook",
+    title: "Gradebook Lock",
+    description: "CSE-3101 Sec A marks finalized and locked by Central Registry.",
+    actor_name: "Academic Council",
+    department_id: "dept-cse",
+    department_name: "Computer Science & Engineering",
+    iconBg: "bg-success-light",
+    iconColor: "text-success",
+  },
+  {
+    id: "log-3",
+    time: "48m ago",
+    timestamp: new Date(Date.now() - 48 * 60000).toISOString(),
+    category: "Routine",
+    title: "Master Routine Sync",
+    description: "Room allocation verified for Lab 4A (Wednesday 02:45 PM slot).",
+    actor_name: "Central Registrar",
+    department_id: "dept-cse",
+    department_name: "Computer Science & Engineering",
+    iconBg: "bg-brand-soft",
+    iconColor: "text-brand",
+  },
+  {
+    id: "log-4",
+    time: "1h ago",
+    timestamp: new Date(Date.now() - 60 * 60000).toISOString(),
+    category: "Snapshot",
+    title: "Academic Term Archive",
+    description: "Semester gradebook & student registry records archived for Spring 2026.",
+    actor_name: "System Registrar",
+    department_id: null,
+    department_name: "Central University Administration",
+    iconBg: "bg-surface-2",
+    iconColor: "text-fg-muted",
+  },
+];
+
+const INITIAL_GRADEBOOK_POLICIES: Record<string, GradebookPolicy> = {
+  "CSE-3101": {
+    course_code: "CSE-3101",
+    course_title: "Design & Analysis of Algorithms",
+    department_id: "dept-cse",
+    is_locked: false,
+    status: "Open",
+    submission_deadline: "2026-11-30",
+  },
+  "CSE-3102": {
+    course_code: "CSE-3102",
+    course_title: "Algorithms Lab & Problem Solving",
+    department_id: "dept-cse",
+    is_locked: true,
+    locked_at: "2026-11-20T10:00:00Z",
+    locked_by: "Central Registry",
+    status: "Locked",
+    submission_deadline: "2026-11-20",
+  },
+  "CSE-3205": {
+    course_code: "CSE-3205",
+    course_title: "Software Engineering & Architecture",
+    department_id: "dept-cse",
+    is_locked: false,
+    status: "Open",
+    submission_deadline: "2026-12-05",
+  },
+  "CSE-4109": {
+    course_code: "CSE-4109",
+    course_title: "Machine Learning & Neural Nets",
+    department_id: "dept-cse",
+    is_locked: false,
+    status: "Open",
+    submission_deadline: "2026-12-10",
+  },
 };
 
 let schemaChecked = false;
@@ -82,8 +178,46 @@ class AdminService {
 
   approveProfile(id: string): Profile[] {
     const profiles = this.getProfiles();
-    const updated = profiles.map((p) => (p.id === id ? { ...p, is_approved: true } : p));
+    const updated = profiles.map((p) => (p.id === id ? { ...p, is_approved: true, account_status: 'active' as const } : p));
     setStoredItem(STORAGE_KEYS.PROFILES, updated);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('unicampus:profiles-updated'));
+    }
+    return updated;
+  }
+
+  suspendProfile(id: string): Profile[] {
+    const profiles = this.getProfiles();
+    const updated = profiles.map((p) => (p.id === id ? { ...p, is_approved: false, account_status: 'suspended' as const } : p));
+    setStoredItem(STORAGE_KEYS.PROFILES, updated);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('unicampus:profiles-updated'));
+    }
+    return updated;
+  }
+
+  reactivateProfile(id: string): Profile[] {
+    const profiles = this.getProfiles();
+    const updated = profiles.map((p) => (p.id === id ? { ...p, is_approved: true, account_status: 'active' as const } : p));
+    setStoredItem(STORAGE_KEYS.PROFILES, updated);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('unicampus:profiles-updated'));
+    }
+    return updated;
+  }
+
+  assignCourseToTeacher(teacherId: string, courseCode: string): Profile[] {
+    const profiles = this.getProfiles();
+    const updated = profiles.map((p) => {
+      if (p.id !== teacherId) return p;
+      const assigned = ((p as unknown as Record<string, unknown>).assigned_courses as string[]) || [];
+      if (assigned.includes(courseCode)) return p;
+      return { ...p, assigned_courses: [...assigned, courseCode] };
+    });
+    setStoredItem(STORAGE_KEYS.PROFILES, updated);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('unicampus:profiles-updated'));
+    }
     return updated;
   }
 
@@ -91,6 +225,9 @@ class AdminService {
     const profiles = this.getProfiles();
     const updated = profiles.filter((p) => p.id !== id);
     setStoredItem(STORAGE_KEYS.PROFILES, updated);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('unicampus:profiles-updated'));
+    }
     return updated;
   }
 
@@ -98,6 +235,9 @@ class AdminService {
     const profiles = this.getProfiles();
     const updated = profiles.map((p) => (p.id === id ? { ...p, ...updates } : p));
     setStoredItem(STORAGE_KEYS.PROFILES, updated);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('unicampus:profiles-updated'));
+    }
     return updated;
   }
 
@@ -110,6 +250,9 @@ class AdminService {
     };
     const updated = [newProfile, ...profiles];
     setStoredItem(STORAGE_KEYS.PROFILES, updated);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('unicampus:profiles-updated'));
+    }
     return newProfile;
   }
 
@@ -283,6 +426,9 @@ class AdminService {
     };
     const updated = [...routines, newRoutine];
     setStoredItem(STORAGE_KEYS.ROUTINES, updated);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('unicampus:routines-updated'));
+    }
     return newRoutine;
   }
 
@@ -290,6 +436,9 @@ class AdminService {
     const routines = getStoredItem<ClassRoutine[]>(STORAGE_KEYS.ROUTINES, INITIAL_ROUTINES);
     const updated = routines.map((r) => (r.id === id ? { ...r, ...data } : r));
     setStoredItem(STORAGE_KEYS.ROUTINES, updated);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('unicampus:routines-updated'));
+    }
     return updated;
   }
 
@@ -297,7 +446,19 @@ class AdminService {
     const routines = getStoredItem<ClassRoutine[]>(STORAGE_KEYS.ROUTINES, INITIAL_ROUTINES);
     const updated = routines.filter((r) => r.id !== id);
     setStoredItem(STORAGE_KEYS.ROUTINES, updated);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('unicampus:routines-updated'));
+    }
     return updated;
+  }
+
+  publishRoutines(routines?: ClassRoutine[]): void {
+    if (routines) {
+      setStoredItem(STORAGE_KEYS.ROUTINES, routines);
+    }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('unicampus:routines-updated'));
+    }
   }
 
   // ===================== NOTICES & BROADCAST =====================
@@ -316,6 +477,9 @@ class AdminService {
     };
     const updated = [newNotice, ...notices];
     setStoredItem(STORAGE_KEYS.NOTICES, updated);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('unicampus:notices-updated'));
+    }
     return newNotice;
   }
 
@@ -323,6 +487,9 @@ class AdminService {
     const notices = this.getNotices();
     const updated = notices.map((n) => (n.id === id ? { ...n, ...data } : n));
     setStoredItem(STORAGE_KEYS.NOTICES, updated);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('unicampus:notices-updated'));
+    }
     return updated;
   }
 
@@ -330,6 +497,9 @@ class AdminService {
     const notices = this.getNotices();
     const updated = notices.filter((n) => n.id !== id);
     setStoredItem(STORAGE_KEYS.NOTICES, updated);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('unicampus:notices-updated'));
+    }
     return updated;
   }
 
@@ -338,6 +508,9 @@ class AdminService {
     const set = new Set(ids);
     const updated = notices.filter((n) => !set.has(n.id));
     setStoredItem(STORAGE_KEYS.NOTICES, updated);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('unicampus:notices-updated'));
+    }
     return updated;
   }
 
@@ -345,6 +518,9 @@ class AdminService {
     const notices = this.getNotices();
     const updated = notices.map((n) => (n.id === id ? { ...n, pinned: !n.pinned } : n));
     setStoredItem(STORAGE_KEYS.NOTICES, updated);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('unicampus:notices-updated'));
+    }
     return updated;
   }
 
@@ -562,6 +738,130 @@ class AdminService {
     ]);
 
     return [headers.join(','), ...rows.map((r) => r.join(','))].join('\r\n');
+  }
+
+  // ===================== AUDIT LOGS & ACTIONS =====================
+  getAuditLogs(departmentId?: string): AuditLogItem[] {
+    const logs = getStoredItem<AuditLogItem[]>(STORAGE_KEYS.AUDIT_LOGS, INITIAL_AUDIT_LOGS);
+    if (!departmentId || departmentId === 'all') return logs;
+    return logs.filter((l) => !l.department_id || l.department_id === departmentId);
+  }
+
+  logAction(log: Omit<AuditLogItem, 'id' | 'timestamp' | 'time'>): AuditLogItem {
+    const logs = getStoredItem<AuditLogItem[]>(STORAGE_KEYS.AUDIT_LOGS, INITIAL_AUDIT_LOGS);
+    const newLog: AuditLogItem = {
+      ...log,
+      id: `log-${Date.now()}`,
+      time: 'Just now',
+      timestamp: new Date().toISOString(),
+      iconBg: log.iconBg || 'bg-brand-soft',
+      iconColor: log.iconColor || 'text-brand',
+    };
+    const updated = [newLog, ...logs].slice(0, 50);
+    setStoredItem(STORAGE_KEYS.AUDIT_LOGS, updated);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('unicampus:audit-updated'));
+    }
+    return newLog;
+  }
+
+  // ===================== GRADEBOOK GOVERNANCE =====================
+  getGradebookPolicies(): Record<string, GradebookPolicy> {
+    return getStoredItem<Record<string, GradebookPolicy>>(
+      STORAGE_KEYS.GRADEBOOK_POLICIES,
+      INITIAL_GRADEBOOK_POLICIES
+    );
+  }
+
+  getGradebookPolicy(courseCode: string): GradebookPolicy {
+    const policies = this.getGradebookPolicies();
+    if (policies[courseCode]) return policies[courseCode];
+    return {
+      course_code: courseCode,
+      is_locked: false,
+      status: 'Open',
+    };
+  }
+
+  setGradebookLock(
+    courseCode: string,
+    isLocked: boolean,
+    lockedBy: string = 'Central Registry',
+    departmentId?: string
+  ): GradebookPolicy {
+    const policies = this.getGradebookPolicies();
+    const existing = policies[courseCode] || {
+      course_code: courseCode,
+      is_locked: false,
+      status: 'Open',
+    };
+    const updatedPolicy: GradebookPolicy = {
+      ...existing,
+      department_id: departmentId || existing.department_id,
+      is_locked: isLocked,
+      locked_at: isLocked ? new Date().toISOString() : null,
+      locked_by: isLocked ? lockedBy : null,
+      status: isLocked ? 'Locked' : 'Open',
+    };
+    const updated = {
+      ...policies,
+      [courseCode]: updatedPolicy,
+    };
+    setStoredItem(STORAGE_KEYS.GRADEBOOK_POLICIES, updated);
+    this.logAction({
+      category: 'Gradebook',
+      title: isLocked ? 'Gradebook Locked' : 'Gradebook Unlocked',
+      description: `${courseCode} score sheet ${isLocked ? 'locked from faculty edits' : 'reopened for grade revision'} by ${lockedBy}.`,
+      actor_name: lockedBy,
+      department_id: departmentId || existing.department_id,
+      iconBg: isLocked ? 'bg-warning-light' : 'bg-success-light',
+      iconColor: isLocked ? 'text-warning' : 'text-success',
+    });
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('unicampus:gradebook-policy-updated'));
+    }
+    return updatedPolicy;
+  }
+
+  // ===================== STUDENT HOLDS =====================
+  toggleStudentHold(
+    id: string,
+    holdType: 'academic' | 'financial',
+    enable: boolean,
+    reason: string = 'Administrative review'
+  ): Profile | null {
+    const profiles = this.getProfiles();
+    let targetProfile: Profile | null = null;
+    const updated = profiles.map((p) => {
+      if (p.id === id || p.student_id === id) {
+        targetProfile = {
+          ...p,
+          academic_hold: holdType === 'academic' ? enable : p.academic_hold,
+          financial_hold: holdType === 'financial' ? enable : p.financial_hold,
+          hold_reason: enable ? reason : null,
+        };
+        return targetProfile;
+      }
+      return p;
+    });
+
+    if (targetProfile) {
+      setStoredItem(STORAGE_KEYS.PROFILES, updated);
+      this.logAction({
+        category: 'Hold',
+        title: `${holdType === 'academic' ? 'Academic' : 'Financial'} Hold ${enable ? 'Applied' : 'Cleared'}`,
+        description: `${enable ? 'Placed' : 'Removed'} ${holdType} hold on ${(targetProfile as Profile).full_name} (${(targetProfile as Profile).student_id || id}): ${reason}.`,
+        actor_name: 'Academic Affairs',
+        department_id: (targetProfile as Profile).department_id,
+        department_name: (targetProfile as Profile).department_name,
+        iconBg: enable ? 'bg-danger-light' : 'bg-success-light',
+        iconColor: enable ? 'text-danger' : 'text-success',
+      });
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('unicampus:profiles-updated'));
+      }
+    }
+    return targetProfile;
   }
 
   // ===================== RESET STORE =====================

@@ -49,7 +49,7 @@ export function Tabs<T extends string = string>({
 
   const transition = shouldReduceMotion
     ? { duration: 0 }
-    : { duration: 0.18, ease: [0.16, 1, 0.3, 1] as const };
+    : ({ type: "spring", stiffness: 440, damping: 28, mass: 0.8 } as const);
 
   const isUnderline = variant === "underline";
 

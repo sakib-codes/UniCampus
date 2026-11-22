@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import {
   Building2,
   Search,
@@ -20,8 +20,11 @@ import {
 } from "@/components/admin/departments/departmentsData";
 import { DepartmentCard } from "@/components/admin/departments/DepartmentCard";
 import { DepartmentModals } from "@/components/admin/departments/DepartmentModals";
+import { adminService } from "@/lib/services/adminService";
+import { useAdminAuth } from "@/context/AdminAuthContext";
 
 export default function AdminDepartmentsPage() {
+  const { isDeptAdmin } = useAdminAuth();
   const [departments, setDepartments] = useState<DepartmentData[]>(DEPARTMENTS);
   const [searchFilter, setSearchFilter] = useState("");
 
@@ -36,7 +39,6 @@ export default function AdminDepartmentsPage() {
   const [newDeptName, setNewDeptName] = useState("");
   const [newDeptCode, setNewDeptCode] = useState("");
   const [newDeptCodeNum, setNewDeptCodeNum] = useState("");
-  const [newDeptDivision, setNewDeptDivision] = useState("");
   const [newDeptHod, setNewDeptHod] = useState("");
   const [newDeptOffice, setNewDeptOffice] = useState("");
   const [newDeptCapacity, setNewDeptCapacity] = useState("500");
@@ -46,6 +48,76 @@ export default function AdminDepartmentsPage() {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
   }, []);
+
+  const loadDepartmentsData = useCallback(() => {
+    const storedDepts = adminService.getDepartments();
+    const storedSubjects = adminService.getSubjects();
+    const storedProfiles = adminService.getProfiles();
+
+    const combined: DepartmentData[] = storedDepts.map((d) => {
+      const existing = DEPARTMENTS.find((base) => base.id === d.id);
+      const deptFaculty = storedProfiles
+        .filter((p) => p.role === "teacher" && p.department_id === d.id)
+        .map((p) => ({
+          id: p.id,
+          name: p.full_name,
+          designation: p.teacher_code ? `Faculty (${p.teacher_code})` : "Faculty Member",
+          office: existing?.office || "Academic Wing, Room 301",
+          email: p.email,
+        }));
+
+      const deptSubjects = storedSubjects
+        .filter((s) => s.department_id === d.id)
+        .map((s) => ({
+          id: s.id,
+          code: s.code,
+          title: s.title,
+          credits: s.credit,
+          type: (s.type || "Theory") as "Theory" | "Lab",
+          semester: "1st Semester",
+          semesterId: s.semester_id,
+        }));
+
+      const initials =
+        d.head_teacher_name
+          ?.split(" ")
+          .map((n) => n[0])
+          .slice(0, 2)
+          .join("")
+          .toUpperCase() || existing?.initials || "HD";
+
+      return {
+        id: d.id,
+        code: d.code,
+        codeNumber: existing?.codeNumber || `CODE ${d.code}`,
+        division: existing?.division || "Undergraduate Studies",
+        name: d.name,
+        initials,
+        hodName: d.head_teacher_name || existing?.hodName || "Dean Appointee",
+        hodRole: existing?.hodRole || "Head of Department",
+        hodBadge: existing?.hodBadge || "HOD",
+        headTeacherId: d.head_teacher_id,
+        deptAdminId: d.dept_admin_id,
+        deptAdminName: d.dept_admin_name,
+        deptAdminEmail: d.dept_admin_email,
+        office: existing?.office || "Academic Wing, Room 301",
+        totalStudents: d.stats?.students ?? existing?.totalStudents ?? 450,
+        totalFaculty: d.stats?.teachers ?? (deptFaculty.length || existing?.totalFaculty || 18),
+        activePrograms: existing?.activePrograms || ["B.Sc.", "M.Sc."],
+        status: (existing?.status as "Accredited • Active" | "Pending Review") || "Accredited • Active",
+        facultyList: deptFaculty.length > 0 ? deptFaculty : existing?.facultyList || [],
+        curriculumList: deptSubjects.length > 0 ? deptSubjects : existing?.curriculumList || [],
+      };
+    });
+
+    setDepartments(combined);
+  }, []);
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      loadDepartmentsData();
+    });
+  }, [loadDepartmentsData]);
 
   const filteredDepartments = useMemo(() => {
     if (!searchFilter.trim()) return departments;
@@ -65,52 +137,77 @@ export default function AdminDepartmentsPage() {
     e.preventDefault();
     if (!newDeptName.trim() || !newDeptCode.trim()) return;
 
-    const initials =
-      newDeptHod
-        .split(" ")
-        .map((n) => n[0])
-        .slice(0, 2)
-        .join("")
-        .toUpperCase() || "HD";
-
-    const newDept: DepartmentData = {
-      id: `dept-${newDeptCode.toLowerCase()}`,
-      code: newDeptCode.toUpperCase().trim(),
-      codeNumber: newDeptCodeNum.trim() || `CODE ${Math.floor(10 + Math.random() * 89)}`,
-      division: newDeptDivision.trim() || "Undergraduate Studies",
+    adminService.createDepartment({
       name: newDeptName.trim(),
-      initials,
-      hodName: newDeptHod.trim() || "Dean Appointee",
-      hodRole: "Head of Department",
-      hodBadge: "HOD",
-      office: newDeptOffice.trim() || "Administrative Wing, Room 101",
-      totalStudents: parseInt(newDeptCapacity, 10) || 450,
-      totalFaculty: parseInt(newDeptFacultyCount, 10) || 18,
-      activePrograms: ["B.Sc.", "M.Sc."],
-      status: "Accredited • Active",
-      facultyList: [
-        {
-          name: newDeptHod.trim() || "Dean Appointee",
-          designation: "Professor & Head",
-          office: newDeptOffice.trim() || "Administrative Wing, Room 101",
-          email: `${newDeptCode.toLowerCase()}.head@unicampus.edu`,
-        },
-      ],
-      curriculumList: [
-        { code: `${newDeptCode}-1101`, title: "Foundations Course I", credits: 3.0, type: "Theory", semester: "1st Semester" },
-        { code: `${newDeptCode}-1102`, title: "Foundations Practical Lab", credits: 1.5, type: "Lab", semester: "1st Semester" },
-      ],
-    };
+      code: newDeptCode.toUpperCase().trim(),
+      head_teacher_id: null,
+      head_teacher_name: newDeptHod.trim() || "Dean Appointee",
+      stats: {
+        students: parseInt(newDeptCapacity, 10) || 450,
+        teachers: parseInt(newDeptFacultyCount, 10) || 18,
+        courses: 2,
+      },
+    });
 
-    setDepartments((prev) => [newDept, ...prev]);
+    loadDepartmentsData();
     setIsAddModalOpen(false);
     setNewDeptName("");
     setNewDeptCode("");
     setNewDeptCodeNum("");
-    setNewDeptDivision("");
     setNewDeptHod("");
     setNewDeptOffice("");
-    showToast(`Successfully created ${newDept.name} (${newDept.code}).`);
+    showToast(`Successfully created ${newDeptName.trim()} (${newDeptCode.toUpperCase().trim()}).`);
+  };
+
+  const handleSaveSettings = (
+    dept: DepartmentData,
+    updates: {
+      hodName: string;
+      office: string;
+      status: "Accredited • Active" | "Pending Review";
+      totalStudents: number;
+      deptAdminName?: string;
+      deptAdminEmail?: string;
+    }
+  ) => {
+    if (updates.hodName) {
+      adminService.updateDepartmentHOD(dept.id, dept.headTeacherId || "teach-hod", updates.hodName);
+    }
+    if (updates.deptAdminName && updates.deptAdminEmail) {
+      adminService.updateDepartmentAdmin(
+        dept.id,
+        dept.deptAdminId || `admin-${dept.code.toLowerCase()}`,
+        updates.deptAdminName,
+        updates.deptAdminEmail
+      );
+    }
+    loadDepartmentsData();
+    setSelectedSettingsDept(null);
+    showToast(`Saved governance parameters for ${dept.code}.`);
+  };
+
+  const handleCreateSubject = (
+    deptId: string,
+    subject: { code: string; title: string; credit: number; type: "Theory" | "Lab"; semester_name: string }
+  ) => {
+    adminService.createSubject({
+      department_id: deptId,
+      semester_id: `sem-${deptId}-1`,
+      code: subject.code,
+      title: subject.title,
+      credit: subject.credit,
+      type: subject.type,
+    });
+    loadDepartmentsData();
+    showToast(`Added ${subject.code} (${subject.title}) to curriculum.`);
+  };
+
+  const handleDeleteSubject = (subjectId?: string, code?: string) => {
+    if (subjectId) {
+      adminService.deleteSubject(subjectId);
+    }
+    loadDepartmentsData();
+    showToast(`Removed course ${code || ""} from syllabus.`);
   };
 
   return (
@@ -168,14 +265,16 @@ export default function AdminDepartmentsPage() {
             )}
           </div>
 
-          <button
-            type="button"
-            onClick={() => setIsAddModalOpen(true)}
-            className="min-h-[44px] flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand hover:bg-brand-hover text-on-brand transition-colors text-xs font-semibold cursor-pointer active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Add Department</span>
-          </button>
+          {!isDeptAdmin && (
+            <button
+              type="button"
+              onClick={() => setIsAddModalOpen(true)}
+              className="min-h-[44px] flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand hover:bg-brand-hover text-on-brand transition-colors text-xs font-semibold cursor-pointer active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add Department</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -290,12 +389,11 @@ export default function AdminDepartmentsPage() {
         onCloseRosterDept={() => setSelectedRosterDept(null)}
         selectedCurriculumDept={selectedCurriculumDept}
         onCloseCurriculumDept={() => setSelectedCurriculumDept(null)}
+        onCreateSubject={handleCreateSubject}
+        onDeleteSubject={handleDeleteSubject}
         selectedSettingsDept={selectedSettingsDept}
         onCloseSettingsDept={() => setSelectedSettingsDept(null)}
-        onSaveSettings={(dept) => {
-          setSelectedSettingsDept(null);
-          showToast(`Updated parameters for ${dept.name}.`);
-        }}
+        onSaveSettings={handleSaveSettings}
         onShowToast={showToast}
       />
     </div>

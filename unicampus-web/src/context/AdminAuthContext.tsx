@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Profile, UserRoleType, AdminRoleLevel } from '@/types/admin';
 import { INITIAL_PROFILES } from '@/lib/mockData';
+import { adminService } from '@/lib/services/adminService';
 
 interface AdminAuthContextType {
   currentUser: Profile | null;
@@ -15,6 +16,10 @@ interface AdminAuthContextType {
   setActiveScopeDeptId: (deptId: string) => void;
   effectiveDeptId: string; // 'all' or department id currently in focus
   isApproved: boolean;
+  isSuspended: boolean;
+  accountStatus: 'active' | 'pending' | 'suspended';
+  hasExplicitSession: boolean;
+  canManageUser: (target: Profile) => boolean;
   isLoaded: boolean;
   switchUserRole: (
     role: UserRoleType, 
@@ -69,6 +74,7 @@ function findDeptAdminTemplate(): Profile {
 
 export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [hasExplicitSession, setHasExplicitSession] = useState(false);
   const [activeScopeDeptId, setActiveScopeDeptIdState] = useState<string>('all');
   
   // Default to Student profile (Sakib Ahmed) for security & student panel privacy
@@ -84,6 +90,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
           localStorage.setItem(AUTH_SCHEMA_VERSION_KEY, AUTH_SCHEMA_VERSION);
           setCurrentUser(findStudentProfile());
           setActiveScopeDeptIdState('all');
+          setHasExplicitSession(false);
           setIsLoaded(true);
           return;
         }
@@ -93,9 +100,13 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
           try {
             const parsed = JSON.parse(stored);
             setCurrentUser(parsed);
+            setHasExplicitSession(true);
           } catch (e) {
             console.error('Failed to parse stored auth user', e);
+            setHasExplicitSession(false);
           }
+        } else {
+          setHasExplicitSession(false);
         }
 
         const storedScope = localStorage.getItem(SCOPE_STORAGE_KEY);
@@ -107,14 +118,45 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  // Listen for profiles-updated events and sync currentUser
+  useEffect(() => {
+    const handleProfilesUpdated = () => {
+      try {
+        const profiles = adminService.getProfiles();
+        setCurrentUser((prev) => {
+          if (!prev) return prev;
+          const fresh = profiles.find((p) => p.id === prev.id || p.email === prev.email);
+          if (fresh) {
+            if (typeof window !== 'undefined') {
+              localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(fresh));
+            }
+            return fresh;
+          }
+          return prev;
+        });
+      } catch (e) {
+        console.error('Failed to sync user with updated profiles', e);
+      }
+    };
+
+    window.addEventListener('unicampus:profiles-updated', handleProfilesUpdated);
+    return () => {
+      window.removeEventListener('unicampus:profiles-updated', handleProfilesUpdated);
+    };
+  }, []);
+
   const saveUser = (user: Profile | null) => {
     setCurrentUser(user);
     if (typeof window !== 'undefined') {
       if (user) {
         localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
+        setHasExplicitSession(true);
       } else {
         localStorage.removeItem(AUTH_STORAGE_KEY);
+        setHasExplicitSession(false);
       }
+    } else {
+      setHasExplicitSession(Boolean(user));
     }
   };
 
@@ -201,7 +243,23 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
   // For Dept Admin, ALWAYS their assigned department
   // For Super Admin, whatever activeScopeDeptId is selected ('all' or specific)
   const effectiveDeptId = isDeptAdmin ? (currentUser?.department_id || 'all') : activeScopeDeptId;
-  const isApproved = !!currentUser?.is_approved;
+
+  const accountStatus: 'active' | 'pending' | 'suspended' =
+    currentUser?.account_status || (currentUser?.is_approved ? 'active' : 'pending');
+  const isSuspended = accountStatus === 'suspended';
+  const isApproved = Boolean(currentUser?.is_approved && !isSuspended && accountStatus !== 'pending');
+
+  const canManageUser = (target: Profile): boolean => {
+    if (!currentUser || currentUser.role !== 'admin') return false;
+    if (isSuperAdmin) {
+      return true;
+    }
+    if (isDeptAdmin) {
+      if (target.role === 'admin') return false;
+      return target.department_id === currentUser.department_id;
+    }
+    return false;
+  };
 
   return (
     <AdminAuthContext.Provider
@@ -216,6 +274,10 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
         setActiveScopeDeptId,
         effectiveDeptId,
         isApproved,
+        isSuspended,
+        accountStatus,
+        hasExplicitSession,
+        canManageUser,
         isLoaded,
         switchUserRole,
         loginAsStudent,

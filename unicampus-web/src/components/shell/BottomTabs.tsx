@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   PORTAL_NAV,
   isNavItemActive,
@@ -24,6 +25,7 @@ export function BottomTabs({
 }: BottomTabsProps) {
   const pathname = usePathname();
   const tabs = PORTAL_NAV[role].mobileTabs;
+  const reduceMotion = useReducedMotion();
 
   return (
     <nav
@@ -65,6 +67,18 @@ export function BottomTabs({
                 isActive ? "text-brand font-semibold" : "text-fg-muted hover:text-fg font-medium"
               }`}
             >
+              {isActive && (
+                <motion.span
+                  layoutId={`bottom-tab-indicator-${role}`}
+                  transition={
+                    reduceMotion
+                      ? { duration: 0 }
+                      : { type: "spring", stiffness: 440, damping: 28, mass: 0.8 }
+                  }
+                  aria-hidden="true"
+                  className="absolute top-0 inset-x-4 h-[2.5px] rounded-b-full bg-brand"
+                />
+              )}
               <div className="relative">
                 <Icon className="w-5 h-5 shrink-0" />
                 {badge === "Live" ? (

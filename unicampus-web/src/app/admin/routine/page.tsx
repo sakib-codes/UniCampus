@@ -1,15 +1,18 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import { CheckCircle2, FileDown, Send, ChevronDown } from "lucide-react";
 import { Badge, Button, PageHeader, Toast } from "@/components/ui";
 import { ACTIVE_TERM } from "@/lib/canonicalCampus";
+import { adminService } from "@/lib/services/adminService";
+import { useAdminAuth } from "@/context/AdminAuthContext";
 import {
   COURSE_OPTIONS,
   INITIAL_SLOTS,
   ROOMS,
   TIME_SLOTS,
   type BuildingType,
+  type DeptType,
   type RoomItem,
   type SlotData,
 } from "@/components/admin/routine/adminRoutineData";
@@ -18,7 +21,11 @@ import { TimetableMatrixGrid } from "@/components/admin/routine/TimetableMatrixG
 import { SlotInspectorPanel } from "@/components/admin/routine/SlotInspectorPanel";
 import { PublishTimetableModal } from "@/components/admin/routine/PublishTimetableModal";
 
+const DAY_MAP: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
 export default function AdminRoutinePage() {
+  const { isDeptAdmin, currentUser } = useAdminAuth();
   const [building, setBuilding] = useState<BuildingType>("bldg-1");
   const [selectedDay, setSelectedDay] = useState("Mon");
   const [semester, setSemester] = useState(`${ACTIVE_TERM} (Active)`);
@@ -32,10 +39,89 @@ export default function AdminRoutinePage() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
 
+  // Lock department filter if dept admin
+  useEffect(() => {
+    if (isDeptAdmin && currentUser) {
+      queueMicrotask(() => {
+        const code = currentUser.department_id?.replace("dept-", "").toLowerCase() || "cse";
+        setDeptFilter(code);
+      });
+    }
+  }, [isDeptAdmin, currentUser]);
+
+  // Hydrate from adminService
+  useEffect(() => {
+    queueMicrotask(() => {
+      const storedRoutines = adminService.getRoutines();
+      if (storedRoutines && storedRoutines.length > 0) {
+        const convertedSlots: SlotData[] = storedRoutines.map((r, i) => {
+          const day = DAY_NAMES[r.day_of_week] || "Mon";
+          const timeRange = `${r.start_time} - ${r.end_time}`;
+          const slotIndex = Math.max(
+            0,
+            TIME_SLOTS.findIndex(
+              (ts) =>
+                ts.label.includes(r.start_time) ||
+                ts.label.startsWith(r.start_time.slice(0, 5))
+            )
+          );
+          const roomMatch = ROOMS.find((rm) => rm.name.toLowerCase() === r.room.toLowerCase());
+          const deptType: DeptType = r.room.toLowerCase().includes("lab")
+            ? "lab"
+            : (r.department_name.toLowerCase().includes("eee")
+                ? "eee"
+                : r.department_name.toLowerCase().includes("bba")
+                ? "bba"
+                : r.department_name.toLowerCase().includes("pharm")
+                ? "pharm"
+                : r.department_name.toLowerCase().includes("eng")
+                ? "eng"
+                : "cse");
+
+          return {
+            id: r.id || `slot-rtn-${i}`,
+            room: r.room,
+            roomCapacity: roomMatch?.capacity || 60,
+            roomType: roomMatch?.type || "Tiered Lecture Hall",
+            slotIndex: slotIndex >= 0 ? slotIndex : 0,
+            slotSpan: 1,
+            day,
+            timeRange,
+            courseCode: r.subject_code,
+            courseName: r.subject_title,
+            section: r.section || "Section A",
+            instructor: r.teacher_name || "Faculty Member",
+            instructorDept: r.department_name,
+            initials: r.teacher_name
+              ? r.teacher_name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase()
+              : "FM",
+            enrolled: 42,
+            deptType,
+            conflictFree: true,
+          };
+        });
+        setSlots(convertedSlots);
+      }
+    });
+  }, []);
+
   const activeSlot = useMemo(
     () => slots.find((s) => s.id === activeSlotId) ?? slots[0] ?? null,
     [slots, activeSlotId]
   );
+
+  const conflictInfo = useMemo(() => {
+    if (!activeSlot) return { hasConflict: false, message: "", conflicts: [] };
+    const [startTime = "08:30", endTime = "10:00"] = activeSlot.timeRange.split(" - ");
+    return adminService.checkRoutineConflicts({
+      id: activeSlot.id,
+      day_of_week: DAY_MAP[activeSlot.day] ?? 1,
+      start_time: startTime.trim(),
+      end_time: endTime.trim(),
+      room: activeSlot.room,
+      teacher_name: activeSlot.instructor,
+    });
+  }, [activeSlot]);
 
   const filteredRooms = useMemo(() => {
     return ROOMS.filter((room) => {
@@ -147,6 +233,30 @@ export default function AdminRoutinePage() {
     triggerToast("Midday recess window (11:45–01:00) reserved across campus.");
   }, [triggerToast]);
 
+  const handlePublishConfirm = useCallback(() => {
+    const mappedRoutines = slots.map((s) => {
+      const [startTime = "08:30", endTime = "10:00"] = s.timeRange.split(" - ");
+      return {
+        id: s.id,
+        subject_code: s.courseCode,
+        subject_title: s.courseName,
+        day_of_week: DAY_MAP[s.day] ?? 1,
+        start_time: startTime.trim(),
+        end_time: endTime.trim(),
+        room: s.room,
+        section: s.section,
+        teacher_name: s.instructor,
+        teacher_id: null,
+        department_name: s.instructorDept || "Computer Science & Engineering",
+        semester_name: "6th Semester" as const,
+      };
+    });
+
+    adminService.publishRoutines(mappedRoutines);
+    setIsPublishModalOpen(false);
+    triggerToast("Semester timetable officially published across university portals!");
+  }, [slots, triggerToast]);
+
   return (
     <div className="w-full space-y-5 antialiased selection:bg-brand/30 pb-6">
       <Toast
@@ -165,7 +275,11 @@ export default function AdminRoutinePage() {
             <span>
               Configure lecture hours, laboratory allotments, and room assignments across departments
             </span>
-            <Badge variant="success">0 Conflicts · 142 Sections Assigned</Badge>
+            <Badge variant={conflictInfo.hasConflict ? "danger" : "success"}>
+              {conflictInfo.hasConflict
+                ? "1 Conflict Detected"
+                : "0 Conflicts · 142 Sections Assigned"}
+            </Badge>
           </span>
         }
         actions={
@@ -188,9 +302,13 @@ export default function AdminRoutinePage() {
               variant="secondary"
               size="sm"
               leftIcon={<CheckCircle2 className="w-3.5 h-3.5 text-brand" />}
-              onClick={() =>
-                triggerToast("Conflict check verified zero lecturer or room overlaps.")
-              }
+              onClick={() => {
+                if (conflictInfo.hasConflict) {
+                  triggerToast(`Conflict detected: ${conflictInfo.message}`);
+                } else {
+                  triggerToast("Conflict check verified zero lecturer or room overlaps.");
+                }
+              }}
             >
               Verify Conflicts
             </Button>
@@ -231,6 +349,7 @@ export default function AdminRoutinePage() {
         onHighlightConflictsChange={setHighlightConflicts}
         showUtilization={showUtilization}
         onShowUtilizationChange={setShowUtilization}
+        isDeptAdmin={isDeptAdmin}
       />
 
       {/* MAIN WORKSPACE: Flex-1 Matrix Grid + Inspector */}
@@ -249,6 +368,7 @@ export default function AdminRoutinePage() {
 
         <SlotInspectorPanel
           activeSlot={activeSlot}
+          conflictInfo={conflictInfo}
           onCourseChange={handleCourseChange}
           onSectionChange={handleSectionChange}
           onUpdateSlot={handleUpdateSlot}
@@ -265,12 +385,7 @@ export default function AdminRoutinePage() {
       <PublishTimetableModal
         open={isPublishModalOpen}
         onClose={() => setIsPublishModalOpen(false)}
-        onConfirm={() => {
-          setIsPublishModalOpen(false);
-          triggerToast(
-            "Semester timetable officially published across university portals!"
-          );
-        }}
+        onConfirm={handlePublishConfirm}
       />
     </div>
   );

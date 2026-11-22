@@ -22,6 +22,7 @@ interface UsersFilterBarProps {
   onTabChange: (tab: RoleTab) => void;
   roleTabs: RoleTabOption[];
   onClearFilters: () => void;
+  isDeptAdmin?: boolean;
 }
 
 export function UsersFilterBar({
@@ -35,6 +36,7 @@ export function UsersFilterBar({
   onTabChange,
   roleTabs,
   onClearFilters,
+  isDeptAdmin = false,
 }: UsersFilterBarProps) {
   return (
     <div className="bg-surface rounded-2xl p-4 border border-line flex flex-col gap-3">
@@ -48,7 +50,7 @@ export function UsersFilterBar({
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search by name, email, or ID..."
-            className="w-full min-h-[44px] bg-surface-2 border border-line focus:border-brand rounded-xl pl-10 pr-9 py-2 text-xs text-fg placeholder:text-fg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand transition-colors"
+            className="w-full min-h-[44px] bg-surface-2 border border-line focus:border-brand rounded-xl pl-10 pr-9 py-2 text-xs text-fg placeholder:text-fg-muted focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-all duration-150"
           />
           {searchQuery && (
             <button
@@ -67,16 +69,17 @@ export function UsersFilterBar({
             <select
               value={selectedDept}
               onChange={(e) => onDeptChange(e.target.value)}
+              disabled={isDeptAdmin}
               aria-label="Filter by department"
-              className="w-full min-h-[44px] appearance-none bg-surface-2 border border-line text-fg rounded-xl pl-3.5 pr-8 py-2 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand cursor-pointer transition-colors"
+              className="w-full min-h-[44px] appearance-none bg-surface-2 border border-line text-fg rounded-xl pl-3.5 pr-8 py-2 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand cursor-pointer transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              <option value="all">All Departments</option>
+              {!isDeptAdmin && <option value="all">All Departments</option>}
               {CANONICAL_DEPARTMENTS.map((d) => (
                 <option key={d.id} value={d.code.toLowerCase()}>
                   {DEPT_META[d.code.toLowerCase() as DeptKey].shortLabel}
                 </option>
               ))}
-              <option value="it">Central Administration</option>
+              {!isDeptAdmin && <option value="it">Central Administration</option>}
             </select>
             <ChevronDown className="w-3.5 h-3.5 text-fg-muted absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>

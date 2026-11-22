@@ -1,5 +1,6 @@
 import {
   BarChart3,
+  BookOpen,
   Building2,
   Calendar,
   CheckSquare,
@@ -61,6 +62,7 @@ export const PORTAL_NAV: Record<PortalRole, PortalNavConfig> = {
     homeHref: "/dashboard",
     desktop: [
       { id: "home", label: "Home", href: "/dashboard", icon: Home, exact: true },
+      { id: "advising", label: "Advising", href: "/advising", icon: BookOpen },
       { id: "routine", label: "Routine", href: "/routine", icon: Calendar },
       { id: "progress", label: "Progress", href: "/dashboard/progress", icon: TrendingUp },
       { id: "payments", label: "Payments", href: "/payments", icon: CreditCard },
@@ -352,6 +354,9 @@ export function getPortalTitle(
   }
   if (pathname === "/payments") {
     return { section: "Student", title: "Payments & Fees", homeHref };
+  }
+  if (pathname === "/advising") {
+    return { section: "Student", title: "Course Advising", homeHref };
   }
   if (pathname === "/routine") {
     return { section: "Student", title: "Routine", homeHref };

@@ -17,6 +17,11 @@ export interface Profile {
   avatar_url: string;
   is_approved: boolean;
   created_at: string;
+  account_status?: 'active' | 'pending' | 'suspended';
+  academic_hold?: boolean;
+  financial_hold?: boolean;
+  hold_reason?: string | null;
+  assigned_courses?: string[];
 }
 
 export interface UserRole {
@@ -192,4 +197,30 @@ export interface TeacherWage {
   disbursed_at: string | null;
   transaction_id: string | null;
 }
+
+export interface AuditLogItem {
+  id: string;
+  time: string;
+  timestamp: string;
+  category: "Access" | "Gradebook" | "Routine" | "Snapshot" | "Finance" | "Notice" | "Curriculum" | "Hold";
+  title: string;
+  description: string;
+  actor_name: string;
+  department_id?: string | null;
+  department_name?: string;
+  iconBg?: string;
+  iconColor?: string;
+}
+
+export interface GradebookPolicy {
+  course_code: string;
+  course_title?: string;
+  department_id?: string;
+  is_locked: boolean;
+  locked_at?: string | null;
+  locked_by?: string | null;
+  submission_deadline?: string;
+  status: 'Open' | 'Submitted' | 'Locked' | 'Verified';
+}
+
 

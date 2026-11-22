@@ -61,6 +61,15 @@ export default function RootLayout({
                   document.documentElement.classList.remove('dark');
                   document.documentElement.classList.add('light');
                 }
+                var rawDensity = localStorage.getItem('unicampus_admin_settings_v1');
+                var density = 'compact';
+                if (rawDensity) {
+                  var parsedDensity = JSON.parse(rawDensity);
+                  if (parsedDensity && parsedDensity.highDensityTable === false) {
+                    density = 'comfortable';
+                  }
+                }
+                document.documentElement.setAttribute('data-density', density);
               } catch (e) {}
             `,
           }}

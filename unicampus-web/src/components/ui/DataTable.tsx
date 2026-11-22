@@ -93,7 +93,7 @@ export function DataTable<T>({
                   scope="col"
                   style={col.width ? { width: col.width } : undefined}
                   className={cn(
-                    "px-4 py-3 font-medium whitespace-nowrap",
+                    "px-4 py-[var(--row-py)] font-medium whitespace-nowrap",
                     alignClasses[align],
                     stickyHeader && "sticky top-0 z-10 bg-surface-2",
                     col.headerClassName
@@ -107,7 +107,7 @@ export function DataTable<T>({
               <th
                 scope="col"
                 className={cn(
-                  "px-4 py-3 text-right font-medium whitespace-nowrap w-1",
+                  "px-4 py-[var(--row-py)] text-right font-medium whitespace-nowrap w-1",
                   stickyHeader && "sticky top-0 z-10 bg-surface-2"
                 )}
               >
@@ -122,10 +122,10 @@ export function DataTable<T>({
             ? Array.from({ length: skeletonRows }).map((_, rowIndex) => (
                 <tr
                   key={`skeleton-${rowIndex}`}
-                  className="h-[52px] border-b border-line last:border-b-0"
+                  className="border-b border-line last:border-b-0"
                 >
                   {Array.from({ length: totalCols }).map((__, colIndex) => (
-                    <td key={`skeleton-${rowIndex}-${colIndex}`} className="px-4 py-3">
+                    <td key={`skeleton-${rowIndex}-${colIndex}`} className="px-4 py-[var(--row-py)]">
                       <Skeleton variant="text" className="h-4 w-3/4" />
                     </td>
                   ))}
@@ -156,7 +156,7 @@ export function DataTable<T>({
                       : undefined
                   }
                   className={cn(
-                    "group h-[52px] border-b border-line last:border-b-0 transition-colors duration-150 hover:bg-surface-2/60",
+                    "group border-b border-line last:border-b-0 transition-colors duration-150 hover:bg-surface-2/60",
                     onRowClick &&
                       "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand"
                   )}
@@ -173,7 +173,7 @@ export function DataTable<T>({
                       <td
                         key={col.key}
                         className={cn(
-                          "px-4 py-2.5 text-fg align-middle",
+                          "px-4 py-[var(--row-py)] text-fg align-middle",
                           alignClasses[align],
                           col.numeric && "tabular-nums",
                           col.className
@@ -186,7 +186,7 @@ export function DataTable<T>({
 
                   {rowActions && (
                     <td
-                      className="px-4 py-2.5 text-right align-middle whitespace-nowrap"
+                      className="px-4 py-[var(--row-py)] text-right align-middle whitespace-nowrap"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <div className="inline-flex items-center justify-end gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-150">

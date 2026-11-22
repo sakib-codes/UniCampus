@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { 
   Users, 
   ShieldCheck, 
@@ -22,24 +22,11 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
 } from "recharts";
 import { adminService } from "@/lib/services/adminService";
+import { useAdminAuth } from "@/context/AdminAuthContext";
+import { CANONICAL_DEPARTMENTS } from "@/lib/canonicalCampus";
+import { Badge } from "@/components/ui";
 import CountUp from "@/components/bits/CountUp";
-
-const departmentAttendanceData = [
-  { dept: 'CSE', present: 94, absent: 6 },
-  { dept: 'EEE', present: 92, absent: 8 },
-  { dept: 'BBA', present: 90, absent: 10 },
-  { dept: 'PHARM', present: 96, absent: 4 },
-  { dept: 'ENG', present: 88, absent: 12 },
-];
-
-const userGrowthData = [
-  { month: 'Jan', students: 4400, faculty: 210 },
-  { month: 'Feb', students: 4520, faculty: 220 },
-  { month: 'Mar', students: 4610, faculty: 225 },
-  { month: 'Apr', students: 4700, faculty: 230 },
-  { month: 'May', students: 4780, faculty: 235 },
-  { month: 'Jun', students: 4820, faculty: 240 },
-];
+import { getAttendanceAlerts } from "@/lib/attendanceService";
 
 const CHART_TOOLTIP_STYLE = {
   backgroundColor: "var(--surface)",
@@ -58,56 +45,207 @@ const CHART_TOOLTIP_LABEL_STYLE = {
 };
 
 export default function AdminAnalyticsPage() {
+  const { effectiveDeptId } = useAdminAuth();
   const [timeRange, setTimeRange] = useState<"week" | "month" | "year">("month");
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const [data, setData] = useState({
-    totalUsers: 5072,
-    activeUsers: 4912,
-    students: 4820,
-    teachers: 240,
-    pendingApprovals: 118,
-    totalRevenue: 25200,
-    pendingPayments: 0,
-    collectionRate: 100.0,
-    completedTxns: 3,
-    performanceRate: 94.2,
-    noticesCount: 2,
-    classesCount: 156,
-    coursesCount: 24,
-  });
+  const activeDept = useMemo(
+    () => CANONICAL_DEPARTMENTS.find((d) => d.id === effectiveDeptId),
+    [effectiveDeptId]
+  );
+
+  const [rawTxns, setRawTxns] = useState<ReturnType<typeof adminService.getTransactions>>([]);
+  const [rawNotices, setRawNotices] = useState<ReturnType<typeof adminService.getNotices>>([]);
+
+  const attendanceAlerts = useMemo(
+    () => getAttendanceAlerts(effectiveDeptId !== "all" ? effectiveDeptId : undefined),
+    [effectiveDeptId]
+  );
 
   useEffect(() => {
     queueMicrotask(() => {
-      const transactions = adminService.getTransactions();
-      const notices = adminService.getNotices();
-
-      const paidTxns = transactions.filter(t => t.type === 'student_fee' && t.status === 'Paid');
-      const revenue = paidTxns.reduce((sum, t) => sum + t.amount, 0);
-      const pendingAmount = transactions
-        .filter(t => t.type === 'student_fee' && t.status === 'Pending')
-        .reduce((sum, t) => sum + t.amount, 0);
-
-      const totalTarget = revenue + pendingAmount;
-      const collectionRate = totalTarget > 0 ? (revenue / totalTarget) * 100 : 100.0;
-
-      setData({
-        totalUsers: 5072,
-        activeUsers: 4912,
-        students: 4820,
-        teachers: 240,
-        pendingApprovals: 118,
-        totalRevenue: revenue || 25200,
-        pendingPayments: pendingAmount,
-        collectionRate: Number(collectionRate.toFixed(1)),
-        completedTxns: paidTxns.length || 3,
-        performanceRate: 94.2,
-        noticesCount: notices.length || 2,
-        classesCount: 156,
-        coursesCount: 24,
-      });
+      setRawTxns(adminService.getTransactions());
+      setRawNotices(adminService.getNotices());
     });
   }, []);
+
+  // Dynamic metrics computed based on effectiveDeptId and timeRange
+  const data = useMemo(() => {
+    const baseStudents = activeDept ? activeDept.students : 4820;
+    const baseFaculty = activeDept ? activeDept.faculty : 240;
+    const baseTotalUsers = activeDept ? baseStudents + baseFaculty : 5072;
+    const baseActiveUsers = activeDept
+      ? Math.round(baseTotalUsers * 0.968)
+      : 4912;
+    const basePendingApprovals = activeDept
+      ? Math.round(118 * (activeDept.students / 4820))
+      : 118;
+
+    // Financial calculations
+    const directTxns = activeDept
+      ? rawTxns.filter(
+          (t) =>
+            t.department_name === activeDept.name ||
+            t.department_name?.toLowerCase().includes(activeDept.code.toLowerCase())
+        )
+      : rawTxns;
+
+    const paidTxns = directTxns.filter((t) => t.type === "student_fee" && t.status === "Paid");
+    let baseRevenue = paidTxns.reduce((sum, t) => sum + t.amount, 0);
+    if (!baseRevenue) {
+      baseRevenue = activeDept
+        ? Math.round(25200 * (activeDept.students / 4820))
+        : 25200;
+    }
+
+    const pendingAmount = directTxns
+      .filter((t) => t.type === "student_fee" && t.status === "Pending")
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    const baseTxnsCount = paidTxns.length || (activeDept ? 1 : 3);
+    const basePerfRate = activeDept
+      ? activeDept.code === "CSE" ? 94.8 : activeDept.code === "EEE" ? 92.5 : activeDept.code === "PHARM" ? 96.2 : 90.5
+      : 94.2;
+
+    const baseNoticesCount = activeDept
+      ? rawNotices.filter((n) => n.department_id === activeDept.id || !n.department_id).length || 2
+      : rawNotices.length || 2;
+
+    const baseClasses = activeDept ? Math.round(156 * (activeDept.courses / 24)) : 156;
+    const baseCourses = activeDept ? activeDept.courses : 24;
+
+    // Multipliers for dynamic timeRange
+    let timeActiveUsers = baseActiveUsers;
+    let timeRevenue = baseRevenue;
+    let timePending = pendingAmount;
+    let timeTxns = baseTxnsCount;
+    let timePerf = basePerfRate;
+
+    if (timeRange === "week") {
+      timeActiveUsers = Math.round(baseActiveUsers * 0.74);
+      timeRevenue = Math.round(baseRevenue * 0.28);
+      timePending = Math.round(pendingAmount * 0.3);
+      timeTxns = Math.max(1, Math.round(baseTxnsCount * 0.4));
+      timePerf = Math.min(99.0, Number((basePerfRate + 0.6).toFixed(1)));
+    } else if (timeRange === "year") {
+      timeActiveUsers = baseActiveUsers;
+      timeRevenue = Math.round(baseRevenue * 3.8);
+      timePending = Math.round(pendingAmount * 3.2);
+      timeTxns = Math.max(baseTxnsCount, Math.round(baseTxnsCount * 4.2));
+      timePerf = Math.max(85.0, Number((basePerfRate - 0.4).toFixed(1)));
+    }
+
+    const totalTarget = timeRevenue + timePending;
+    const collectionRate = totalTarget > 0 ? (timeRevenue / totalTarget) * 100 : 100.0;
+
+    return {
+      totalUsers: baseTotalUsers,
+      activeUsers: timeActiveUsers,
+      students: baseStudents,
+      teachers: baseFaculty,
+      pendingApprovals: basePendingApprovals,
+      totalRevenue: timeRevenue,
+      pendingPayments: timePending,
+      collectionRate: Number(collectionRate.toFixed(1)),
+      completedTxns: timeTxns,
+      performanceRate: timePerf,
+      noticesCount: baseNoticesCount,
+      classesCount: baseClasses,
+      coursesCount: baseCourses,
+    };
+  }, [activeDept, rawTxns, rawNotices, timeRange]);
+
+  // Attendance chart data: preserves canonical X-axis ['CSE', 'EEE', 'BBA', 'PHARM', 'ENG'] under 'all' scope
+  const departmentAttendanceData = useMemo(() => {
+    if (activeDept) {
+      if (timeRange === "week") {
+        return [
+          { dept: "1st Yr", present: 96, absent: 4 },
+          { dept: "2nd Yr", present: 95, absent: 5 },
+          { dept: "3rd Yr", present: 93, absent: 7 },
+          { dept: "4th Yr", present: 97, absent: 3 },
+        ];
+      }
+      if (timeRange === "year") {
+        return [
+          { dept: "1st Yr", present: 93, absent: 7 },
+          { dept: "2nd Yr", present: 91, absent: 9 },
+          { dept: "3rd Yr", present: 90, absent: 10 },
+          { dept: "4th Yr", present: 94, absent: 6 },
+        ];
+      }
+      return [
+        { dept: "1st Yr", present: 95, absent: 5 },
+        { dept: "2nd Yr", present: 93, absent: 7 },
+        { dept: "3rd Yr", present: 91, absent: 9 },
+        { dept: "4th Yr", present: 96, absent: 4 },
+      ];
+    }
+
+    if (timeRange === "week") {
+      return [
+        { dept: "CSE", present: 96, absent: 4 },
+        { dept: "EEE", present: 94, absent: 6 },
+        { dept: "BBA", present: 92, absent: 8 },
+        { dept: "PHARM", present: 97, absent: 3 },
+        { dept: "ENG", present: 90, absent: 10 },
+      ];
+    }
+    if (timeRange === "year") {
+      return [
+        { dept: "CSE", present: 93, absent: 7 },
+        { dept: "EEE", present: 91, absent: 9 },
+        { dept: "BBA", present: 89, absent: 11 },
+        { dept: "PHARM", present: 95, absent: 5 },
+        { dept: "ENG", present: 87, absent: 13 },
+      ];
+    }
+    // Month (Canonical baseline)
+    return [
+      { dept: "CSE", present: 94, absent: 6 },
+      { dept: "EEE", present: 92, absent: 8 },
+      { dept: "BBA", present: 90, absent: 10 },
+      { dept: "PHARM", present: 96, absent: 4 },
+      { dept: "ENG", present: 88, absent: 12 },
+    ];
+  }, [activeDept, timeRange]);
+
+  // Cohort User Growth chart data: dynamic with timeRange and activeDept
+  const userGrowthData = useMemo(() => {
+    const baseStudents = activeDept ? activeDept.students : 4820;
+    const baseFaculty = activeDept ? activeDept.faculty : 240;
+
+    if (timeRange === "week") {
+      return [
+        { month: "Mon", students: Math.round(baseStudents * 0.96), faculty: Math.round(baseFaculty * 0.95) },
+        { month: "Tue", students: Math.round(baseStudents * 0.98), faculty: Math.round(baseFaculty * 0.97) },
+        { month: "Wed", students: baseStudents, faculty: baseFaculty },
+        { month: "Thu", students: Math.round(baseStudents * 0.99), faculty: Math.round(baseFaculty * 0.98) },
+        { month: "Fri", students: Math.round(baseStudents * 0.94), faculty: Math.round(baseFaculty * 0.92) },
+        { month: "Sat", students: Math.round(baseStudents * 0.88), faculty: Math.round(baseFaculty * 0.85) },
+      ];
+    }
+
+    if (timeRange === "year") {
+      return [
+        { month: "2022", students: Math.round(baseStudents * 0.79), faculty: Math.round(baseFaculty * 0.75) },
+        { month: "2023", students: Math.round(baseStudents * 0.86), faculty: Math.round(baseFaculty * 0.83) },
+        { month: "2024", students: Math.round(baseStudents * 0.93), faculty: Math.round(baseFaculty * 0.90) },
+        { month: "2025", students: Math.round(baseStudents * 0.97), faculty: Math.round(baseFaculty * 0.96) },
+        { month: "2026", students: baseStudents, faculty: baseFaculty },
+      ];
+    }
+
+    // Month
+    return [
+      { month: "Jan", students: Math.round(baseStudents * 0.912), faculty: Math.round(baseFaculty * 0.875) },
+      { month: "Feb", students: Math.round(baseStudents * 0.937), faculty: Math.round(baseFaculty * 0.916) },
+      { month: "Mar", students: Math.round(baseStudents * 0.956), faculty: Math.round(baseFaculty * 0.937) },
+      { month: "Apr", students: Math.round(baseStudents * 0.975), faculty: Math.round(baseFaculty * 0.958) },
+      { month: "May", students: Math.round(baseStudents * 0.991), faculty: Math.round(baseFaculty * 0.979) },
+      { month: "Jun", students: baseStudents, faculty: baseFaculty },
+    ];
+  }, [activeDept, timeRange]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -119,11 +257,20 @@ export default function AdminAnalyticsPage() {
       {/* Top Header & Segmented Control */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-semibold text-fg tracking-tight">
-            Analytics &amp; Reports
-          </h1>
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-2xl md:text-3xl font-semibold text-fg tracking-tight">
+              Analytics &amp; Reports
+            </h1>
+            {activeDept && (
+              <Badge variant="brand" appearance="soft" dot>
+                {activeDept.code} Scope
+              </Badge>
+            )}
+          </div>
           <p className="text-xs font-medium text-fg-muted mt-1">
-            Campus metrics, student enrollment, and academic session performance
+            {activeDept
+              ? `Departmental analytics and performance metrics scoped to ${activeDept.name} (${activeDept.code}).`
+              : "Campus metrics, student enrollment, and academic session performance across all 5 departments."}
           </p>
         </div>
 
@@ -133,12 +280,13 @@ export default function AdminAnalyticsPage() {
             <button
               type="button"
               onClick={() => setTimeRange("week")}
-              className={`min-h-[36px] px-3 py-1.5 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
+              className={`min-h-[36px] px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                 timeRange === "week"
                   ? "bg-surface text-fg font-semibold border border-line"
                   : "text-fg-muted hover:text-fg"
               }`}
             >
+              {timeRange === "week" && <Check className="w-3.5 h-3.5 text-brand" />}
               Week
             </button>
 
@@ -158,12 +306,13 @@ export default function AdminAnalyticsPage() {
             <button
               type="button"
               onClick={() => setTimeRange("year")}
-              className={`min-h-[36px] px-3 py-1.5 rounded-lg transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
+              className={`min-h-[36px] px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                 timeRange === "year"
                   ? "bg-surface text-fg font-semibold border border-line"
                   : "text-fg-muted hover:text-fg"
               }`}
             >
+              {timeRange === "year" && <Check className="w-3.5 h-3.5 text-brand" />}
               Year
             </button>
           </div>
@@ -525,6 +674,69 @@ export default function AdminAnalyticsPage() {
           </div>
         </div>
       </div>
+
+      {/* SECTION 5: At-Risk Attendance & Compliance Watchlist */}
+      {attendanceAlerts.length > 0 && (
+        <section className="rounded-2xl bg-surface border border-line p-5 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-line pb-3">
+            <div>
+              <h2 className="text-sm font-semibold text-fg flex items-center gap-2">
+                <span>At-Risk Course Attendance Watchlist (&lt;75% Mandatory Quota)</span>
+                <Badge variant="danger" appearance="soft">
+                  {attendanceAlerts.length} Flagged
+                </Badge>
+              </h2>
+              <p className="text-xs text-fg-muted mt-0.5">
+                Surveillance logs flagging academic sections where average attendance breaches university thresholds
+              </p>
+            </div>
+            <span className="text-xs font-semibold text-fg-muted">
+              Threshold: 75.0% verified presence
+            </span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="border-b border-line text-fg-muted font-semibold">
+                  <th className="pb-2.5">Course Code</th>
+                  <th className="pb-2.5">Course Title</th>
+                  <th className="pb-2.5">Section</th>
+                  <th className="pb-2.5">Average Attendance</th>
+                  <th className="pb-2.5">Critical Students</th>
+                  <th className="pb-2.5 text-right">Surveillance Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {attendanceAlerts.map((row) => (
+                  <tr key={row.courseCode} className="hover:bg-surface-2/60 transition-colors">
+                    <td className="py-3 font-mono font-semibold text-brand">
+                      {row.courseCode}
+                    </td>
+                    <td className="py-3 font-medium text-fg">
+                      {row.courseName}
+                    </td>
+                    <td className="py-3 text-fg-muted">
+                      {row.section}
+                    </td>
+                    <td className="py-3 font-mono font-semibold text-danger tabular-nums">
+                      {row.averageAttendance}%
+                    </td>
+                    <td className="py-3 text-fg-muted">
+                      {row.atRiskStudents.join(", ")}
+                    </td>
+                    <td className="py-3 text-right">
+                      <span className="px-2 py-0.5 rounded-md bg-danger-light text-danger border border-danger/25 font-semibold text-xs">
+                        Advisory Alert Sent
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
     </div>
   );
 }

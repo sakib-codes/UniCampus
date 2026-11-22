@@ -194,7 +194,7 @@ export default function StudentsPage() {
                 setCurrentPage(1);
               }}
               placeholder="Search by name, ID, or department..."
-              className="w-full min-h-[44px] pl-10 pr-10 rounded-xl bg-surface-2 border border-line text-xs sm:text-sm text-fg placeholder:text-fg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:border-brand transition-colors"
+              className="w-full min-h-[44px] pl-10 pr-10 rounded-xl bg-surface-2 border border-line text-xs sm:text-sm text-fg placeholder:text-fg-muted focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-all duration-150"
             />
             {searchQuery ? (
               <button

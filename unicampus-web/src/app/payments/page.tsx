@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { CheckCircle2, CreditCard } from "lucide-react";
+import { CheckCircle2, CreditCard, AlertCircle } from "lucide-react";
 import { CANONICAL_STUDENT, ACTIVE_TERM } from "@/lib/canonicalCampus";
 import { studentPaymentService } from "@/lib/services/studentPaymentService";
-import { PaymentTransaction, SemesterInvoice } from "@/types/admin";
+import { adminService } from "@/lib/services/adminService";
+import { PaymentTransaction, Profile, SemesterInvoice } from "@/types/admin";
 import { Tabs, TabOption } from "@/components/ui/Tabs";
 import { Button } from "@/components/ui/Button";
 import { PaymentKpiStrip } from "@/components/payments/PaymentKpiStrip";
@@ -27,6 +28,12 @@ export default function PaymentsPage() {
   const [invoices, setInvoices] = useState<SemesterInvoice[]>([]);
   const [transactions, setTransactions] = useState<PaymentTransaction[]>([]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [studentProfile, setStudentProfile] = useState<Profile | null>(() => {
+    const student = adminService.getProfiles().find(
+      (p) => p.student_id === CANONICAL_STUDENT.studentId || p.id === "user-stud-1"
+    );
+    return student || null;
+  });
 
   // Gateway Modal State
   const [isGatewayOpen, setIsGatewayOpen] = useState(false);
@@ -74,9 +81,19 @@ export default function PaymentsPage() {
     const handleFinanceUpdated = () => {
       loadPaymentData();
     };
+    const handleProfilesUpdated = () => {
+      const student = adminService.getProfiles().find(
+        (p) => p.student_id === CANONICAL_STUDENT.studentId || p.id === "user-stud-1"
+      );
+      if (student) setStudentProfile(student);
+    };
     window.addEventListener("unicampus:finance-updated", handleFinanceUpdated);
+    window.addEventListener("unicampus:profiles-updated", handleProfilesUpdated);
+    window.addEventListener("storage", handleProfilesUpdated);
     return () => {
       window.removeEventListener("unicampus:finance-updated", handleFinanceUpdated);
+      window.removeEventListener("unicampus:profiles-updated", handleProfilesUpdated);
+      window.removeEventListener("storage", handleProfilesUpdated);
     };
   }, [loadPaymentData]);
 
@@ -187,6 +204,29 @@ export default function PaymentsPage() {
         >
           <CheckCircle2 className="w-5 h-5 text-success shrink-0" />
           <span>{toastMessage}</span>
+        </div>
+      )}
+
+      {/* Financial Hold Notice */}
+      {studentProfile?.financial_hold && (
+        <div className="p-4 rounded-2xl bg-danger-light border border-danger/30 flex items-start gap-3.5 text-xs">
+          <div className="w-8 h-8 rounded-xl bg-danger text-on-brand flex items-center justify-center shrink-0 mt-0.5">
+            <AlertCircle className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-danger text-sm">
+                Active Financial Hold on Student Ledger
+              </span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-danger/10 text-danger border border-danger/25 uppercase">
+                Restriction Enforced
+              </span>
+            </div>
+            <p className="text-fg-muted font-sans mt-1 leading-relaxed">
+              {studentProfile.hold_reason ||
+                "Your account is under financial hold due to outstanding semester tuition dues. Completing payment for the current term will automatically clear this hold immediately."}
+            </p>
+          </div>
         </div>
       )}
 

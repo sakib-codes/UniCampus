@@ -1,6 +1,8 @@
 import { CANONICAL_STUDENT } from "@/lib/canonicalCampus";
 import { adminService } from "@/lib/services/adminService";
 import {
+  FeeCategory,
+  FeeLineItem,
   PaymentTransaction,
   SemesterInvoice,
 } from "@/types/admin";
@@ -352,10 +354,147 @@ class StudentPaymentService {
       window.dispatchEvent(new Event("unicampus:finance-updated"));
     }
 
+    if (updatedDue === 0 && targetInvoice.student_id) {
+      adminService.toggleStudentHold(
+        targetInvoice.student_id,
+        "financial",
+        false,
+        "Dues cleared in full via online payment"
+      );
+    }
+
+    adminService.logAction({
+      category: "Finance",
+      title: "Fee Payment Received",
+      description: `Payment of ৳${paidAmount.toLocaleString()} received from ${targetInvoice.student_name} via ${params.gateway === "bkash" ? "bKash" : "SSLCommerz"}.`,
+      actor_name: targetInvoice.student_name,
+      department_id: "dept-cse",
+      iconBg: "bg-brand-soft",
+      iconColor: "text-brand",
+    });
+
     return {
       invoice: updatedInvoice,
       transaction: newTxn,
     };
+  }
+
+  issueCustomFee(
+    studentId: string,
+    label: string,
+    category: FeeCategory,
+    amount: number,
+    termLabel?: string
+  ): SemesterInvoice {
+    const invoices = this.getInvoices();
+    let invoiceIndex = invoices.findIndex((inv) => inv.student_id === studentId);
+    if (invoiceIndex === -1 && termLabel) {
+      invoiceIndex = invoices.findIndex((inv) => inv.term_label === termLabel);
+    }
+    if (invoiceIndex === -1) {
+      invoiceIndex = 0;
+    }
+    const targetInvoice = invoices[invoiceIndex] || INITIAL_SEMESTER_INVOICES[0];
+    const feeAmount = Number(amount);
+    const newLineItem: FeeLineItem = {
+      id: `fee-custom-${Date.now()}`,
+      label,
+      category,
+      amount: feeAmount,
+    };
+    const updatedTotal = (targetInvoice.total_amount || 0) + feeAmount;
+    const updatedDue = Math.max(0, (targetInvoice.due_amount || 0) + feeAmount);
+    const updatedInvoice: SemesterInvoice = {
+      ...targetInvoice,
+      line_items: [...targetInvoice.line_items, newLineItem],
+      total_amount: updatedTotal,
+      due_amount: updatedDue,
+      status: updatedDue === 0 ? "Paid" : "Pending",
+    };
+
+    invoices[invoiceIndex] = updatedInvoice;
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem(INVOICES_STORAGE_KEY, JSON.stringify(invoices));
+        window.dispatchEvent(new Event("unicampus:finance-updated"));
+      } catch {
+        // quota
+      }
+    }
+
+    adminService.logAction({
+      category: "Finance",
+      title: "Custom Fee Issued",
+      description: `Issued ${label} (৳${feeAmount.toLocaleString()}) for ${targetInvoice.student_name} (${targetInvoice.semester_name}).`,
+      actor_name: "Finance Accounts",
+      department_id: "dept-cse",
+      iconBg: "bg-warning-light",
+      iconColor: "text-warning",
+    });
+
+    return updatedInvoice;
+  }
+
+  applyTuitionWaiver(
+    studentId: string,
+    waiverAmount: number,
+    reason: string
+  ): SemesterInvoice {
+    const invoices = this.getInvoices();
+    const invoiceIndex = invoices.findIndex((inv) => inv.student_id === studentId);
+    const targetIndex = invoiceIndex >= 0 ? invoiceIndex : 0;
+    const targetInvoice = invoices[targetIndex] || INITIAL_SEMESTER_INVOICES[0];
+    const discount = Number(waiverAmount);
+
+    const newLineItem: FeeLineItem = {
+      id: `waiver-${Date.now()}`,
+      label: `Tuition Waiver: ${reason}`,
+      category: "Tuition",
+      amount: -discount,
+    };
+
+    const updatedTotal = Math.max(0, (targetInvoice.total_amount || 0) - discount);
+    const updatedDue = Math.max(0, (targetInvoice.due_amount || 0) - discount);
+    const updatedStatus = updatedDue === 0 ? "Paid" : "Pending";
+
+    const updatedInvoice: SemesterInvoice = {
+      ...targetInvoice,
+      line_items: [...targetInvoice.line_items, newLineItem],
+      total_amount: updatedTotal,
+      due_amount: updatedDue,
+      status: updatedStatus,
+    };
+
+    invoices[targetIndex] = updatedInvoice;
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem(INVOICES_STORAGE_KEY, JSON.stringify(invoices));
+        window.dispatchEvent(new Event("unicampus:finance-updated"));
+      } catch {
+        // quota
+      }
+    }
+
+    adminService.logAction({
+      category: "Finance",
+      title: "Tuition Waiver Applied",
+      description: `Waiver discount ৳${discount.toLocaleString()} applied for ${targetInvoice.student_name}: ${reason}.`,
+      actor_name: "Academic Accounts",
+      department_id: "dept-cse",
+      iconBg: "bg-success-light",
+      iconColor: "text-success",
+    });
+
+    if (updatedDue === 0 && targetInvoice.student_id) {
+      adminService.toggleStudentHold(
+        targetInvoice.student_id,
+        "financial",
+        false,
+        "Dues cleared in full by tuition waiver"
+      );
+    }
+
+    return updatedInvoice;
   }
 
   getStudentTransactions(): PaymentTransaction[] {

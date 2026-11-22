@@ -11,6 +11,9 @@ import {
   Eye,
   Ban,
   AlertCircle,
+  CreditCard,
+  Check,
+  X,
 } from "lucide-react";
 import { Badge, Button } from "@/components/ui";
 import type { UserRecord } from "./usersData";
@@ -25,6 +28,9 @@ interface UserRowProps {
   onResetPassword: (user: UserRecord) => void;
   onImpersonate: (user: UserRecord) => void;
   onSuspendToggle: (user: UserRecord) => void;
+  onToggleHold?: (user: UserRecord, holdType: "academic" | "financial") => void;
+  onApprove?: (user: UserRecord) => void;
+  onReject?: (user: UserRecord) => void;
 }
 
 const UserTableRow = React.memo(function UserTableRow({
@@ -37,15 +43,18 @@ const UserTableRow = React.memo(function UserTableRow({
   onResetPassword,
   onImpersonate,
   onSuspendToggle,
+  onToggleHold,
+  onApprove,
+  onReject,
 }: UserRowProps) {
   return (
     <tr
-      className={`transition-colors h-14 ${
+      className={`transition-colors ${
         isPopoverOpen ? "bg-surface-2 relative z-30" : "hover:bg-surface-2/60"
       }`}
     >
       {/* 1. Name & Email */}
-      <td className="py-2.5 px-4">
+      <td className="py-[var(--row-py)] px-4">
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-8 h-8 rounded-full bg-brand-soft border border-brand/25 flex items-center justify-center shrink-0 font-sans text-xs font-semibold text-brand">
             {user.initials}
@@ -70,7 +79,7 @@ const UserTableRow = React.memo(function UserTableRow({
       </td>
 
       {/* 2. Role Badge */}
-      <td className="py-2.5 px-3 whitespace-nowrap">
+      <td className="py-[var(--row-py)] px-3 whitespace-nowrap">
         {user.role === "admin" && (
           <Badge variant="brand">
             <Shield className="w-3 h-3" />
@@ -92,19 +101,19 @@ const UserTableRow = React.memo(function UserTableRow({
       </td>
 
       {/* 3. User ID / Student ID */}
-      <td className="py-2.5 px-3 whitespace-nowrap">
+      <td className="py-[var(--row-py)] px-3 whitespace-nowrap">
         <span className="font-mono text-xs text-fg bg-surface-2 px-2 py-1 rounded border border-line tabular-nums">
           {user.id}
         </span>
       </td>
 
       {/* 4. Department */}
-      <td className="py-2.5 px-3 text-fg-muted font-medium max-w-[180px] truncate">
+      <td className="py-[var(--row-py)] px-3 text-fg-muted font-medium max-w-[180px] truncate">
         {user.department}
       </td>
 
       {/* 5. Last Login */}
-      <td className="py-2.5 px-3 whitespace-nowrap hidden xl:table-cell">
+      <td className="py-[var(--row-py)] px-3 whitespace-nowrap hidden xl:table-cell">
         <span
           className={`font-sans text-xs ${
             user.isOnlineNow ? "text-success font-medium" : "text-fg-muted"
@@ -115,32 +124,65 @@ const UserTableRow = React.memo(function UserTableRow({
       </td>
 
       {/* 6. Account Status */}
-      <td className="py-2.5 px-3 whitespace-nowrap">
-        {user.status === "active" && <Badge variant="success">Active</Badge>}
-        {user.status === "pending" && (
-          <Badge variant="warning">Pending Verification</Badge>
-        )}
-        {user.status === "suspended" && (
-          <Badge variant="danger">Suspended</Badge>
-        )}
+      <td className="py-[var(--row-py)] px-3 whitespace-nowrap">
+        <div className="flex flex-wrap gap-1 items-center">
+          {user.status === "active" && <Badge variant="success">Active</Badge>}
+          {user.status === "pending" && (
+            <Badge variant="warning">Pending Verification</Badge>
+          )}
+          {user.status === "suspended" && (
+            <Badge variant="danger">Suspended</Badge>
+          )}
+          {user.academic_hold && (
+            <Badge variant="danger">Academic Hold</Badge>
+          )}
+          {user.financial_hold && (
+            <Badge variant="danger">Financial Hold</Badge>
+          )}
+        </div>
       </td>
 
       {/* 7. Actions */}
-      <td className="py-2.5 px-4 text-right whitespace-nowrap relative">
-        <button
-          type="button"
-          data-action-trigger="true"
-          onClick={() => onTogglePopover(user.id)}
-          aria-label={`Manage ${user.name}`}
-          className={`min-w-[40px] min-h-[40px] inline-flex items-center justify-center rounded-xl transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
-            isPopoverOpen
-              ? "bg-surface-2 text-brand border border-brand/40"
-              : "text-fg-muted hover:text-fg hover:bg-surface-2"
-          }`}
-          title="Manage User Account"
-        >
-          <MoreVertical className="w-4 h-4" />
-        </button>
+      <td className="py-[var(--row-py)] px-4 text-right whitespace-nowrap relative">
+        <div className="inline-flex items-center justify-end gap-1.5">
+          {user.status === "pending" && (
+            <div className="inline-flex items-center gap-1 mr-1">
+              <button
+                type="button"
+                onClick={() => onApprove?.(user)}
+                title="Approve User"
+                className="px-2 py-1 rounded-lg bg-success hover:bg-success/90 text-on-brand text-xs font-semibold inline-flex items-center gap-1 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+              >
+                <Check className="w-3 h-3" />
+                <span>Approve</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onReject?.(user)}
+                title="Reject User"
+                className="px-2 py-1 rounded-lg bg-danger hover:bg-danger/90 text-on-brand text-xs font-semibold inline-flex items-center gap-1 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+              >
+                <X className="w-3 h-3" />
+                <span>Reject</span>
+              </button>
+            </div>
+          )}
+
+          <button
+            type="button"
+            data-action-trigger="true"
+            onClick={() => onTogglePopover(user.id)}
+            aria-label={`Manage ${user.name}`}
+            className={`min-w-[40px] min-h-[40px] inline-flex items-center justify-center rounded-xl transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
+              isPopoverOpen
+                ? "bg-surface-2 text-brand border border-brand/40"
+                : "text-fg-muted hover:text-fg hover:bg-surface-2"
+            }`}
+            title="Manage User Account"
+          >
+            <MoreVertical className="w-4 h-4" />
+          </button>
+        </div>
 
         {isPopoverOpen && (
           <div
@@ -155,6 +197,28 @@ const UserTableRow = React.memo(function UserTableRow({
                 {user.id}
               </span>
             </div>
+
+            {user.status === "pending" && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => onApprove?.(user)}
+                  className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-success hover:bg-success-light text-xs font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
+                  <span>Approve Registration</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onReject?.(user)}
+                  className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-danger hover:bg-danger-light text-xs font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                >
+                  <Ban className="w-3.5 h-3.5 text-danger shrink-0" />
+                  <span>Reject Registration</span>
+                </button>
+                <div className="my-1 border-t border-line" />
+              </>
+            )}
 
             <button
               type="button"
@@ -182,6 +246,32 @@ const UserTableRow = React.memo(function UserTableRow({
               <Eye className="w-3.5 h-3.5 text-fg-muted shrink-0" />
               <span className="font-medium">Preview Role View</span>
             </button>
+
+            {user.role === "student" && (
+              <>
+                <div className="my-1 border-t border-line" />
+                <button
+                  type="button"
+                  onClick={() => onToggleHold?.(user, "academic")}
+                  className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-fg hover:bg-surface-2 text-xs transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                >
+                  <AlertCircle className="w-3.5 h-3.5 text-warning shrink-0" />
+                  <span className="font-medium">
+                    {user.academic_hold ? "Lift Academic Hold" : "Place Academic Hold"}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onToggleHold?.(user, "financial")}
+                  className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-fg hover:bg-surface-2 text-xs transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                >
+                  <CreditCard className="w-3.5 h-3.5 text-warning shrink-0" />
+                  <span className="font-medium">
+                    {user.financial_hold ? "Lift Financial Hold" : "Place Financial Hold"}
+                  </span>
+                </button>
+              </>
+            )}
 
             <div className="my-1 border-t border-line" />
 
@@ -212,6 +302,9 @@ const UserMobileCard = React.memo(function UserMobileCard({
   onEditRole,
   onResetPassword,
   onSuspendToggle,
+  onToggleHold,
+  onApprove,
+  onReject,
 }: Omit<UserRowProps, "openUpward" | "onImpersonate">) {
   return (
     <div className="p-4 space-y-3 relative">
@@ -251,7 +344,34 @@ const UserMobileCard = React.memo(function UserMobileCard({
         {user.status === "suspended" && (
           <Badge variant="danger">Suspended</Badge>
         )}
+        {user.academic_hold && (
+          <Badge variant="danger">Academic Hold</Badge>
+        )}
+        {user.financial_hold && (
+          <Badge variant="danger">Financial Hold</Badge>
+        )}
       </div>
+
+      {user.status === "pending" && (
+        <div className="flex items-center gap-2 pt-1">
+          <button
+            type="button"
+            onClick={() => onApprove?.(user)}
+            className="flex-1 min-h-[36px] rounded-lg bg-success hover:bg-success/90 text-on-brand text-xs font-semibold flex items-center justify-center gap-1 cursor-pointer transition-colors"
+          >
+            <Check className="w-3.5 h-3.5" />
+            <span>Approve</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => onReject?.(user)}
+            className="flex-1 min-h-[36px] rounded-lg bg-danger hover:bg-danger/90 text-on-brand text-xs font-semibold flex items-center justify-center gap-1 cursor-pointer transition-colors"
+          >
+            <X className="w-3.5 h-3.5" />
+            <span>Reject</span>
+          </button>
+        </div>
+      )}
 
       <div className="text-xs text-fg-muted flex items-center justify-between gap-2">
         <span className="truncate">{user.department}</span>
@@ -279,6 +399,32 @@ const UserMobileCard = React.memo(function UserMobileCard({
             <KeyRound className="w-3.5 h-3.5 text-fg-muted shrink-0" />
             <span>Reset Password</span>
           </button>
+
+          {user.role === "student" && (
+            <>
+              <button
+                type="button"
+                onClick={() => onToggleHold?.(user, "academic")}
+                className="w-full min-h-[44px] flex items-center gap-2.5 px-3 py-2 rounded-lg text-fg hover:bg-surface text-xs font-medium cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+              >
+                <AlertCircle className="w-3.5 h-3.5 text-warning shrink-0" />
+                <span>
+                  {user.academic_hold ? "Lift Academic Hold" : "Place Academic Hold"}
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onToggleHold?.(user, "financial")}
+                className="w-full min-h-[44px] flex items-center gap-2.5 px-3 py-2 rounded-lg text-fg hover:bg-surface text-xs font-medium cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+              >
+                <CreditCard className="w-3.5 h-3.5 text-warning shrink-0" />
+                <span>
+                  {user.financial_hold ? "Lift Financial Hold" : "Place Financial Hold"}
+                </span>
+              </button>
+            </>
+          )}
+
           <button
             type="button"
             onClick={() => onSuspendToggle(user)}
@@ -313,6 +459,9 @@ interface UsersDirectoryTableProps {
   onResetPassword: (user: UserRecord) => void;
   onImpersonate: (user: UserRecord) => void;
   onSuspendToggle: (user: UserRecord) => void;
+  onToggleHold?: (user: UserRecord, holdType: "academic" | "financial") => void;
+  onApprove?: (user: UserRecord) => void;
+  onReject?: (user: UserRecord) => void;
 }
 
 export function UsersDirectoryTable({
@@ -331,6 +480,9 @@ export function UsersDirectoryTable({
   onResetPassword,
   onImpersonate,
   onSuspendToggle,
+  onToggleHold,
+  onApprove,
+  onReject,
 }: UsersDirectoryTableProps) {
   return (
     <div className="bg-surface rounded-2xl border border-line relative overflow-visible">
@@ -339,15 +491,15 @@ export function UsersDirectoryTable({
         <table className="w-full text-left border-collapse table-auto">
           <thead>
             <tr className="bg-surface-2 border-b border-line text-xs font-sans text-fg-muted">
-              <th className="py-3 px-4 font-semibold">User</th>
-              <th className="py-3 px-3 font-semibold">Role</th>
-              <th className="py-3 px-3 font-semibold whitespace-nowrap">ID</th>
-              <th className="py-3 px-3 font-semibold">Department</th>
-              <th className="py-3 px-3 font-semibold hidden xl:table-cell whitespace-nowrap">
+              <th className="py-[var(--row-py)] px-4 font-semibold">User</th>
+              <th className="py-[var(--row-py)] px-3 font-semibold">Role</th>
+              <th className="py-[var(--row-py)] px-3 font-semibold whitespace-nowrap">ID</th>
+              <th className="py-[var(--row-py)] px-3 font-semibold">Department</th>
+              <th className="py-[var(--row-py)] px-3 font-semibold hidden xl:table-cell whitespace-nowrap">
                 Last Login
               </th>
-              <th className="py-3 px-3 font-semibold">Status</th>
-              <th className="py-3 px-4 font-semibold text-right w-16">Actions</th>
+              <th className="py-[var(--row-py)] px-3 font-semibold">Status</th>
+              <th className="py-[var(--row-py)] px-4 font-semibold text-right w-16">Actions</th>
             </tr>
           </thead>
 
@@ -389,6 +541,9 @@ export function UsersDirectoryTable({
                   onResetPassword={onResetPassword}
                   onImpersonate={onImpersonate}
                   onSuspendToggle={onSuspendToggle}
+                  onToggleHold={onToggleHold}
+                  onApprove={onApprove}
+                  onReject={onReject}
                 />
               ))
             )}
@@ -422,6 +577,9 @@ export function UsersDirectoryTable({
               onEditRole={onEditRole}
               onResetPassword={onResetPassword}
               onSuspendToggle={onSuspendToggle}
+              onToggleHold={onToggleHold}
+              onApprove={onApprove}
+              onReject={onReject}
             />
           ))
         )}

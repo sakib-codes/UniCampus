@@ -4,6 +4,7 @@ import React from "react";
 import { UserPlus, Upload, Shield, X, FileSpreadsheet, Download } from "lucide-react";
 import { Button } from "@/components/ui";
 import { CANONICAL_DEPARTMENTS } from "@/lib/canonicalCampus";
+import { ORDINAL_SEMESTERS } from "@/lib/mockData";
 import { DEPT_META, type DeptKey, type UserRecord } from "./usersData";
 
 interface UsersModalsProps {
@@ -32,7 +33,12 @@ interface UsersModalsProps {
   onEditRoleChange: (v: "student" | "teacher" | "admin") => void;
   editDeptKey: DeptKey;
   onEditDeptKeyChange: (v: DeptKey) => void;
+  editSemester?: string;
+  onEditSemesterChange?: (v: string) => void;
+  editTeacherCode?: string;
+  onEditTeacherCodeChange?: (v: string) => void;
   onSaveRoleChanges: () => void;
+  isDeptAdmin?: boolean;
 }
 
 export function UsersModals({
@@ -59,7 +65,12 @@ export function UsersModals({
   onEditRoleChange,
   editDeptKey,
   onEditDeptKeyChange,
+  editSemester = "1st Semester",
+  onEditSemesterChange,
+  editTeacherCode = "",
+  onEditTeacherCodeChange,
   onSaveRoleChanges,
+  isDeptAdmin = false,
 }: UsersModalsProps) {
   return (
     <>
@@ -148,7 +159,7 @@ export function UsersModals({
                   >
                     <option value="student">Student</option>
                     <option value="teacher">Teacher / Faculty</option>
-                    <option value="admin">Administrator</option>
+                    {!isDeptAdmin && <option value="admin">Administrator</option>}
                   </select>
                 </div>
 
@@ -162,8 +173,9 @@ export function UsersModals({
                   <select
                     id="invite-user-dept"
                     value={inviteDept}
+                    disabled={isDeptAdmin}
                     onChange={(e) => onInviteDeptChange(e.target.value as DeptKey)}
-                    className="w-full min-h-[44px] bg-surface-2 border border-line focus:border-brand rounded-xl px-3.5 py-2 text-xs text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand cursor-pointer"
+                    className="w-full min-h-[44px] bg-surface-2 border border-line focus:border-brand rounded-xl px-3.5 py-2 text-xs text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     {CANONICAL_DEPARTMENTS.map((d) => {
                       const key = d.code.toLowerCase() as DeptKey;
@@ -173,7 +185,7 @@ export function UsersModals({
                         </option>
                       );
                     })}
-                    <option value="it">Central Administration</option>
+                    {!isDeptAdmin && <option value="it">Central Administration</option>}
                   </select>
                 </div>
               </div>
@@ -333,7 +345,7 @@ export function UsersModals({
                 >
                   <option value="student">Student</option>
                   <option value="teacher">Teacher / Faculty</option>
-                  <option value="admin">Administrator</option>
+                  {!isDeptAdmin && <option value="admin">Administrator</option>}
                 </select>
               </div>
 
@@ -347,10 +359,11 @@ export function UsersModals({
                 <select
                   id="edit-user-dept"
                   value={editDeptKey}
+                  disabled={isDeptAdmin}
                   onChange={(e) =>
                     onEditDeptKeyChange(e.target.value as DeptKey)
                   }
-                  className="w-full min-h-[44px] bg-surface-2 border border-line focus:border-brand rounded-xl px-3.5 py-2 text-xs text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand cursor-pointer"
+                  className="w-full min-h-[44px] bg-surface-2 border border-line focus:border-brand rounded-xl px-3.5 py-2 text-xs text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {CANONICAL_DEPARTMENTS.map((d) => {
                     const key = d.code.toLowerCase() as DeptKey;
@@ -360,9 +373,52 @@ export function UsersModals({
                       </option>
                     );
                   })}
-                  <option value="it">Central University Administration</option>
+                  {!isDeptAdmin && <option value="it">Central University Administration</option>}
                 </select>
               </div>
+
+              {/* Dynamic Role Fields */}
+              {editRole === "student" && (
+                <div>
+                  <label
+                    htmlFor="edit-user-semester"
+                    className="block text-xs font-semibold text-fg-muted mb-1.5"
+                  >
+                    Assigned Semester &amp; Batch
+                  </label>
+                  <select
+                    id="edit-user-semester"
+                    value={editSemester}
+                    onChange={(e) => onEditSemesterChange?.(e.target.value)}
+                    className="w-full min-h-[44px] bg-surface-2 border border-line focus:border-brand rounded-xl px-3.5 py-2 text-xs text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand cursor-pointer"
+                  >
+                    {ORDINAL_SEMESTERS.map((sem) => (
+                      <option key={sem} value={sem}>
+                        {sem}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {editRole === "teacher" && (
+                <div>
+                  <label
+                    htmlFor="edit-user-teacher-code"
+                    className="block text-xs font-semibold text-fg-muted mb-1.5"
+                  >
+                    Teacher Code / Faculty ID
+                  </label>
+                  <input
+                    id="edit-user-teacher-code"
+                    type="text"
+                    placeholder="e.g. T-CSE-01 or FAC-102"
+                    value={editTeacherCode}
+                    onChange={(e) => onEditTeacherCodeChange?.(e.target.value)}
+                    className="w-full min-h-[44px] bg-surface-2 border border-line focus:border-brand rounded-xl px-3.5 py-2 text-xs text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand font-mono"
+                  />
+                </div>
+              )}
 
               <div className="pt-2 flex items-center justify-end gap-3 border-t border-line">
                 <Button variant="secondary" size="sm" onClick={onCloseEditModal}>

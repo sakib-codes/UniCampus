@@ -9,11 +9,16 @@ import {
   Users,
   Receipt,
   Mail,
+  PlusCircle,
+  CheckCircle2,
 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { ORDINAL_SEMESTERS } from "@/lib/mockData";
+import { CANONICAL_STUDENT } from "@/lib/canonicalCampus";
+import { studentPaymentService } from "@/lib/services/studentPaymentService";
 import type {
   Department,
+  FeeCategory,
   OrdinalSemesterName,
   PaymentTransaction,
 } from "@/types/admin";
@@ -250,6 +255,41 @@ export function SemesterDuesTab({
   onSendDueReminders,
 }: SemesterDuesTabProps) {
   const [reminderChannel, setReminderChannel] = useState<"all" | "sms" | "email">("all");
+  const [isAdjustmentModalOpen, setIsAdjustmentModalOpen] = useState(false);
+  const [adjType, setAdjType] = useState<"custom_fee" | "waiver">("custom_fee");
+  const [adjStudentId, setAdjStudentId] = useState<string>(CANONICAL_STUDENT.studentId);
+  const [adjCategory, setAdjCategory] = useState<FeeCategory>("Late Fine");
+  const [adjLabel, setAdjLabel] = useState("Late Semester Registration Surcharge");
+  const [adjAmount, setAdjAmount] = useState("1500");
+  const [adjStatusMessage, setAdjStatusMessage] = useState<string | null>(null);
+
+  const handleApplyAdjustment = (e: React.FormEvent) => {
+    e.preventDefault();
+    const amountNum = parseFloat(adjAmount);
+    if (isNaN(amountNum) || amountNum <= 0) return;
+
+    if (adjType === "custom_fee") {
+      studentPaymentService.issueCustomFee(
+        adjStudentId,
+        adjLabel,
+        adjCategory,
+        amountNum
+      );
+      setAdjStatusMessage(`Successfully issued ৳${amountNum.toLocaleString()} custom fee.`);
+    } else {
+      studentPaymentService.applyTuitionWaiver(
+        adjStudentId,
+        amountNum,
+        adjLabel || "Merit Tuition Waiver"
+      );
+      setAdjStatusMessage(`Successfully applied ৳${amountNum.toLocaleString()} tuition waiver.`);
+    }
+
+    setTimeout(() => {
+      setAdjStatusMessage(null);
+      setIsAdjustmentModalOpen(false);
+    }, 1200);
+  };
 
   // Compute 1st to 8th Semester metrics
   const semesterBreakdown = useMemo(() => {
@@ -338,6 +378,14 @@ export function SemesterDuesTab({
           </div>
 
           <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => setIsAdjustmentModalOpen(true)}
+              className="min-h-[40px] bg-brand text-on-brand hover:bg-brand/90 rounded-xl font-semibold px-3.5 py-1.5 text-xs flex items-center gap-1.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand shadow-xs transition-colors"
+            >
+              <PlusCircle className="w-3.5 h-3.5" />
+              Issue Fee / Waiver
+            </button>
             <button
               type="button"
               onClick={onExportDeptCsv}
@@ -507,6 +555,151 @@ export function SemesterDuesTab({
             </p>
           </div>
         </div>
+      </Modal>
+
+      {/* Fee & Waiver Adjustment Modal */}
+      <Modal
+        open={isAdjustmentModalOpen}
+        onClose={() => setIsAdjustmentModalOpen(false)}
+        title="Institutional Fiscal Adjustment"
+        description="Issue custom administrative fee, late fine, or apply scholarship tuition waiver directly to the student ledger."
+      >
+        <form onSubmit={handleApplyAdjustment} className="space-y-4">
+          {adjStatusMessage && (
+            <div className="p-3 rounded-xl bg-success-light border border-success/30 text-success text-xs font-semibold flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              <span>{adjStatusMessage}</span>
+            </div>
+          )}
+
+          {/* Action Type Toggle */}
+          <div>
+            <label className="block text-xs font-semibold text-fg-muted mb-1.5">
+              Adjustment Operation
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setAdjType("custom_fee");
+                  setAdjLabel("Late Semester Registration Surcharge");
+                  setAdjCategory("Late Fine");
+                }}
+                className={`py-2 px-3 rounded-xl text-xs font-semibold border transition-colors cursor-pointer ${
+                  adjType === "custom_fee"
+                    ? "bg-brand text-on-brand border-brand"
+                    : "bg-canvas text-fg-muted border-line hover:text-fg"
+                }`}
+              >
+                Issue Fee / Fine (+)
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setAdjType("waiver");
+                  setAdjLabel("Merit-Based Tuition Waiver (20%)");
+                  setAdjCategory("Tuition");
+                }}
+                className={`py-2 px-3 rounded-xl text-xs font-semibold border transition-colors cursor-pointer ${
+                  adjType === "waiver"
+                    ? "bg-brand text-on-brand border-brand"
+                    : "bg-canvas text-fg-muted border-line hover:text-fg"
+                }`}
+              >
+                Apply Tuition Waiver (-)
+              </button>
+            </div>
+          </div>
+
+          {/* Student Selector */}
+          <div>
+            <label htmlFor="adj-student-select" className="block text-xs font-semibold text-fg-muted mb-1">
+              Beneficiary / Student
+            </label>
+            <select
+              id="adj-student-select"
+              value={adjStudentId}
+              onChange={(e) => setAdjStudentId(e.target.value)}
+              className="w-full min-h-[40px] px-3 py-2 rounded-xl bg-canvas border border-line text-xs font-semibold text-fg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+            >
+              <option value={CANONICAL_STUDENT.studentId}>
+                {CANONICAL_STUDENT.name} ({CANONICAL_STUDENT.studentId}) • {CANONICAL_STUDENT.departmentName}
+              </option>
+            </select>
+          </div>
+
+          {/* Category */}
+          {adjType === "custom_fee" && (
+            <div>
+              <label htmlFor="adj-category-select" className="block text-xs font-semibold text-fg-muted mb-1">
+                Classification Category
+              </label>
+              <select
+                id="adj-category-select"
+                value={adjCategory}
+                onChange={(e) => setAdjCategory(e.target.value as FeeCategory)}
+                className="w-full min-h-[40px] px-3 py-2 rounded-xl bg-canvas border border-line text-xs font-semibold text-fg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+              >
+                <option value="Late Fine">Late Fine / Penalty</option>
+                <option value="Lab">Lab &amp; Sessional Equipment Fee</option>
+                <option value="Library">Library &amp; Resource Access</option>
+                <option value="Exam">Exam / Retake Fee</option>
+                <option value="Tuition">Special Tuition Adjustment</option>
+                <option value="Transport">Campus Shuttle / Transport</option>
+              </select>
+            </div>
+          )}
+
+          {/* Label / Description */}
+          <div>
+            <label htmlFor="adj-label-input" className="block text-xs font-semibold text-fg-muted mb-1">
+              {adjType === "custom_fee" ? "Fee Description" : "Waiver Justification / Scheme"}
+            </label>
+            <input
+              id="adj-label-input"
+              type="text"
+              required
+              value={adjLabel}
+              onChange={(e) => setAdjLabel(e.target.value)}
+              placeholder="e.g. Late Registration Surcharge"
+              className="w-full min-h-[40px] px-3 py-2 rounded-xl bg-canvas border border-line text-xs font-medium text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+            />
+          </div>
+
+          {/* Amount */}
+          <div>
+            <label htmlFor="adj-amount-input" className="block text-xs font-semibold text-fg-muted mb-1">
+              Adjustment Amount (BDT ৳)
+            </label>
+            <input
+              id="adj-amount-input"
+              type="number"
+              min="100"
+              step="100"
+              required
+              value={adjAmount}
+              onChange={(e) => setAdjAmount(e.target.value)}
+              placeholder="1500"
+              className="w-full min-h-[40px] px-3 py-2 rounded-xl bg-canvas border border-line text-xs font-medium text-fg tabular-nums focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+            />
+          </div>
+
+          <div className="pt-2 flex items-center justify-end gap-2 border-t border-line">
+            <button
+              type="button"
+              onClick={() => setIsAdjustmentModalOpen(false)}
+              className="px-4 py-2 rounded-xl bg-surface-2 hover:bg-canvas text-xs font-semibold text-fg border border-line cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 rounded-xl bg-brand text-on-brand hover:bg-brand/90 text-xs font-semibold cursor-pointer shadow-xs"
+            >
+              Confirm &amp; Apply
+            </button>
+          </div>
+        </form>
       </Modal>
     </div>
   );

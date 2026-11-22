@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   ChevronLeft,
   ChevronRight,
@@ -14,9 +15,53 @@ import {
   PORTAL_NAV,
   isNavItemActive,
   resolveNavBadge,
+  type NavItem,
   type PortalRole,
 } from "@/lib/navigation";
 import ProfileAvatar from "@/components/common/ProfileAvatar";
+
+export const NAV_GROUPS: Record<
+  PortalRole,
+  Array<{ key: string; label: string; ids: string[] }>
+> = {
+  admin: [
+    { key: "overview", label: "Overview", ids: ["overview"] },
+    {
+      key: "academic",
+      label: "Academic",
+      ids: ["users", "departments", "routine"],
+    },
+    {
+      key: "operations",
+      label: "Operations",
+      ids: ["notices", "finance", "analytics", "settings"],
+    },
+  ],
+  student: [
+    {
+      key: "academic",
+      label: "Academic",
+      ids: ["home", "advising", "routine", "progress", "payments"],
+    },
+    {
+      key: "community",
+      label: "Campus & Community",
+      ids: ["notices", "classmates", "faculty", "materials", "messages"],
+    },
+  ],
+  teacher: [
+    {
+      key: "teaching",
+      label: "Teaching",
+      ids: ["home", "attendance", "gradebook", "routine", "materials"],
+    },
+    {
+      key: "operations",
+      label: "Operations",
+      ids: ["notices", "payroll", "messages"],
+    },
+  ],
+};
 
 interface SideNavProps {
   role: PortalRole;
@@ -34,6 +79,7 @@ export function SideNav({
   const pathname = usePathname();
   const router = useRouter();
   const { currentUser, isDeptAdmin, logout } = useAdminAuth();
+  const reduceMotion = useReducedMotion();
 
   const config = PORTAL_NAV[role];
 
@@ -64,7 +110,7 @@ export function SideNav({
       {/* Top Brand + Nav Links */}
       <div className="flex flex-col flex-1 min-h-0">
         <div
-          className={`h-16 flex items-center border-b border-line shrink-0 ${
+          className={`h-14 flex items-center border-b border-line shrink-0 ${
             collapsed ? "px-3 justify-center" : "px-4 justify-between"
           }`}
         >
@@ -120,65 +166,118 @@ export function SideNav({
             collapsed ? "px-2" : "px-3"
           }`}
         >
-          {config.desktop.map((item) => {
-            const isActive = isNavItemActive(pathname, item.href, item.exact);
-            const badgeText = resolveNavBadge(item.badgeKey, role, pendingCount);
-            const isRestrictedForDept = Boolean(isDeptAdmin && item.superAdminOnly);
-            const Icon = item.icon;
+          {(() => {
+            const renderNavItem = (item: NavItem) => {
+              const isActive = isNavItemActive(pathname, item.href, item.exact);
+              const badgeText = resolveNavBadge(item.badgeKey, role, pendingCount);
+              const isRestrictedForDept = Boolean(isDeptAdmin && item.superAdminOnly);
+              const Icon = item.icon;
 
-            const badgeClass =
-              item.badgeTone === "danger"
-                ? "bg-danger-light text-danger"
-                : item.badgeTone === "success"
-                ? "bg-success-light text-success"
-                : "bg-brand-soft text-brand";
+              const badgeClass =
+                item.badgeTone === "danger"
+                  ? "bg-danger-light text-danger"
+                  : item.badgeTone === "success"
+                  ? "bg-success-light text-success"
+                  : "bg-brand-soft text-brand";
 
-            return (
-              <Link
-                key={item.id}
-                href={item.href}
-                title={collapsed ? item.label : undefined}
-                aria-current={isActive ? "page" : undefined}
-                className={`group relative flex items-center min-h-[44px] rounded-xl text-sm transition-colors ${
-                  collapsed ? "justify-center px-2" : "gap-3 px-3"
-                } ${
-                  isActive
-                    ? "bg-brand-soft text-brand font-semibold"
-                    : isRestrictedForDept
-                    ? "text-fg-subtle hover:bg-surface-2 hover:text-fg-muted font-medium"
-                    : "text-fg-muted hover:bg-surface-2 hover:text-fg font-medium"
-                }`}
-              >
-                {isActive && (
-                  <span
-                    aria-hidden="true"
-                    className="absolute left-0 top-2.5 bottom-2.5 w-[3px] rounded-r-full bg-brand"
-                  />
-                )}
-                <Icon className="w-[18px] h-[18px] shrink-0" />
-                {!collapsed && (
-                  <div className="flex-1 flex items-center justify-between gap-2 min-w-0">
-                    <span className="truncate">{item.label}</span>
-                    {badgeText && (
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-[12px] font-medium leading-none shrink-0 tabular-nums ${badgeClass}`}
-                      >
-                        {badgeText}
-                      </span>
-                    )}
-                    {isRestrictedForDept && (
-                      <span
-                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-surface-2 text-fg-muted text-[12px] leading-none shrink-0"
-                        title="Super Admin only"
-                      >
-                        <Lock className="w-3 h-3" />
-                      </span>
-                    )}
-                  </div>
-                )}
-              </Link>
-            );
-          })}
+              return (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  title={collapsed ? item.label : undefined}
+                  aria-current={isActive ? "page" : undefined}
+                  className={`group relative flex items-center h-9 rounded-lg text-sm transition-colors ${
+                    collapsed ? "justify-center px-2" : "gap-3 px-3"
+                  } ${
+                    isActive
+                      ? "text-brand font-semibold"
+                      : isRestrictedForDept
+                      ? "text-fg-subtle hover:bg-surface-2 hover:text-fg-muted font-medium"
+                      : "text-fg-muted hover:bg-surface-2 hover:text-fg font-medium"
+                  }`}
+                >
+                  {isActive && (
+                    <>
+                      <motion.span
+                        layoutId={`sidenav-active-pill-${role}`}
+                        transition={
+                          reduceMotion
+                            ? { duration: 0 }
+                            : { type: "spring", stiffness: 420, damping: 28, mass: 0.8 }
+                        }
+                        aria-hidden="true"
+                        className="absolute inset-0 rounded-xl bg-brand-soft pointer-events-none"
+                      />
+                      <motion.span
+                        layoutId={`sidenav-active-bar-${role}`}
+                        transition={
+                          reduceMotion
+                            ? { duration: 0 }
+                            : { type: "spring", stiffness: 440, damping: 28, mass: 0.8 }
+                        }
+                        aria-hidden="true"
+                        className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-brand z-10"
+                      />
+                    </>
+                  )}
+                  <Icon className="relative z-10 w-[18px] h-[18px] shrink-0" />
+                  {!collapsed && (
+                    <div className="relative z-10 flex-1 flex items-center justify-between gap-2 min-w-0">
+                      <span className="truncate">{item.label}</span>
+                      {badgeText && (
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[12px] font-medium leading-none shrink-0 tabular-nums ${badgeClass}`}
+                        >
+                          {badgeText}
+                        </span>
+                      )}
+                      {isRestrictedForDept && (
+                        <span
+                          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-surface-2 text-fg-muted text-[12px] leading-none shrink-0"
+                          title="Super Admin only"
+                        >
+                          <Lock className="w-3 h-3" />
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </Link>
+              );
+            };
+
+            if (!collapsed && NAV_GROUPS[role]) {
+              const groups = NAV_GROUPS[role];
+              const renderedIds = new Set<string>();
+
+              return (
+                <div className="space-y-3">
+                  {groups.map((group) => {
+                    const groupItems = group.ids
+                      .map((id) => {
+                        renderedIds.add(id);
+                        return config.desktop.find((item) => item.id === id);
+                      })
+                      .filter((item): item is NavItem => Boolean(item));
+                    if (groupItems.length === 0) return null;
+                    return (
+                      <div key={group.key} className="space-y-1">
+                        <div className="px-3 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-fg-subtle">
+                          {group.label}
+                        </div>
+                        {groupItems.map(renderNavItem)}
+                      </div>
+                    );
+                  })}
+                  {/* Failsafe to ensure zero dropped navigation items */}
+                  {config.desktop
+                    .filter((item) => !renderedIds.has(item.id))
+                    .map(renderNavItem)}
+                </div>
+              );
+            }
+
+            return config.desktop.map(renderNavItem);
+          })()}
         </nav>
       </div>
 
@@ -186,6 +285,13 @@ export function SideNav({
       <div className="border-t border-line p-3 shrink-0">
         {collapsed ? (
           <div className="flex flex-col items-center gap-2">
+            <div className="relative shrink-0" title={`${displayName} (${displayMeta})`}>
+              <ProfileAvatar size="sm" alt={displayName} />
+              <span
+                className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-success ring-2 ring-surface"
+                aria-hidden="true"
+              />
+            </div>
             <button
               type="button"
               onClick={() => {
@@ -194,7 +300,7 @@ export function SideNav({
               }}
               title="Sign out"
               aria-label="Sign out"
-              className="w-11 h-11 rounded-xl flex items-center justify-center text-fg-muted hover:text-danger hover:bg-danger-light transition-colors cursor-pointer"
+              className="w-9 h-9 rounded-lg flex items-center justify-center text-fg-muted hover:text-danger hover:bg-danger-light transition-colors cursor-pointer"
             >
               <LogOut className="w-4 h-4" />
             </button>
@@ -202,7 +308,14 @@ export function SideNav({
         ) : (
           <div className="flex items-center justify-between gap-2 px-1.5 py-1">
             <div className="flex items-center gap-2.5 min-w-0">
-              <ProfileAvatar size="sm" alt={displayName} />
+              <div className="relative shrink-0">
+                <ProfileAvatar size="sm" alt={displayName} />
+                <span
+                  className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-success ring-2 ring-surface"
+                  title="Online"
+                  aria-label="Online status"
+                />
+              </div>
               <div className="min-w-0">
                 <p className="text-sm font-medium text-fg truncate leading-tight">
                   {displayName}
@@ -220,7 +333,7 @@ export function SideNav({
               }}
               title="Sign out"
               aria-label="Sign out"
-              className="w-9 h-9 rounded-lg flex items-center justify-center text-fg-muted hover:text-danger hover:bg-danger-light transition-colors shrink-0 cursor-pointer"
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-fg-muted hover:text-danger hover:bg-danger-light transition-colors shrink-0 cursor-pointer"
             >
               <LogOut className="w-4 h-4" />
             </button>

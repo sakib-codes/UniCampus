@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { executeThemeTransition } from "@/lib/themeTransition";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import {
@@ -27,6 +28,7 @@ import {
   FolderGit2,
   MessageSquare,
   BarChart3,
+  BookOpen,
 } from "lucide-react";
 
 interface CommandItem {
@@ -82,6 +84,19 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
         onClose();
       },
       keywords: ["classes", "timetable", "schedule", "routine", "period"],
+    },
+    {
+      id: "nav-advising",
+      title: "Course Advising & Pre-Registration",
+      subtitle: "Select Fall 2026 courses, resolve clashes & submit",
+      category: "Academic",
+      icon: BookOpen,
+      badge: "Advising",
+      action: () => {
+        router.push("/advising");
+        onClose();
+      },
+      keywords: ["advising", "registration", "courses", "preregistration", "credits", "electives", "curriculum"],
     },
     {
       id: "nav-notices",
@@ -475,63 +490,88 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
     }
   }, [selectedIndex]);
 
-  if (!isOpen) return null;
+  const shouldReduceMotion = useReducedMotion();
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 select-none"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Command palette"
-    >
-      <button
-        type="button"
-        aria-label="Close"
-        tabIndex={-1}
-        onClick={onClose}
-        className="fixed inset-0 bg-black/45 dark:bg-black/70 cursor-default"
-      />
-      <div
-        className="relative z-10 w-full max-w-xl max-h-[85vh] bg-surface border border-line rounded-2xl shadow-lg overflow-hidden flex flex-col"
-      >
-        {/* Search Input Bar */}
-        <div className="flex items-center px-4 py-3.5 border-b border-line gap-3 bg-surface-2">
-          <Search className="w-4 h-4 text-fg-muted shrink-0" />
-          <input
-            ref={inputRef}
-            type="text"
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setSelectedIndex(0);
-            }}
-            placeholder="Type a command or jump to a destination..."
-            aria-label="Type a command or jump to a destination"
-            className="flex-1 bg-transparent text-sm font-medium text-fg placeholder:text-fg-muted outline-none focus-visible:ring-2 focus-visible:ring-brand rounded px-1"
-          />
-          {query ? (
-            <button
-              type="button"
-              onClick={() => {
-                setQuery("");
-                setSelectedIndex(0);
-              }}
-              aria-label="Clear query"
-              className="p-1.5 rounded-lg text-fg-muted hover:text-fg transition-colors cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          ) : (
-            <kbd className="px-2 py-0.5 rounded-md bg-surface border border-line font-mono text-xs text-fg-muted">
-              ESC
-            </kbd>
-          )}
-        </div>
-
-        {/* Command List */}
+    <AnimatePresence>
+      {isOpen && (
         <div
-          ref={listRef}
-          className="max-h-[380px] min-h-0 overflow-y-auto p-2 space-y-1"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 select-none"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Command palette"
+        >
+          <motion.button
+            key="cmd-backdrop"
+            type="button"
+            aria-label="Close"
+            tabIndex={-1}
+            onClick={onClose}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 bg-black/45 dark:bg-black/70 cursor-default"
+          />
+          <motion.div
+            key="cmd-dialog"
+            initial={
+              shouldReduceMotion
+                ? { opacity: 0 }
+                : { opacity: 0, scale: 0.93, y: -12 }
+            }
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={
+              shouldReduceMotion
+                ? { opacity: 0 }
+                : { opacity: 0, scale: 0.96, y: -8, transition: { duration: 0.14, ease: "easeIn" } }
+            }
+            transition={{
+              type: "spring",
+              stiffness: 430,
+              damping: 28,
+              mass: 0.8,
+            }}
+            className="relative z-10 w-full max-w-xl max-h-[85vh] bg-surface border border-line rounded-2xl shadow-xl overflow-hidden flex flex-col"
+          >
+            {/* Search Input Bar */}
+            <div className="flex items-center px-4 py-3.5 border-b border-line gap-3 bg-surface-2 focus-within:bg-surface focus-within:border-brand/40 transition-colors">
+              <Search className="w-4 h-4 text-fg-muted shrink-0" />
+              <input
+                ref={inputRef}
+                type="text"
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setSelectedIndex(0);
+                }}
+                placeholder="Type a command or jump to a destination..."
+                aria-label="Type a command or jump to a destination"
+                className="flex-1 bg-transparent text-sm font-medium text-fg placeholder:text-fg-muted outline-none border-none focus:outline-none focus:ring-0"
+              />
+              {query ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuery("");
+                    setSelectedIndex(0);
+                  }}
+                  aria-label="Clear query"
+                  className="p-1.5 rounded-lg text-fg-muted hover:text-fg transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              ) : (
+                <kbd className="px-2 py-0.5 rounded-md bg-surface border border-line font-mono text-xs text-fg-muted">
+                  ESC
+                </kbd>
+              )}
+            </div>
+
+            {/* Command List */}
+            <div
+              ref={listRef}
+              className="max-h-[380px] min-h-0 overflow-y-auto p-2 space-y-1"
         >
           {filteredCommands.length === 0 ? (
             <div className="py-12 text-center text-sm text-fg-muted">
@@ -550,13 +590,25 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                   data-index={idx}
                   onClick={() => cmd.action()}
                   onMouseEnter={() => setSelectedIndex(idx)}
-                  className={`w-full text-left flex items-center justify-between px-3.5 py-2.5 rounded-xl cursor-pointer transition-colors ${
+                  className={`relative w-full text-left flex items-center justify-between px-3.5 py-2.5 rounded-xl cursor-pointer transition-colors ${
                     isSelected
                       ? "bg-brand text-on-brand"
                       : "text-fg-muted hover:bg-surface-2 hover:text-fg"
                   }`}
                 >
-                  <div className="flex items-center gap-3 min-w-0">
+                  {isSelected && (
+                    <motion.span
+                      layoutId="command-palette-active-row"
+                      transition={
+                        shouldReduceMotion
+                          ? { duration: 0 }
+                          : { type: "spring", stiffness: 500, damping: 34, mass: 0.7 }
+                      }
+                      aria-hidden="true"
+                      className="absolute inset-0 rounded-xl bg-brand pointer-events-none"
+                    />
+                  )}
+                  <div className="relative z-10 flex items-center gap-3 min-w-0">
                     <div
                       className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
                         isSelected
@@ -599,7 +651,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 pl-3 shrink-0">
+                  <div className="relative z-10 flex items-center gap-2 pl-3 shrink-0">
                     <span
                       className={`text-xs font-medium ${
                         isSelected ? "text-on-brand/85" : "text-fg-muted"
@@ -643,7 +695,9 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
             <span className="font-medium text-fg-muted">UniCampus Command</span>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
-  );
+  )}
+</AnimatePresence>
+);
 }

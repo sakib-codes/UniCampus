@@ -13,11 +13,19 @@ export interface UserRecord {
   roleLabel: string;
   department: string;
   deptKey: DeptKey;
+  departmentId: string;
+  semesterId?: string | null;
+  semesterName?: string | null;
+  teacherCode?: string | null;
+  studentId?: string | null;
   lastLogin: string;
   isOnlineNow?: boolean;
   status: "active" | "pending" | "suspended";
   statusLabel: string;
   verified?: boolean;
+  academic_hold?: boolean;
+  financial_hold?: boolean;
+  hold_reason?: string | null;
 }
 
 export const DEPT_META: Record<
@@ -92,6 +100,21 @@ export function mapProfileToUserRecord(profile: Profile, index: number): UserRec
   ];
   const isOnline = profile.id === "user-stud-1";
 
+  const rawStatus = (profile as unknown as Record<string, unknown>).account_status as string | undefined;
+  const status: "active" | "pending" | "suspended" =
+    rawStatus === "suspended"
+      ? "suspended"
+      : rawStatus === "pending" || !profile.is_approved
+      ? "pending"
+      : "active";
+
+  const statusLabel =
+    status === "active"
+      ? "Active"
+      : status === "suspended"
+      ? "Suspended"
+      : "Pending Verification";
+
   return {
     id: displayId,
     profileId: profile.id,
@@ -108,14 +131,22 @@ export function mapProfileToUserRecord(profile: Profile, index: number): UserRec
     department:
       profile.department_name || DEPT_META[deptKey].fullName,
     deptKey,
-    lastLogin: !profile.is_approved
+    departmentId: profile.department_id,
+    semesterId: profile.semester_id,
+    semesterName: profile.semester_name,
+    teacherCode: profile.teacher_code,
+    studentId: profile.student_id,
+    lastLogin: status === "pending"
       ? "Pending verification"
       : isOnline
       ? "Online now"
       : loginWindows[index % loginWindows.length],
-    isOnlineNow: isOnline && profile.is_approved,
-    status: profile.is_approved ? "active" : "pending",
-    statusLabel: profile.is_approved ? "Active" : "Pending Verification",
+    isOnlineNow: isOnline && status === "active",
+    status,
+    statusLabel,
     verified: profile.admin_role === "super_admin",
+    academic_hold: Boolean(profile.academic_hold),
+    financial_hold: Boolean(profile.financial_hold),
+    hold_reason: profile.hold_reason || null,
   };
 }

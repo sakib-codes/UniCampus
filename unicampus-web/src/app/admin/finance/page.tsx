@@ -27,6 +27,7 @@ import {
 import { SemesterDuesTab } from "@/components/admin/finance/SemesterDuesTab";
 import { TeacherPayrollTab } from "@/components/admin/finance/TeacherPayrollTab";
 import { GatewayConfigPanel } from "@/components/admin/finance/GatewayConfigPanel";
+import { SuperAdminGate } from "@/components/admin/SuperAdminGate";
 
 const MONTH_CYCLES = ["August 2026", "September 2026", "October 2026", "November 2026"];
 
@@ -136,45 +137,60 @@ export default function AdminFinancePage() {
     [showToast]
   );
 
+  const targetDeptName = useMemo(() => {
+    if (isDeptAdmin && currentUser?.department_id) {
+      return departments.find((d) => d.id === currentUser.department_id)?.name;
+    }
+    if (effectiveDeptId !== "all") {
+      return departments.find((d) => d.id === effectiveDeptId)?.name;
+    }
+    return undefined;
+  }, [isDeptAdmin, currentUser, effectiveDeptId, departments]);
+
+  const scopedTransactions = useMemo(() => {
+    if (!targetDeptName) return transactions;
+    return transactions.filter((t) => t.department_name === targetDeptName);
+  }, [transactions, targetDeptName]);
+
   // Overview Calculations
   const totalInflow = useMemo(
     () =>
-      transactions
+      scopedTransactions
         .filter((t) => (t.type === "student_fee" || t.type === "late_fine") && t.status === "Paid")
         .reduce((acc, t) => acc + t.amount, 0),
-    [transactions]
+    [scopedTransactions]
   );
 
   const totalOutflow = useMemo(
     () =>
-      transactions
+      scopedTransactions
         .filter((t) => t.type === "teacher_wage" && t.status === "Paid")
         .reduce((acc, t) => acc + t.amount, 0),
-    [transactions]
+    [scopedTransactions]
   );
 
   const totalDues = useMemo(
     () =>
-      transactions
+      scopedTransactions
         .filter((t) => t.type === "student_fee" && (t.status === "Pending" || t.status === "Overdue"))
         .reduce((acc, t) => acc + t.amount, 0),
-    [transactions]
+    [scopedTransactions]
   );
 
   const totalPendingDues = useMemo(
     () =>
-      transactions
+      scopedTransactions
         .filter((t) => t.type === "student_fee" && t.status === "Pending")
         .reduce((acc, t) => acc + t.amount, 0),
-    [transactions]
+    [scopedTransactions]
   );
 
   const totalOverdueAmount = useMemo(
     () =>
-      transactions
+      scopedTransactions
         .filter((t) => t.type === "student_fee" && t.status === "Overdue")
         .reduce((acc, t) => acc + t.amount, 0),
-    [transactions]
+    [scopedTransactions]
   );
 
   const netBalance = useMemo(() => totalInflow - totalOutflow, [totalInflow, totalOutflow]);
@@ -195,6 +211,11 @@ export default function AdminFinancePage() {
       return { department: d, collected, target, pending, percentage };
     });
   }, [departments, transactions]);
+
+  const scopedDeptProgressList = useMemo(() => {
+    if (!targetDeptName) return deptProgressList;
+    return deptProgressList.filter((dp) => dp.department.name === targetDeptName);
+  }, [deptProgressList, targetDeptName]);
 
   const currentDeptObj = useMemo(
     () => departments.find((d) => d.id === activeDeptTab) || departments[0],
@@ -296,7 +317,7 @@ export default function AdminFinancePage() {
             </span>
           </div>
           <p className="text-xs text-fg-muted mt-1">
-            YouTube Studio–grade console for student tuition collections, digital gateway reconciliation, semester dues clearance, and faculty payroll.
+            Institutional ledger for student tuition collections, digital gateway reconciliation, semester dues clearance, and faculty payroll.
           </p>
         </div>
       </div>
@@ -360,9 +381,9 @@ export default function AdminFinancePage() {
           totalPendingDues={totalPendingDues}
           totalOverdueAmount={totalOverdueAmount}
           netBalance={netBalance}
-          deptProgressList={deptProgressList}
-          recentTransactions={transactions.slice(0, 5)}
-          allTransactions={transactions}
+          deptProgressList={scopedDeptProgressList}
+          recentTransactions={scopedTransactions.slice(0, 5)}
+          allTransactions={scopedTransactions}
           formatTransactionType={formatTransactionType}
           onSwitchTab={setActiveTab}
           onViewReceipt={setViewingReceipt}
@@ -372,8 +393,10 @@ export default function AdminFinancePage() {
       {/* Tab 2: Transactions Ledger */}
       {activeTab === "transactions" && (
         <TransactionsLedgerTab
-          transactions={transactions}
+          transactions={scopedTransactions}
           departments={departments}
+          isDeptAdmin={isDeptAdmin}
+          defaultDepartment={targetDeptName}
           formatTransactionType={formatTransactionType}
           onExportCsv={(filtered) => {
             const csv = adminService.exportTransactionsCSV(filtered);
@@ -440,15 +463,17 @@ export default function AdminFinancePage() {
 
       {/* Tab 5: Gateway Config & Sandbox Simulation */}
       {activeTab === "gateways" && (
-        <GatewayConfigPanel
-          departments={departments}
-          transactions={transactions}
-          onViewReceipt={setViewingReceipt}
-          onPaymentRecorded={() => {
-            loadData();
-          }}
-          showToast={showToast}
-        />
+        <SuperAdminGate featureName="Payment Gateway Configuration">
+          <GatewayConfigPanel
+            departments={departments}
+            transactions={transactions}
+            onViewReceipt={setViewingReceipt}
+            onPaymentRecorded={() => {
+              loadData();
+            }}
+            showToast={showToast}
+          />
+        </SuperAdminGate>
       )}
 
       {/* Global Digital Receipt Voucher Modal */}

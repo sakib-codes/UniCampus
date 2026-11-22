@@ -96,8 +96,13 @@ export function MoreSheet({
             aria-label="More options"
             initial={reduceMotion ? { opacity: 1 } : { y: "100%" }}
             animate={{ y: 0 }}
-            exit={reduceMotion ? { opacity: 0 } : { y: "100%" }}
-            transition={{ duration: 0.18, ease: "easeOut" }}
+            exit={reduceMotion ? { opacity: 0 } : { y: "100%", transition: { duration: 0.18, ease: "easeIn" } }}
+            transition={{
+              type: "spring",
+              stiffness: 400,
+              damping: 32,
+              mass: 0.85,
+            }}
             className="relative z-10 w-full max-h-[85vh] overflow-y-auto rounded-t-2xl border-t border-line bg-surface shadow-lg px-4 pt-3 pb-[calc(1.25rem+env(safe-area-inset-bottom))]"
           >
             {/* Drag handle + Header */}

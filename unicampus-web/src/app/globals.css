@@ -41,6 +41,9 @@
   --shadow-premium: 0 6px 20px -2px var(--brand-shadow);
   --shadow-xl: 0 20px 40px -12px rgba(20, 20, 27, 0.14);
 
+  /* Information density */
+  --row-py: 0.75rem;
+
   /* Legacy CSS variable aliases mapped to Option A */
   --bg-canvas: var(--canvas);
   --bg-surface: var(--surface);
@@ -97,6 +100,22 @@
   --shadow-lg: 0 12px 28px -6px rgba(0, 0, 0, 0.50);
   --shadow-premium: 0 4px 24px -2px var(--brand-shadow);
   --shadow-xl: 0 20px 40px -12px rgba(0, 0, 0, 0.60);
+}
+
+[data-density="comfortable"],
+html[data-density="comfortable"] {
+  --row-py: 0.75rem;
+}
+
+[data-density="compact"],
+html[data-density="compact"] {
+  --row-py: 0.5rem;
+}
+
+[data-density] table tbody tr td:not([colspan]),
+[data-density] table thead tr th {
+  padding-top: var(--row-py);
+  padding-bottom: var(--row-py);
 }
 
 @theme inline {
@@ -164,8 +183,8 @@
   --shadow-premium: var(--shadow-premium);
   --shadow-xl: var(--shadow-xl);
 
-  --text-xs: 0.8125rem;
-  --text-xs--line-height: 1.125rem;
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1rem;
 
   --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
@@ -209,9 +228,9 @@ body {
 
 /* Scoped transitions for theme switching & interaction */
 button, [role="button"], a, input, select, textarea, [role="tablist"] {
-  transition-property: background-color, border-color, color;
-  transition-duration: 0.2s;
-  transition-timing-function: ease;
+  transition-property: background-color, border-color, color, opacity, box-shadow;
+  transition-duration: 140ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
 }
 
 /* Focus indicator */

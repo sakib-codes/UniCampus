@@ -16,6 +16,7 @@ interface AdminNoticeRowProps {
   notice: Notice;
   isSelected: boolean;
   isMenuOpen: boolean;
+  canModify?: boolean;
   onToggleSelect: (id: string) => void;
   onTogglePin: (id: string) => void;
   onView: (notice: Notice) => void;
@@ -28,6 +29,7 @@ const AdminNoticeRow = React.memo(function AdminNoticeRow({
   notice,
   isSelected,
   isMenuOpen,
+  canModify = true,
   onToggleSelect,
   onTogglePin,
   onView,
@@ -38,23 +40,36 @@ const AdminNoticeRow = React.memo(function AdminNoticeRow({
   return (
     <tr className="hover:bg-surface-2/60 border-b border-line transition-colors group">
       <td className="px-5 py-3 text-center">
-        <input
-          type="checkbox"
-          aria-label={`Select notice ${notice.title}`}
-          checked={isSelected}
-          onChange={() => onToggleSelect(notice.id)}
-          className="rounded border-line bg-canvas text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand cursor-pointer"
-        />
+        {canModify ? (
+          <input
+            type="checkbox"
+            aria-label={`Select notice ${notice.title}`}
+            checked={isSelected}
+            onChange={() => onToggleSelect(notice.id)}
+            className="rounded border-line bg-canvas text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand cursor-pointer"
+          />
+        ) : (
+          <span className="text-xs text-fg-muted">—</span>
+        )}
       </td>
 
       <td className="px-4 py-3 max-w-md">
         <div className="flex items-start gap-2.5">
           <button
             type="button"
+            disabled={!canModify}
             onClick={() => onTogglePin(notice.id)}
-            title={notice.pinned ? "Unpin notice" : "Pin notice to top"}
+            title={
+              !canModify
+                ? "Campus-wide notice (Read-only for department admins)"
+                : notice.pinned
+                ? "Unpin notice"
+                : "Pin notice to top"
+            }
             aria-label={notice.pinned ? "Unpin notice" : "Pin notice to top"}
-            className={`mt-0.5 p-1 rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
+            className={`mt-0.5 p-1 rounded-md transition-colors ${
+              !canModify ? "opacity-60 cursor-not-allowed" : "cursor-pointer"
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
               notice.pinned
                 ? "text-warning bg-warning-light border border-warning/30"
                 : "text-fg-subtle hover:text-fg"
@@ -176,43 +191,47 @@ const AdminNoticeRow = React.memo(function AdminNoticeRow({
                   <Eye className="w-3.5 h-3.5 text-fg-muted" />
                   <span>View Details</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEdit(notice);
-                    onToggleMenu(null);
-                  }}
-                  className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-fg hover:bg-surface-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-                >
-                  <Edit3 className="w-3.5 h-3.5 text-fg-muted" />
-                  <span>Edit Notice</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onTogglePin(notice.id);
-                    onToggleMenu(null);
-                  }}
-                  className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-fg hover:bg-surface-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-                >
-                  <Pin className="w-3.5 h-3.5 text-warning" />
-                  <span>{notice.pinned ? "Unpin Notice" : "Pin to Top"}</span>
-                </button>
-                <div className="my-1 border-t border-line" />
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onRequestDelete(notice.id);
-                    onToggleMenu(null);
-                  }}
-                  className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-danger hover:bg-danger-light transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  <span>Delete Notice</span>
-                </button>
+                {canModify && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEdit(notice);
+                        onToggleMenu(null);
+                      }}
+                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-fg hover:bg-surface-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                    >
+                      <Edit3 className="w-3.5 h-3.5 text-fg-muted" />
+                      <span>Edit Notice</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onTogglePin(notice.id);
+                        onToggleMenu(null);
+                      }}
+                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-fg hover:bg-surface-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                    >
+                      <Pin className="w-3.5 h-3.5 text-warning" />
+                      <span>{notice.pinned ? "Unpin Notice" : "Pin to Top"}</span>
+                    </button>
+                    <div className="my-1 border-t border-line" />
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRequestDelete(notice.id);
+                        onToggleMenu(null);
+                      }}
+                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-danger hover:bg-danger-light transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Delete Notice</span>
+                    </button>
+                  </>
+                )}
               </div>
             </>
           )}
@@ -225,6 +244,7 @@ const AdminNoticeRow = React.memo(function AdminNoticeRow({
 const AdminNoticeMobileCard = React.memo(function AdminNoticeMobileCard({
   notice,
   isMenuOpen,
+  canModify = true,
   onTogglePin,
   onView,
   onEdit,
@@ -237,10 +257,19 @@ const AdminNoticeMobileCard = React.memo(function AdminNoticeMobileCard({
         <div className="flex items-center gap-2 flex-wrap">
           <button
             type="button"
+            disabled={!canModify}
             onClick={() => onTogglePin(notice.id)}
-            title={notice.pinned ? "Unpin notice" : "Pin notice"}
+            title={
+              !canModify
+                ? "Campus-wide notice (Read-only for department admins)"
+                : notice.pinned
+                ? "Unpin notice"
+                : "Pin notice"
+            }
             aria-label={notice.pinned ? "Unpin notice" : "Pin notice"}
-            className={`p-1 rounded-md transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
+            className={`p-1 rounded-md transition-colors ${
+              !canModify ? "opacity-60 cursor-not-allowed" : "cursor-pointer"
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
               notice.pinned
                 ? "text-warning bg-warning-light border border-warning/30"
                 : "text-fg-subtle hover:text-fg"
@@ -336,43 +365,47 @@ const AdminNoticeMobileCard = React.memo(function AdminNoticeMobileCard({
                   <Eye className="w-3.5 h-3.5 text-fg-muted" />
                   <span>View Details</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEdit(notice);
-                    onToggleMenu(null);
-                  }}
-                  className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-fg hover:bg-surface-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-                >
-                  <Edit3 className="w-3.5 h-3.5 text-fg-muted" />
-                  <span>Edit Notice</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onTogglePin(notice.id);
-                    onToggleMenu(null);
-                  }}
-                  className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-fg hover:bg-surface-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-                >
-                  <Pin className="w-3.5 h-3.5 text-warning" />
-                  <span>{notice.pinned ? "Unpin Notice" : "Pin to Top"}</span>
-                </button>
-                <div className="my-1 border-t border-line" />
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onRequestDelete(notice.id);
-                    onToggleMenu(null);
-                  }}
-                  className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-danger hover:bg-danger-light transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  <span>Delete Notice</span>
-                </button>
+                {canModify && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEdit(notice);
+                        onToggleMenu(null);
+                      }}
+                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-fg hover:bg-surface-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                    >
+                      <Edit3 className="w-3.5 h-3.5 text-fg-muted" />
+                      <span>Edit Notice</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onTogglePin(notice.id);
+                        onToggleMenu(null);
+                      }}
+                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-fg hover:bg-surface-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                    >
+                      <Pin className="w-3.5 h-3.5 text-warning" />
+                      <span>{notice.pinned ? "Unpin Notice" : "Pin to Top"}</span>
+                    </button>
+                    <div className="my-1 border-t border-line" />
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRequestDelete(notice.id);
+                        onToggleMenu(null);
+                      }}
+                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-danger hover:bg-danger-light transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Delete Notice</span>
+                    </button>
+                  </>
+                )}
               </div>
             </>
           )}
@@ -393,6 +426,7 @@ interface AdminNoticesTableProps {
   onEdit: (notice: Notice) => void;
   onRequestDelete: (id: string) => void;
   onToggleMenu: (id: string | null) => void;
+  canModifyNotice?: (notice: Notice) => boolean;
 }
 
 export function AdminNoticesTable({
@@ -406,6 +440,7 @@ export function AdminNoticesTable({
   onEdit,
   onRequestDelete,
   onToggleMenu,
+  canModifyNotice,
 }: AdminNoticesTableProps) {
   return (
     <div className="rounded-2xl bg-surface border border-line overflow-hidden">
@@ -421,6 +456,7 @@ export function AdminNoticesTable({
               key={notice.id}
               notice={notice}
               isMenuOpen={activeActionMenuId === notice.id}
+              canModify={canModifyNotice ? canModifyNotice(notice) : true}
               onTogglePin={onTogglePin}
               onView={onView}
               onEdit={onEdit}
@@ -472,6 +508,7 @@ export function AdminNoticesTable({
                   notice={notice}
                   isSelected={selectedNoticeIds.includes(notice.id)}
                   isMenuOpen={activeActionMenuId === notice.id}
+                  canModify={canModifyNotice ? canModifyNotice(notice) : true}
                   onToggleSelect={onToggleSelectNotice}
                   onTogglePin={onTogglePin}
                   onView={onView}

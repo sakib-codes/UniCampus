@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
-import { ShieldCheck, X } from "lucide-react";
+import { useState, useMemo, useCallback, useEffect } from "react";
+import { ShieldCheck, X, Lock } from "lucide-react";
+import { adminService } from "@/lib/services/adminService";
 import {
   INITIAL_ROWS,
   LIMITS,
@@ -27,9 +28,28 @@ export default function TeacherGradesPage() {
   const [activeCellId, setActiveCellId] = useState<string>("stud-2-final");
   const [submitModalOpen, setSubmitModalOpen] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
+  const [gradebookPolicy, setGradebookPolicy] = useState(() =>
+    adminService.getGradebookPolicy(selectedCourse)
+  );
   const [submitSuccessToast, setSubmitSuccessToast] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    const syncPolicy = () => {
+      const p = adminService.getGradebookPolicy(selectedCourse);
+      setGradebookPolicy(p);
+      setIsLocked(p.is_locked);
+    };
+    syncPolicy();
+
+    window.addEventListener("unicampus:gradebook-policy-updated", syncPolicy);
+    window.addEventListener("storage", syncPolicy);
+    return () => {
+      window.removeEventListener("unicampus:gradebook-policy-updated", syncPolicy);
+      window.removeEventListener("storage", syncPolicy);
+    };
+  }, [selectedCourse]);
 
   const outOfRangeErrors = useMemo(() => {
     let count = 0;
@@ -138,11 +158,12 @@ export default function TeacherGradesPage() {
   }, [rows]);
 
   const handleLockAndSubmit = useCallback(() => {
+    adminService.setGradebookLock(selectedCourse, true, "Dr. Asif Rahman", "dept-cse");
     setIsLocked(true);
     setSubmitModalOpen(false);
     setSubmitSuccessToast(true);
     setTimeout(() => setSubmitSuccessToast(false), 4000);
-  }, []);
+  }, [selectedCourse]);
 
   return (
     <div className="w-full space-y-6 pb-20">
@@ -161,6 +182,28 @@ export default function TeacherGradesPage() {
           >
             <X className="w-4 h-4" />
           </button>
+        </div>
+      )}
+
+      {/* Official Registry Lock Banner */}
+      {isLocked && (
+        <div className="p-4 rounded-2xl bg-warning-light border border-warning/30 flex items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-warning text-on-brand flex items-center justify-center shrink-0">
+              <Lock className="w-4 h-4" />
+            </div>
+            <div>
+              <p className="font-semibold text-fg">
+                Official Gradebook Locked • {selectedCourse} ({selectedSemester})
+              </p>
+              <p className="text-fg-muted font-sans mt-0.5">
+                Marks submission has been finalized and locked by {gradebookPolicy.locked_by || "Academic Administration"}. Contact the Registrar to request evaluation amendments.
+              </p>
+            </div>
+          </div>
+          <span className="px-2.5 py-1 rounded-lg bg-surface border border-line font-mono font-semibold text-warning shrink-0">
+            Read-Only
+          </span>
         </div>
       )}
 

@@ -6,9 +6,11 @@ import { Button, PageHeader, Toast } from "@/components/ui";
 import { CAMPUS_METRICS } from "@/lib/canonicalCampus";
 import { INITIAL_PROFILES } from "@/lib/mockData";
 import { adminService } from "@/lib/services/adminService";
+import { useAdminAuth } from "@/context/AdminAuthContext";
 import {
   DEPT_META,
   mapProfileToUserRecord,
+  resolveDeptKey,
   type DeptKey,
   type RoleTab,
   type UserRecord,
@@ -18,6 +20,8 @@ import { UsersDirectoryTable } from "@/components/admin/users/UsersDirectoryTabl
 import { UsersModals } from "@/components/admin/users/UsersModals";
 
 export default function AdminUsersPage() {
+  const { currentUser, isDeptAdmin } = useAdminAuth();
+
   const [users, setUsers] = useState<UserRecord[]>(() =>
     INITIAL_PROFILES.map((p, idx) => mapProfileToUserRecord(p, idx))
   );
@@ -34,6 +38,8 @@ export default function AdminUsersPage() {
   const [editingUser, setEditingUser] = useState<UserRecord | null>(null);
   const [editRole, setEditRole] = useState<"student" | "teacher" | "admin">("student");
   const [editDeptKey, setEditDeptKey] = useState<DeptKey>("cse");
+  const [editSemester, setEditSemester] = useState<string>("1st Semester");
+  const [editTeacherCode, setEditTeacherCode] = useState<string>("");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const [inviteName, setInviteName] = useState("");
@@ -44,12 +50,32 @@ export default function AdminUsersPage() {
 
   const popoverRef = useRef<HTMLDivElement>(null);
 
+  // Sync users with adminService and event bus
   useEffect(() => {
-    queueMicrotask(() => {
+    const syncProfiles = () => {
       const profiles = adminService.getProfiles();
       setUsers(profiles.map((p, idx) => mapProfileToUserRecord(p, idx)));
-    });
+    };
+    syncProfiles();
+    window.addEventListener("unicampus:profiles-updated", syncProfiles);
+    window.addEventListener("storage", syncProfiles);
+    return () => {
+      window.removeEventListener("unicampus:profiles-updated", syncProfiles);
+      window.removeEventListener("storage", syncProfiles);
+    };
   }, []);
+
+  // Lock department filters if dept admin
+  useEffect(() => {
+    if (isDeptAdmin && currentUser) {
+      queueMicrotask(() => {
+        const key = resolveDeptKey(currentUser);
+        setSelectedDept(key);
+        setInviteDept(key);
+        setEditDeptKey(key);
+      });
+    }
+  }, [isDeptAdmin, currentUser]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -69,6 +95,11 @@ export default function AdminUsersPage() {
 
   const filteredUsers = useMemo(() => {
     return users.filter((u) => {
+      if (isDeptAdmin && currentUser?.department_id) {
+        if (u.departmentId !== currentUser.department_id && u.deptKey !== resolveDeptKey(currentUser)) {
+          return false;
+        }
+      }
       if (activeTab !== "all" && u.role !== activeTab) return false;
       if (selectedDept !== "all" && u.deptKey !== selectedDept) return false;
       if (selectedStatus !== "all" && u.status !== selectedStatus) return false;
@@ -84,7 +115,7 @@ export default function AdminUsersPage() {
       }
       return true;
     });
-  }, [users, activeTab, selectedDept, selectedStatus, searchQuery]);
+  }, [users, isDeptAdmin, currentUser, activeTab, selectedDept, selectedStatus, searchQuery]);
 
   const totalPages = Math.max(1, Math.ceil(filteredUsers.length / pageSize));
   const safePage = Math.min(currentPage, totalPages);
@@ -116,6 +147,8 @@ export default function AdminUsersPage() {
     setEditingUser(user);
     setEditRole(user.role);
     setEditDeptKey(user.deptKey);
+    setEditSemester(user.semesterName || "1st Semester");
+    setEditTeacherCode(user.teacherCode || "");
     setOpenPopoverId(null);
   }, []);
 
@@ -128,7 +161,15 @@ export default function AdminUsersPage() {
     setUsers((prev) =>
       prev.map((u) =>
         u.id === editingUser.id
-          ? { ...u, role: editRole, roleLabel: nextRoleLabel, deptKey: editDeptKey, department: deptMeta.fullName }
+          ? {
+              ...u,
+              role: editRole,
+              roleLabel: nextRoleLabel,
+              deptKey: editDeptKey,
+              department: deptMeta.fullName,
+              semesterName: editRole === "student" ? editSemester : u.semesterName,
+              teacherCode: editRole === "teacher" ? editTeacherCode : u.teacherCode,
+            }
           : u
       )
     );
@@ -137,13 +178,14 @@ export default function AdminUsersPage() {
       role: editRole,
       department_id: deptMeta.id,
       department_name: deptMeta.fullName,
+      ...(editRole === "student" ? { semester_name: editSemester } : {}),
+      ...(editRole === "teacher" ? { teacher_code: editTeacherCode } : {}),
     });
-    window.dispatchEvent(new Event("unicampus:profiles-updated"));
 
     const targetName = editingUser.name;
     setEditingUser(null);
     triggerToast(`Updated role permissions for ${targetName}.`);
-  }, [editDeptKey, editRole, editingUser, triggerToast]);
+  }, [editDeptKey, editRole, editSemester, editTeacherCode, editingUser, triggerToast]);
 
   const handleResetPassword = useCallback(
     (user: UserRecord) => {
@@ -163,50 +205,82 @@ export default function AdminUsersPage() {
 
   const handleSuspendToggle = useCallback(
     (user: UserRecord) => {
-      const nextStatus = user.status === "suspended" ? "active" : "suspended";
-      const nextLabel = nextStatus === "suspended" ? "Suspended" : "Active";
-
-      setUsers((prev) =>
-        prev.map((u) => (u.id === user.id ? { ...u, status: nextStatus, statusLabel: nextLabel } : u))
-      );
-
-      if (nextStatus === "active") {
-        adminService.approveProfile(user.profileId);
-        window.dispatchEvent(new Event("unicampus:profiles-updated"));
+      if (user.status === "suspended") {
+        adminService.reactivateProfile(user.profileId);
+        triggerToast(`Restored active access for ${user.name}.`);
+      } else {
+        adminService.suspendProfile(user.profileId);
+        triggerToast(`Access suspended for ${user.name}.`);
       }
-
       setOpenPopoverId(null);
-      triggerToast(
-        user.status === "suspended"
-          ? `Restored active access for ${user.name}.`
-          : `Access suspended for ${user.name}.`
-      );
     },
     [triggerToast]
+  );
+
+  const handleApproveUser = useCallback(
+    (user: UserRecord) => {
+      adminService.approveProfile(user.profileId);
+      triggerToast(`Approved account for ${user.name}.`);
+      setOpenPopoverId(null);
+    },
+    [triggerToast]
+  );
+
+  const handleRejectUser = useCallback(
+    (user: UserRecord) => {
+      adminService.rejectProfile(user.profileId);
+      triggerToast(`Rejected application for ${user.name}.`);
+      setOpenPopoverId(null);
+    },
+    [triggerToast]
+  );
+
+  const handleToggleHold = useCallback(
+    (user: UserRecord, holdType: "academic" | "financial") => {
+      const isCurrentlyHeld =
+        holdType === "academic" ? user.academic_hold : user.financial_hold;
+      const actionLabel = isCurrentlyHeld ? "Cleared" : "Placed";
+      const reason = isCurrentlyHeld
+        ? `Administrative resolution by ${currentUser?.full_name || "Academic Registry"}`
+        : `Administrative review: ${
+            holdType === "academic"
+              ? "Course prerequisite compliance check"
+              : "Tuition dues review"
+          }`;
+
+      adminService.toggleStudentHold(user.profileId, holdType, !isCurrentlyHeld, reason);
+      triggerToast(
+        `${holdType === "academic" ? "Academic" : "Financial"} hold ${actionLabel.toLowerCase()} for ${user.name}.`
+      );
+      setOpenPopoverId(null);
+    },
+    [currentUser, triggerToast]
   );
 
   const handleCreateUser = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inviteName.trim() || !inviteEmail.trim()) return;
 
-    const deptMeta = DEPT_META[inviteDept];
+    // Dept admin can only invite for their dept and cannot create admin
+    const finalRole = isDeptAdmin && inviteRole === "admin" ? "student" : inviteRole;
+    const finalDeptKey = isDeptAdmin && currentUser ? resolveDeptKey(currentUser) : inviteDept;
+    const deptMeta = DEPT_META[finalDeptKey];
     const generatedId = inviteId.trim() || `GEN-${Math.floor(1000 + Math.random() * 9000)}`;
 
     const created = adminService.createProfile({
       full_name: inviteName.trim(),
       email: inviteEmail.trim(),
-      role: inviteRole,
-      admin_role: inviteRole === "admin" ? "dept_admin" : undefined,
+      role: finalRole,
+      admin_role: finalRole === "admin" ? "dept_admin" : undefined,
       department_id: deptMeta.id,
       department_name: deptMeta.fullName,
-      semester_id: inviteRole === "student" ? "sem-cse-1" : null,
-      semester_name: inviteRole === "student" ? "1st Semester" : null,
-      teacher_code: inviteRole !== "student" ? generatedId : null,
-      student_id: inviteRole === "student" ? generatedId : null,
+      semester_id: finalRole === "student" ? "sem-cse-1" : null,
+      semester_name: finalRole === "student" ? "1st Semester" : null,
+      teacher_code: finalRole !== "student" ? generatedId : null,
+      student_id: finalRole === "student" ? generatedId : null,
       avatar_url: "",
       is_approved: true,
     });
-    window.dispatchEvent(new Event("unicampus:profiles-updated"));
 
     const newUser = mapProfileToUserRecord(created, 0);
     newUser.lastLogin = "Invited";
@@ -223,10 +297,12 @@ export default function AdminUsersPage() {
   const handleClearFilters = useCallback(() => {
     setSearchQuery("");
     setActiveTab("all");
-    setSelectedDept("all");
+    if (!isDeptAdmin) {
+      setSelectedDept("all");
+    }
     setSelectedStatus("all");
     setCurrentPage(1);
-  }, []);
+  }, [isDeptAdmin]);
 
   return (
     <div className="w-full space-y-5 antialiased selection:bg-brand/30 pb-6">
@@ -294,6 +370,7 @@ export default function AdminUsersPage() {
         }}
         roleTabs={roleTabs}
         onClearFilters={handleClearFilters}
+        isDeptAdmin={isDeptAdmin}
       />
 
       <UsersDirectoryTable
@@ -312,6 +389,9 @@ export default function AdminUsersPage() {
         onResetPassword={handleResetPassword}
         onImpersonate={handleImpersonate}
         onSuspendToggle={handleSuspendToggle}
+        onToggleHold={handleToggleHold}
+        onApprove={handleApproveUser}
+        onReject={handleRejectUser}
       />
 
       {/* BOTTOM METADATA STATUS STRIP */}
@@ -353,7 +433,12 @@ export default function AdminUsersPage() {
         onEditRoleChange={setEditRole}
         editDeptKey={editDeptKey}
         onEditDeptKeyChange={setEditDeptKey}
+        editSemester={editSemester}
+        onEditSemesterChange={setEditSemester}
+        editTeacherCode={editTeacherCode}
+        onEditTeacherCodeChange={setEditTeacherCode}
         onSaveRoleChanges={handleSaveRoleChanges}
+        isDeptAdmin={isDeptAdmin}
       />
     </div>
   );

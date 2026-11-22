@@ -11,7 +11,8 @@ import {
   QrCode,
   ShieldCheck,
   Layers,
-  CheckCircle2
+  CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
 import ProfileAvatar from "@/components/common/ProfileAvatar";
 import LectureScheduleCard from "@/components/common/LectureScheduleCard";
@@ -21,6 +22,8 @@ import { Button } from "@/components/ui/Button";
 import { Stat } from "@/components/ui/Stat";
 import { getRoster, subscribeToAttendance, StudentRosterRecord } from "@/lib/attendanceService";
 import { ACTIVE_TERM, CANONICAL_STUDENT } from "@/lib/canonicalCampus";
+import { adminService } from "@/lib/services/adminService";
+import type { Profile } from "@/types/admin";
 
 interface DashboardScheduleSlot {
   courseCode: string;
@@ -70,6 +73,28 @@ const MONDAY_SCHEDULE: DashboardScheduleSlot[] = [
 export default function DashboardPage() {
   const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
   const [attendanceRecord, setAttendanceRecord] = useState<StudentRosterRecord | null>(null);
+  const [studentProfile, setStudentProfile] = useState<Profile | null>(() => {
+    const student = adminService.getProfiles().find(
+      (p) => p.student_id === CANONICAL_STUDENT.studentId || p.id === "user-stud-1"
+    );
+    return student || null;
+  });
+
+  useEffect(() => {
+    const syncProfile = () => {
+      const student = adminService.getProfiles().find(
+        (p) => p.student_id === CANONICAL_STUDENT.studentId || p.id === "user-stud-1"
+      );
+      if (student) setStudentProfile(student);
+    };
+    syncProfile();
+    window.addEventListener("unicampus:profiles-updated", syncProfile);
+    window.addEventListener("storage", syncProfile);
+    return () => {
+      window.removeEventListener("unicampus:profiles-updated", syncProfile);
+      window.removeEventListener("storage", syncProfile);
+    };
+  }, []);
 
   const ongoingClass = useMemo(
     () => MONDAY_SCHEDULE.find((s) => s.status === "ongoing"),
@@ -133,6 +158,46 @@ export default function DashboardPage() {
 
   return (
     <div className="w-full space-y-6 pb-6">
+      {/* Official Administrative Hold Alert Banner */}
+      {(studentProfile?.financial_hold || studentProfile?.academic_hold) && (
+        <div className="p-4 sm:p-5 rounded-2xl bg-danger-light border border-danger/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-xl bg-danger text-on-brand flex items-center justify-center shrink-0 mt-0.5">
+              <AlertCircle className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-sm text-danger">
+                  {studentProfile.financial_hold && studentProfile.academic_hold
+                    ? "Academic & Financial Administrative Hold Active"
+                    : studentProfile.financial_hold
+                    ? "Institutional Financial Hold Active"
+                    : "Academic Administrative Hold Active"}
+                </span>
+                <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-danger/10 text-danger border border-danger/20 uppercase tracking-wider">
+                  Restricted Access
+                </span>
+              </div>
+              <p className="text-xs text-fg-muted mt-1 leading-relaxed">
+                {studentProfile.hold_reason ||
+                  (studentProfile.financial_hold
+                    ? "Outstanding dues detected on student ledger. Access to semester grade reports and registration is temporarily restricted."
+                    : "Your account is on hold pending advisor review.")}
+              </p>
+            </div>
+          </div>
+          {studentProfile.financial_hold && (
+            <Link
+              href="/payments"
+              className="min-h-[40px] px-4 py-2 rounded-xl bg-danger text-on-brand hover:bg-danger/90 text-xs font-semibold flex items-center justify-center gap-1.5 shrink-0 transition-colors shadow-xs"
+            >
+              <span>Review &amp; Pay Dues</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          )}
+        </div>
+      )}
+
       {/* 1. Welcome Banner Card */}
       <section className="rounded-2xl bg-surface border border-line p-6 md:p-8 transition-colors">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">

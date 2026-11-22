@@ -35,8 +35,8 @@ export function ThemeToggle({ className = "", size = "md" }: ThemeToggleProps) {
 
   const buttonSizeClass =
     size === "sm"
-      ? "w-9 h-9 min-h-[44px] min-w-[44px]"
-      : "w-10 h-10 min-h-[44px] min-w-[44px]";
+      ? "w-11 h-11 min-h-[44px] min-w-[44px] sm:w-9 sm:h-9 sm:min-h-0 sm:min-w-0"
+      : "w-11 h-11 min-h-[44px] min-w-[44px] sm:w-10 sm:h-10 sm:min-h-0 sm:min-w-0";
   const iconSize = "w-4 h-4";
 
   return (
@@ -46,7 +46,7 @@ export function ThemeToggle({ className = "", size = "md" }: ThemeToggleProps) {
       title={mounted ? (isDark ? "Switch to light theme" : "Switch to dark theme") : "Toggle theme"}
       aria-label={mounted ? (isDark ? "Switch to light theme" : "Switch to dark theme") : "Toggle theme"}
       suppressHydrationWarning
-      className={`group relative inline-flex items-center justify-center rounded-xl bg-surface border border-line text-fg-muted hover:text-fg hover:bg-surface-2 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-brand shadow-2xs select-none ${buttonSizeClass} ${className}`}
+      className={`group relative inline-flex items-center justify-center rounded-lg bg-transparent border border-transparent text-fg-muted hover:text-fg hover:bg-surface-2 active:scale-90 transition-[background-color,border-color,color,transform] duration-140 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-brand select-none ${buttonSizeClass} ${className}`}
     >
       <span className="sr-only">Toggle theme</span>
       {/* Sun icon visible in dark mode */}

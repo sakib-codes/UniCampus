@@ -8,23 +8,30 @@ export interface DepartmentData {
   hodName: string;
   hodRole: string;
   hodBadge: string;
+  headTeacherId?: string | null;
+  deptAdminId?: string | null;
+  deptAdminName?: string | null;
+  deptAdminEmail?: string | null;
   office: string;
   totalStudents: number;
   totalFaculty: number;
   activePrograms: string[];
   status: "Accredited • Active" | "Pending Review";
   facultyList: {
+    id?: string;
     name: string;
     designation: string;
     office: string;
     email: string;
   }[];
   curriculumList: {
+    id?: string;
     code: string;
     title: string;
     credits: number;
     type: "Theory" | "Lab";
     semester: string;
+    semesterId?: string;
   }[];
 }
 

@@ -499,3 +499,40 @@ export function subscribeToAttendance(callback: (event: AttendanceEvent) => void
     }
   };
 }
+
+export interface AttendanceAlertItem {
+  courseCode: string;
+  courseName: string;
+  section: string;
+  departmentId: string;
+  averageAttendance: number;
+  lowAttendanceCount: number;
+  atRiskStudents: string[];
+}
+
+export function getAttendanceAlerts(departmentId?: string): AttendanceAlertItem[] {
+  const alerts: AttendanceAlertItem[] = [
+    {
+      courseCode: "CSE-3101",
+      courseName: "Design & Analysis of Algorithms",
+      section: "Section B",
+      departmentId: "dept-cse",
+      averageAttendance: 71.4,
+      lowAttendanceCount: 4,
+      atRiskStudents: ["Farhan Sadik", "Nusrat Jahan", "Tanvir Ahmed", "Sadia Sultana"],
+    },
+    {
+      courseCode: "EEE-2101",
+      courseName: "Analog Electronics & Circuitry",
+      section: "Section A",
+      departmentId: "dept-eee",
+      averageAttendance: 68.5,
+      lowAttendanceCount: 5,
+      atRiskStudents: ["Rashedul Islam", "Farzana Yeasmin", "Mahmudul Hasan"],
+    },
+  ];
+
+  if (!departmentId || departmentId === "all") return alerts;
+  return alerts.filter((a) => a.departmentId === departmentId);
+}
+

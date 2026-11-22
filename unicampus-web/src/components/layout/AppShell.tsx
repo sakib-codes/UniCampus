@@ -10,6 +10,10 @@ import { PortalShell } from "@/components/shell/PortalShell";
 import type { PortalRole } from "@/lib/navigation";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { executeThemeTransition } from "@/lib/themeTransition";
+import {
+  ADMIN_SETTINGS_UPDATED_EVENT,
+  readAdminSettings,
+} from "@/lib/adminSettings";
 
 const CommandPalette = dynamic(
   () =>
@@ -44,8 +48,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [isMessagingOpen, setIsMessagingOpen] = useState(false);
   const [messagingPeerName, setMessagingPeerName] = useState<string | null>(null);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
+  const [adminSettings, setAdminSettings] = useState(() => readAdminSettings());
   const pendingKeyRef = useRef<string | null>(null);
   const pendingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const handleSettingsUpdate = () => {
+      setAdminSettings(readAdminSettings());
+    };
+    window.addEventListener(ADMIN_SETTINGS_UPDATED_EVENT, handleSettingsUpdate);
+    window.addEventListener("storage", handleSettingsUpdate);
+    return () => {
+      window.removeEventListener(ADMIN_SETTINGS_UPDATED_EVENT, handleSettingsUpdate);
+      window.removeEventListener("storage", handleSettingsUpdate);
+    };
+  }, []);
 
   const isSplash =
     pathname === "/splash" ||
@@ -246,6 +263,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <>
+      {adminSettings.maintenanceMode && role !== "admin" && !isSplash && (
+        <div className="bg-danger text-on-brand px-4 py-2 text-xs font-semibold flex items-center justify-between gap-3 shadow-md z-50 sticky top-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="w-2 h-2 rounded-full bg-on-brand animate-pulse shrink-0" />
+            <span className="truncate">
+              <strong>Campus Maintenance Lockdown:</strong>{" "}
+              {adminSettings.maintenanceReason ||
+                "Scheduled term-end grade synchronization & maintenance. Features are operating in read-only mode."}
+            </span>
+          </div>
+          <span className="font-mono text-[10px] bg-black/25 px-2 py-0.5 rounded text-on-brand shrink-0">
+            Read-Only
+          </span>
+        </div>
+      )}
       {mainLayout}
       {isCommandOpen ? (
         <CommandPalette

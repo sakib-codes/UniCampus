@@ -10,6 +10,7 @@ import {
   GRADE_WEIGHTS,
   calculateGrade,
 } from '@/lib/canonicalCampus';
+import { adminService } from '@/lib/services/adminService';
 
 export interface TeacherCourse {
   id: string;
@@ -230,6 +231,45 @@ export const teacherService = {
   },
 
   getRoutine(): TeacherTimetableSlot[] {
+    if (typeof window !== 'undefined') {
+      try {
+        const adminRoutines = adminService.getRoutines();
+        if (adminRoutines && adminRoutines.length > 0) {
+          const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+          const teacherSlots = adminRoutines.filter(
+            (r) =>
+              r.teacher_name?.includes('Karim') ||
+              r.teacher_id === 'user-1' ||
+              r.teacher_id === 'teacher-101' ||
+              r.subject_code === CANONICAL_COURSES['CSE-3101'].code ||
+              r.subject_code === CANONICAL_COURSES['CSE-4109'].code ||
+              r.subject_code === CANONICAL_COURSES['CSE-3102'].code
+          );
+
+          if (teacherSlots.length > 0) {
+            return teacherSlots.map((r) => {
+              const day = daysOfWeek[r.day_of_week] || 'Monday';
+              const isLab =
+                r.room.toLowerCase().includes('lab') ||
+                r.subject_code.toLowerCase().includes('lab');
+              return {
+                id: r.id,
+                day,
+                startTime: r.start_time,
+                endTime: r.end_time,
+                courseCode: r.subject_code,
+                courseTitle: r.subject_title,
+                room: r.room,
+                section: r.section,
+                type: (isLab ? 'Lab' : 'Theory') as 'Theory' | 'Lab' | 'Consultation',
+              };
+            });
+          }
+        }
+      } catch {
+        // fallback
+      }
+    }
     return INITIAL_TEACHER_ROUTINE;
   },
 

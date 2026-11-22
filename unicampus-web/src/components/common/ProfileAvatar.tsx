@@ -6,6 +6,7 @@ export interface ProfileAvatarProps {
   iconClassName?: string;
   size?: AvatarSize;
   alt?: string;
+  src?: string | null;
 }
 
 export default function ProfileAvatar({
@@ -13,11 +14,13 @@ export default function ProfileAvatar({
   iconClassName = "",
   size,
   alt = "",
+  src,
 }: ProfileAvatarProps) {
   return (
     <Avatar
       alt={alt}
       size={size}
+      src={src}
       className={className}
       iconClassName={iconClassName}
     />

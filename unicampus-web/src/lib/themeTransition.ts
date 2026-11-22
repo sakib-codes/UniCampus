@@ -16,6 +16,8 @@ export interface ThemeTransitionOptions {
   duration?: number;
 }
 
+let isTransitioning = false;
+
 export function executeThemeTransition({
   theme,
   event,
@@ -23,7 +25,10 @@ export function executeThemeTransition({
   currentTheme,
   duration = 750,
 }: ThemeTransitionOptions) {
-  // If target theme is already active, no-op
+  // If target theme is already active or a transition is in-flight, safely guard against flicker
+  if (isTransitioning) {
+    return;
+  }
   if (currentTheme && currentTheme === theme) {
     return;
   }
@@ -69,10 +74,14 @@ export function executeThemeTransition({
     Math.max(y, window.innerHeight - y)
   );
 
+  isTransitioning = true;
   try {
     const transition = (
       doc as unknown as {
-        startViewTransition: (cb: () => Promise<void>) => { ready: Promise<void> };
+        startViewTransition: (cb: () => Promise<void>) => {
+          ready: Promise<void>;
+          finished?: Promise<void>;
+        };
       }
     ).startViewTransition(async () => {
       setTheme(theme);
@@ -80,26 +89,42 @@ export function executeThemeTransition({
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
-    transition.ready.then(() => {
-      const clipPath = [
-        `circle(0px at ${x}px ${y}px)`,
-        `circle(${endRadius}px at ${x}px ${y}px)`,
-      ];
+    transition.ready
+      .then(() => {
+        const clipPath = [
+          `circle(0px at ${x}px ${y}px)`,
+          `circle(${endRadius}px at ${x}px ${y}px)`,
+        ];
 
-      document.documentElement.animate(
-        {
-          clipPath,
-        },
-        {
-          duration,
-          easing: "cubic-bezier(0.4, 0, 0.2, 1)", // Smooth ease-in-out expansion curve
-          pseudoElement: "::view-transition-new(root)",
-        } as KeyframeAnimationOptions
-      );
-    }).catch(() => {
-      // Catch aborted transitions
-    });
+        const anim = document.documentElement.animate(
+          {
+            clipPath,
+          },
+          {
+            duration,
+            easing: "cubic-bezier(0.4, 0, 0.2, 1)", // Smooth ease-in-out expansion curve
+            pseudoElement: "::view-transition-new(root)",
+          } as KeyframeAnimationOptions
+        );
+
+        anim.onfinish = () => {
+          isTransitioning = false;
+        };
+        anim.oncancel = () => {
+          isTransitioning = false;
+        };
+      })
+      .catch(() => {
+        isTransitioning = false;
+      });
+
+    if (transition.finished) {
+      transition.finished.finally(() => {
+        isTransitioning = false;
+      });
+    }
   } catch {
+    isTransitioning = false;
     // Fallback if startViewTransition throws
     setTheme(theme);
   }
