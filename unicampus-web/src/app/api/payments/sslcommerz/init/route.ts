@@ -1,7 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
+import { checkRateLimit, getClientRateLimitKey } from "@/lib/scalability/rateLimiter";
 
 export async function POST(req: NextRequest) {
   try {
+    const rl = await checkRateLimit(getClientRateLimitKey(req, "pay:sslcz:init"), {
+      capacity: 15,
+      refillPerSecond: 0.5,
+    });
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: "Too many payment attempts. Please wait a moment and retry." },
+        { status: 429, headers: rl.headers }
+      );
+    }
+
     const body = await req.json().catch(() => ({}));
     const {
       amount = 23500,

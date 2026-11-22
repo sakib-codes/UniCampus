@@ -2,7 +2,7 @@
 
 > **Database:** PostgreSQL on Supabase  
 > **Directives:** [`AGENTS.md`](file:///home/sakib360/sakib-codes/UniCampus/unicampus-supabase/AGENTS.md) • **Master Router:** [`../AGENTS.md`](file:///home/sakib360/sakib-codes/UniCampus/AGENTS.md)  
-> **Migration Source:** [`migrations/20261017_admin_portal_schema.sql`](file:///home/sakib360/sakib-codes/UniCampus/unicampus-supabase/migrations/20261017_admin_portal_schema.sql)
+> **Migration Sources:** [`migrations/20261017_admin_portal_schema.sql`](file:///home/sakib360/sakib-codes/UniCampus/unicampus-supabase/migrations/20261017_admin_portal_schema.sql), [`migrations/20261122_production_erp_scale.sql`](file:///home/sakib360/sakib-codes/UniCampus/unicampus-supabase/migrations/20261122_production_erp_scale.sql)
 
 ---
 
@@ -138,6 +138,11 @@ CREATE INDEX idx_wages_month_status ON public.teacher_wages (month, status);
 ---
 
 ## 4. Row Level Security (RLS) Rules
-- **Admin Access**: Verified admins (`role = 'admin' AND is_approved = TRUE`) have full `ALL` CRUD access to all tables.
-- **Authenticated Read Access**: Authenticated users have read (`SELECT`) access to public university resources: `notices`, `departments`, `semesters`, `subjects`, and `class_routines`.
+- **Admin Access**: Verified admins (`role = 'admin' AND is_approved = TRUE`) have full `ALL` CRUD access via `public.is_verified_admin()` scalar helper.
+- **Authenticated Read Access**: Authenticated users have read (`SELECT`) access to public university resources: `notices`, `departments`, `semesters`, `subjects`, `class_routines`, and `assignments`.
 - **Profiles Isolation**: Users can read and update only their own profile unless granted admin role.
+- **High-Scale Additions (`20261122_production_erp_scale.sql`)**:
+  - Extended `profiles` with Bangladeshi admission fields (`board_exams`, `teacher_qualifications`, `nid_or_birth_cert`, `rejection_reason`, `account_status`, `academic_hold`, `financial_hold`).
+  - Added `academic_id_counters` + `public.generate_academic_id()` atomic RPC for collision-free Academic ID generation under concurrent spikes.
+  - Added `advising_submissions`, `assignments`, `assignment_submissions`, `gradebook_policies`, `audit_logs`, and `idempotency_keys`.
+  - Configured Supabase Storage buckets: `avatars` (public, 5MB), `academic-documents` (private, 10MB), `assignment-submissions` (private, 25MB).
