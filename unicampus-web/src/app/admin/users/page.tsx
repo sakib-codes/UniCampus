@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
-import { Upload, UserPlus, Trash2 } from "lucide-react";
-import { Button, Modal, PageHeader, Toast } from "@/components/ui";
+import { Upload, UserPlus, Trash2, CreditCard, Users } from "lucide-react";
+import { Button, Modal, PageHeader, Tabs, Toast } from "@/components/ui";
+import { IdCardPrintQueue } from "@/components/admin/users/IdCardPrintQueue";
+import { ID_CARD_REQUESTS_EVENT, idCardService } from "@/lib/services/idCardService";
 import { TableRowsSkeleton } from "@/components/ui/Skeleton";
 import { adminService } from "@/lib/services/adminService";
 import type { Department } from "@/types/admin";
@@ -28,6 +30,8 @@ export default function AdminUsersPage() {
   const [isHydrating, setIsHydrating] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<RoleTab>("all");
+  const [adminView, setAdminView] = useState<"directory" | "id_cards">("directory");
+  const [idCardQueueCount, setIdCardQueueCount] = useState(0);
   const [selectedDept, setSelectedDept] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
@@ -89,6 +93,24 @@ export default function AdminUsersPage() {
       });
     }
   }, [isDeptAdmin, currentUser]);
+
+  // Keep ID card print queue badge count synced (department-scoped)
+  useEffect(() => {
+    const syncQueueCount = () => {
+      const deptScope = isDeptAdmin ? selectedDept : selectedDept;
+      const openReqs = idCardService
+        .getAllRequests(deptScope)
+        .filter((r) => r.status !== "collected");
+      setIdCardQueueCount(openReqs.length);
+    };
+    syncQueueCount();
+    window.addEventListener(ID_CARD_REQUESTS_EVENT, syncQueueCount);
+    window.addEventListener("storage", syncQueueCount);
+    return () => {
+      window.removeEventListener(ID_CARD_REQUESTS_EVENT, syncQueueCount);
+      window.removeEventListener("storage", syncQueueCount);
+    };
+  }, [isDeptAdmin, selectedDept]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -402,7 +424,36 @@ export default function AdminUsersPage() {
         }
       />
 
-      <UsersFilterBar
+      {/* Top Workspace View Switcher: User Directory vs ID Card Print Queue */}
+      <Tabs
+        value={adminView}
+        onChange={(v) => setAdminView(v as "directory" | "id_cards")}
+        ariaLabel="Admin user workspace views"
+        tabs={[
+          {
+            id: "directory",
+            label: "User Directory",
+            icon: <Users className="w-3.5 h-3.5" />,
+            count: users.length,
+          },
+          {
+            id: "id_cards",
+            label: "ID Card Print Queue",
+            icon: <CreditCard className="w-3.5 h-3.5" />,
+            count: idCardQueueCount,
+          },
+        ]}
+      />
+
+      {adminView === "id_cards" ? (
+        <IdCardPrintQueue
+          deptFilter={selectedDept}
+          adminName={currentUser?.full_name || "Academic Administration"}
+          onNotify={triggerToast}
+        />
+      ) : (
+        <>
+          <UsersFilterBar
         searchQuery={searchQuery}
         onSearchChange={(q) => {
           setSearchQuery(q);
@@ -456,6 +507,8 @@ export default function AdminUsersPage() {
           currentUserEmail={currentUser?.email}
           statusSummary={`${directoryCounts.active} Active · ${directoryCounts.pending} Pending · ${directoryCounts.rejected} Rejected · ${directoryCounts.suspended} Suspended`}
         />
+      )}
+        </>
       )}
 
       <RegistrationReviewModal

@@ -20,6 +20,7 @@ interface AdminAuthContextType {
   isSuspended: boolean;
   accountStatus: 'active' | 'pending' | 'suspended' | 'rejected';
   hasExplicitSession: boolean;
+  isDemoMode: boolean;
   canManageUser: (target: Profile) => boolean;
   isLoaded: boolean;
   switchUserRole: (
@@ -42,6 +43,17 @@ const AUTH_STORAGE_KEY = 'unicampus_auth_current_user';
 const SCOPE_STORAGE_KEY = 'unicampus_admin_scope_dept';
 const AUTH_SCHEMA_VERSION_KEY = 'unicampus_auth_schema_version';
 const AUTH_SCHEMA_VERSION = 'v3-live';
+
+function syncSessionCookies(user: Profile | null) {
+  if (typeof document === 'undefined') return;
+  if (user) {
+    document.cookie = `uc_session=1; Path=/; SameSite=Lax; Max-Age=604800`;
+    document.cookie = `uc_role=${encodeURIComponent(user.role)}; Path=/; SameSite=Lax; Max-Age=604800`;
+  } else {
+    document.cookie = `uc_session=; Path=/; SameSite=Lax; Max-Age=0`;
+    document.cookie = `uc_role=; Path=/; SameSite=Lax; Max-Age=0`;
+  }
+}
 
 function findStudentProfile(): Profile {
   return (
@@ -84,54 +96,82 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
     supabaseSyncBridge.isLive() ? null : findStudentProfile()
   );
 
+  const isDemoMode = !supabaseSyncBridge.isLive();
+
   useEffect(() => {
+    let cancelled = false;
     queueMicrotask(() => {
-      if (typeof window !== 'undefined') {
-        const storedVersion = localStorage.getItem(AUTH_SCHEMA_VERSION_KEY);
-        if (storedVersion !== AUTH_SCHEMA_VERSION) {
-          localStorage.removeItem(AUTH_STORAGE_KEY);
-          localStorage.removeItem(SCOPE_STORAGE_KEY);
-          localStorage.setItem(AUTH_SCHEMA_VERSION_KEY, AUTH_SCHEMA_VERSION);
-          setCurrentUser(supabaseSyncBridge.isLive() ? null : findStudentProfile());
-          setActiveScopeDeptIdState('all');
-          setHasExplicitSession(false);
-          setIsLoaded(true);
-        } else {
-          const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-          if (stored) {
-            try {
-              const parsed = JSON.parse(stored);
-              setCurrentUser(parsed);
-              setHasExplicitSession(true);
-            } catch (e) {
-              console.error('Failed to parse stored auth user', e);
-              setHasExplicitSession(false);
-            }
-          } else {
-            setHasExplicitSession(false);
-          }
+      if (typeof window === 'undefined') {
+        if (!cancelled) setIsLoaded(true);
+        return;
+      }
 
-          const storedScope = localStorage.getItem(SCOPE_STORAGE_KEY);
-          if (storedScope) {
-            setActiveScopeDeptIdState(storedScope);
-          }
-          setIsLoaded(true);
-        }
+      const storedScope = localStorage.getItem(SCOPE_STORAGE_KEY);
+      if (storedScope) {
+        setActiveScopeDeptIdState(storedScope);
+      }
 
-        // Hydrate live Supabase Auth session if active
-        if (supabaseSyncBridge.isLive()) {
-          void supabaseSyncBridge.getCurrentSessionProfile().then((liveProfile) => {
+      // Live Supabase mode: NEVER trust raw localStorage role JSON before verifying session
+      if (supabaseSyncBridge.isLive()) {
+        void supabaseSyncBridge
+          .getCurrentSessionProfile()
+          .then((liveProfile) => {
+            if (cancelled) return;
             if (liveProfile) {
               setCurrentUser(liveProfile);
               setHasExplicitSession(true);
               localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(liveProfile));
+              syncSessionCookies(liveProfile);
+            } else {
+              localStorage.removeItem(AUTH_STORAGE_KEY);
+              syncSessionCookies(null);
+              setCurrentUser(null);
+              setHasExplicitSession(false);
             }
+          })
+          .catch(() => {
+            if (cancelled) return;
+            localStorage.removeItem(AUTH_STORAGE_KEY);
+            setCurrentUser(null);
+            setHasExplicitSession(false);
+          })
+          .finally(() => {
+            if (!cancelled) setIsLoaded(true);
           });
-        }
         return;
       }
-      setIsLoaded(true);
+
+      // Demo / Mock mode
+      const storedVersion = localStorage.getItem(AUTH_SCHEMA_VERSION_KEY);
+      if (storedVersion !== AUTH_SCHEMA_VERSION) {
+        localStorage.removeItem(AUTH_STORAGE_KEY);
+        localStorage.removeItem(SCOPE_STORAGE_KEY);
+        localStorage.setItem(AUTH_SCHEMA_VERSION_KEY, AUTH_SCHEMA_VERSION);
+        setCurrentUser(findStudentProfile());
+        setActiveScopeDeptIdState('all');
+        setHasExplicitSession(false);
+        setIsLoaded(true);
+      } else {
+        const stored = localStorage.getItem(AUTH_STORAGE_KEY);
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            setCurrentUser(parsed);
+            setHasExplicitSession(true);
+          } catch (e) {
+            console.error('Failed to parse stored auth user', e);
+            setHasExplicitSession(false);
+          }
+        } else {
+          setHasExplicitSession(false);
+        }
+        setIsLoaded(true);
+      }
     });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Listen for profiles-updated events and sync currentUser
@@ -163,6 +203,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
 
   const saveUser = (user: Profile | null) => {
     setCurrentUser(user);
+    syncSessionCookies(user);
     if (typeof window !== 'undefined') {
       if (user) {
         localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
@@ -305,6 +346,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
         isSuspended,
         accountStatus,
         hasExplicitSession,
+        isDemoMode,
         canManageUser,
         isLoaded,
         switchUserRole,

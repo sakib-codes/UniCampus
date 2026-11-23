@@ -3,7 +3,7 @@
 import React, { memo } from "react";
 import Image from "next/image";
 import { CheckCheck, Maximize2, Pause, Pin, Play, Reply } from "lucide-react";
-import ProfileAvatar from "@/components/common/ProfileAvatar";
+import { Avatar } from "@/components/ui/Avatar";
 import {
   EMOJI_REACTIONS_LIST,
   MessageItem,
@@ -13,6 +13,7 @@ import {
 
 interface MessageBubbleProps {
   msg: MessageItem;
+  senderName?: string;
   isMe: boolean;
   isLastSent: boolean;
   themeColor: MessengerTheme;
@@ -30,6 +31,7 @@ interface MessageBubbleProps {
 
 export const MessageBubble = memo(function MessageBubble({
   msg,
+  senderName = "Peer",
   isMe,
   isLastSent,
   themeColor,
@@ -57,9 +59,10 @@ export const MessageBubble = memo(function MessageBubble({
     >
       {/* Contact Avatar for Incoming Messages */}
       {!isMe && (
-        <ProfileAvatar
-          className="w-7 h-7 border border-line mb-1 shrink-0"
-          iconClassName="w-3.5 h-3.5"
+        <Avatar
+          name={senderName}
+          size="sm"
+          className="mb-5 shrink-0"
         />
       )}
 
@@ -217,40 +220,41 @@ export const MessageBubble = memo(function MessageBubble({
           </div>
         )}
 
-        {/* Attached Emoji Reactions Badge */}
+        {/* Attached Emoji Reactions Row (never overlaps timestamp) */}
         {msg.reactions && msg.reactions.length > 0 && (
           <div
-            className={`absolute -bottom-2.5 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-surface border border-line shadow-2xs text-xs ${
-              isMe ? "right-1" : "left-1"
+            className={`flex items-center gap-1 -mt-2 relative z-10 px-1 ${
+              isMe ? "justify-end" : "justify-start"
             }`}
           >
-            {msg.reactions.map((r, i) => (
-              <span key={i} className="flex items-center gap-0.5 font-bold">
-                <span>{r.emoji}</span>
-                {r.count > 1 && (
-                  <span className="text-xs text-fg-muted">{r.count}</span>
-                )}
-              </span>
-            ))}
+            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface border border-line shadow-2xs text-xs">
+              {msg.reactions.map((r, i) => (
+                <span key={i} className="inline-flex items-center gap-0.5 font-semibold">
+                  <span>{r.emoji}</span>
+                  {r.count > 1 && (
+                    <span className="text-xs text-fg-muted tabular-nums">{r.count}</span>
+                  )}
+                </span>
+              ))}
+            </div>
           </div>
         )}
 
-        {/* Message Time & Messenger 'Seen' Mini Avatar status */}
+        {/* Message Time & Read Receipt */}
         <div
-          className={`flex items-center gap-1.5 mt-1 px-1 text-xs text-fg-muted ${
+          className={`flex items-center gap-1.5 mt-1 px-1 text-xs text-fg-muted tabular-nums ${
             isMe ? "justify-end" : "justify-start"
           }`}
         >
           <span>{msg.time}</span>
-          {isMe &&
-            (isLastSent ? (
-              <ProfileAvatar
-                className="w-3.5 h-3.5 border border-surface shrink-0"
-                iconClassName="w-2 h-2"
-              />
-            ) : (
-              <CheckCheck className="w-3.5 h-3.5 text-brand" />
-            ))}
+          {isMe && (
+            <CheckCheck
+              className={`w-3.5 h-3.5 shrink-0 ${
+                isLastSent ? "text-brand" : "text-fg-muted"
+              }`}
+              aria-label={isLastSent ? "Read" : "Delivered"}
+            />
+          )}
         </div>
       </div>
     </div>

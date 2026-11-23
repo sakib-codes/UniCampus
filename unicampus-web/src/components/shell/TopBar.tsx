@@ -10,8 +10,8 @@ import {
   ChevronDown,
   Globe,
   GraduationCap,
-  Search,
 } from "lucide-react";
+import { SearchIcon, type SearchIconHandle } from "@/components/icons/search";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { adminService } from "@/lib/services/adminService";
 import type { PortalRole } from "@/lib/navigation";
@@ -45,6 +45,7 @@ export function TopBar({
     activeScopeDeptId,
     setActiveScopeDeptId,
     effectiveDeptId,
+    isDemoMode,
   } = useAdminAuth();
 
   const pathname = usePathname();
@@ -55,6 +56,8 @@ export function TopBar({
   );
   const [scopeOpen, setScopeOpen] = useState(false);
   const scopeRef = useRef<HTMLDivElement>(null);
+  const mobileSearchRef = useRef<SearchIconHandle>(null);
+  const desktopSearchRef = useRef<SearchIconHandle>(null);
   const reduceMotion = useReducedMotion();
 
   const departments = useMemo(() => {
@@ -110,6 +113,16 @@ export function TopBar({
           <span className="text-sm sm:text-[15px] font-semibold text-fg truncate">
             {title}
           </span>
+          {mounted && isDemoMode && (
+            <span
+              title="Running with demo preview data (not connected to live authentication)"
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-warning/15 text-warning border border-warning/30 text-[11px] font-semibold tracking-wide uppercase shrink-0"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-warning" aria-hidden="true" />
+              <span className="hidden sm:inline">Demo Mode</span>
+              <span className="sm:hidden">Demo</span>
+            </span>
+          )}
         </div>
       </div>
 
@@ -235,20 +248,24 @@ export function TopBar({
         <button
           type="button"
           onClick={onOpenCommand}
+          onMouseEnter={() => mobileSearchRef.current?.startAnimation()}
+          onMouseLeave={() => mobileSearchRef.current?.stopAnimation()}
           aria-label="Search commands and routes"
           className="lg:hidden w-11 h-11 min-w-[44px] min-h-[44px] sm:w-9 sm:h-9 sm:min-h-9 sm:min-w-9 rounded-lg bg-surface-2 border border-line text-fg-muted hover:text-fg flex items-center justify-center transition-colors cursor-pointer"
         >
-          <Search className="w-[18px] h-[18px]" />
+          <SearchIcon ref={mobileSearchRef} size={18} aria-hidden="true" />
         </button>
 
         <button
           type="button"
           onClick={onOpenCommand}
+          onMouseEnter={() => desktopSearchRef.current?.startAnimation()}
+          onMouseLeave={() => desktopSearchRef.current?.stopAnimation()}
           aria-label="Open command palette"
           className="hidden lg:flex items-center justify-between gap-3 h-9 w-44 xl:w-64 px-3 rounded-lg bg-surface-2 border border-line text-fg-muted hover:text-fg hover:border-fg-subtle/50 transition-colors cursor-pointer"
         >
           <span className="flex items-center gap-2 min-w-0">
-            <Search className="w-4 h-4 shrink-0" />
+            <SearchIcon ref={desktopSearchRef} size={16} className="shrink-0" aria-hidden="true" />
             <span className="text-sm truncate">Search…</span>
           </span>
           <kbd className="px-1.5 py-0.5 rounded bg-surface border border-line font-mono text-xs text-fg-muted shrink-0">

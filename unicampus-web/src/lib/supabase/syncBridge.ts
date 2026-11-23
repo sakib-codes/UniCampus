@@ -768,6 +768,102 @@ export const supabaseSyncBridge = {
     );
   },
 
+  async fetchNotices<T>(fallback: () => T[]): Promise<T[]> {
+    const client = getSupabaseClient();
+    if (!client) return fallback();
+
+    return queryWithSwr(
+      "notices:all",
+      () =>
+        supabaseCircuitBreaker.execute(
+          async () =>
+            withExponentialBackoff(async () => {
+              const { data, error } = await client
+                .from("notices")
+                .select("*")
+                .order("created_at", { ascending: false })
+                .limit(100);
+              if (error) throw error;
+              return (data ?? []) as T[];
+            }),
+          fallback
+        ),
+      { ttlMs: 120_000 }
+    );
+  },
+
+  async fetchRoutineSlots<T>(fallback: () => T[]): Promise<T[]> {
+    const client = getSupabaseClient();
+    if (!client) return fallback();
+
+    return queryWithSwr(
+      "routine:all",
+      () =>
+        supabaseCircuitBreaker.execute(
+          async () =>
+            withExponentialBackoff(async () => {
+              const { data, error } = await client
+                .from("routine_slots")
+                .select("*")
+                .order("day_of_week", { ascending: true })
+                .limit(200);
+              if (error) throw error;
+              return (data ?? []) as T[];
+            }),
+          fallback
+        ),
+      { ttlMs: 300_000 }
+    );
+  },
+
+  async fetchAssignments<T>(fallback: () => T[]): Promise<T[]> {
+    const client = getSupabaseClient();
+    if (!client) return fallback();
+
+    return queryWithSwr(
+      "assignments:all",
+      () =>
+        supabaseCircuitBreaker.execute(
+          async () =>
+            withExponentialBackoff(async () => {
+              const { data, error } = await client
+                .from("assignments")
+                .select("*")
+                .order("due_at", { ascending: true })
+                .limit(100);
+              if (error) throw error;
+              return (data ?? []) as T[];
+            }),
+          fallback
+        ),
+      { ttlMs: 120_000 }
+    );
+  },
+
+  async fetchFinanceTransactions<T>(fallback: () => T[]): Promise<T[]> {
+    const client = getSupabaseClient();
+    if (!client) return fallback();
+
+    return queryWithSwr(
+      "finance:transactions",
+      () =>
+        supabaseCircuitBreaker.execute(
+          async () =>
+            withExponentialBackoff(async () => {
+              const { data, error } = await client
+                .from("finance_transactions")
+                .select("*")
+                .order("created_at", { ascending: false })
+                .limit(100);
+              if (error) throw error;
+              return (data ?? []) as T[];
+            }),
+          fallback
+        ),
+      { ttlMs: 120_000 }
+    );
+  },
+
   invalidate(prefix?: string): void {
     invalidateQueryCache(prefix);
   },

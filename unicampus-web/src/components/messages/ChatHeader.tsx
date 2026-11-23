@@ -2,7 +2,7 @@
 
 import React, { memo } from "react";
 import { ArrowLeft, BellOff, Info, Phone, Search, Video, X } from "lucide-react";
-import ProfileAvatar from "@/components/common/ProfileAvatar";
+import { Avatar } from "@/components/ui/Avatar";
 import { Conversation } from "./types";
 
 interface ChatHeaderProps {
@@ -50,12 +50,12 @@ export const ChatHeader = memo(function ChatHeader({
           </button>
 
           <div className="relative shrink-0">
-            <ProfileAvatar
+            <Avatar
+              name={activeConv.nickname || activeConv.name}
               size="md"
-              className="border border-line"
             />
             {activeConv.isOnline && (
-              <span className="w-3 h-3 rounded-full bg-success border-2 border-surface absolute bottom-0 right-0 shadow-xs" />
+              <span className="w-3 h-3 rounded-full bg-success border-2 border-surface absolute bottom-0 right-0" />
             )}
           </div>
 
@@ -82,53 +82,53 @@ export const ChatHeader = memo(function ChatHeader({
         </div>
 
         {/* Action Icons: In-chat Search, Audio Call, Video Call, Details Toggle */}
-        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+        <div className="flex items-center gap-1 shrink-0">
           <button
             type="button"
             onClick={onToggleSearchInChat}
-            className={`p-2.5 rounded-full transition-colors cursor-pointer ${
+            className={`w-11 h-11 min-w-[44px] min-h-[44px] sm:w-9 sm:h-9 sm:min-w-0 sm:min-h-0 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
               isSearchInChatOpen
                 ? "bg-brand/10 text-brand"
-                : "text-fg-muted hover:bg-surface-2"
+                : "text-fg-muted hover:text-fg hover:bg-surface-2"
             }`}
             title="Search in conversation"
             aria-label="Search in conversation"
           >
-            <Search className="w-5 h-5" />
+            <Search className="w-[18px] h-[18px]" />
           </button>
 
           <button
             type="button"
             onClick={() => onStartCall("audio")}
-            className="p-2.5 rounded-full text-brand hover:bg-brand/10 transition-colors cursor-pointer"
+            className="w-11 h-11 min-w-[44px] min-h-[44px] sm:w-9 sm:h-9 sm:min-w-0 sm:min-h-0 rounded-full flex items-center justify-center text-fg-muted hover:text-fg hover:bg-surface-2 transition-colors cursor-pointer"
             title="Start voice call"
             aria-label="Start voice call"
           >
-            <Phone className="w-5 h-5" />
+            <Phone className="w-[18px] h-[18px]" />
           </button>
 
           <button
             type="button"
             onClick={() => onStartCall("video")}
-            className="p-2.5 rounded-full text-brand hover:bg-brand/10 transition-colors cursor-pointer"
+            className="w-11 h-11 min-w-[44px] min-h-[44px] sm:w-9 sm:h-9 sm:min-w-0 sm:min-h-0 rounded-full flex items-center justify-center text-fg-muted hover:text-fg hover:bg-surface-2 transition-colors cursor-pointer"
             title="Start video call"
             aria-label="Start video call"
           >
-            <Video className="w-5 h-5" />
+            <Video className="w-[18px] h-[18px]" />
           </button>
 
           <button
             type="button"
             onClick={onToggleDetails}
-            className={`p-2.5 rounded-full transition-colors cursor-pointer ${
+            className={`w-11 h-11 min-w-[44px] min-h-[44px] sm:w-9 sm:h-9 sm:min-w-0 sm:min-h-0 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
               isDetailsOpen
                 ? "bg-brand/10 text-brand"
-                : "text-fg-muted hover:bg-surface-2"
+                : "text-fg-muted hover:text-fg hover:bg-surface-2"
             }`}
             title="Conversation information"
             aria-label="Conversation information"
           >
-            <Info className="w-5 h-5" />
+            <Info className="w-[18px] h-[18px]" />
           </button>
         </div>
       </div>

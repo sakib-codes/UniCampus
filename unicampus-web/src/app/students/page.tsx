@@ -223,17 +223,15 @@ export default function StudentsPage() {
                     setActiveFilter(tab.id);
                     setCurrentPage(1);
                   }}
-                  className={`min-h-[36px] px-3.5 py-1.5 rounded-lg text-xs font-semibold tracking-tight transition-colors shrink-0 cursor-pointer flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
+                  className={`min-h-[36px] px-3.5 py-1.5 rounded-lg text-xs font-medium tracking-tight transition-colors shrink-0 cursor-pointer flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                     isActive
-                      ? "bg-brand text-on-brand"
-                      : "text-fg-muted hover:text-fg hover:bg-surface"
+                      ? "bg-surface text-fg font-semibold border border-line/80 shadow-2xs"
+                      : "text-fg-muted hover:text-fg"
                   }`}
                 >
                   {tab.id === "active" && (
                     <span
-                      className={`w-1.5 h-1.5 rounded-full ${
-                        isActive ? "bg-on-brand" : "bg-success"
-                      }`}
+                      className="w-1.5 h-1.5 rounded-full bg-success"
                       aria-hidden="true"
                     />
                   )}

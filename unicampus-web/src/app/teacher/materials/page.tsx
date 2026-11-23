@@ -29,6 +29,7 @@ import {
   ChipRow,
   type BadgeVariant,
 } from "@/components/ui";
+import { Select } from "@/components/ui/Select";
 
 type MaterialType = "Slides" | "Lab Manual" | "Syllabus" | "Assignment";
 type MaterialFilterType = "All" | MaterialType;
@@ -470,19 +471,23 @@ export default function TeacherMaterialsPage() {
             >
               Course
             </label>
-            <select
+            <Select
               id="materials-course-filter"
+              ariaLabel="Filter by course"
               value={selectedCourse}
-              onChange={(e) => setSelectedCourse(e.target.value)}
-              className="w-full md:w-auto min-h-[44px] bg-surface-2 border border-line text-fg rounded-xl px-3 py-2 font-sans font-medium text-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:border-brand transition-colors cursor-pointer"
-            >
-              <option value="all">All Assigned Courses</option>
-              {assignedCourses.map((course) => (
-                <option key={course.code} value={course.code}>
-                  {course.code}: {course.title}
-                </option>
-              ))}
-            </select>
+              onChange={setSelectedCourse}
+              options={[
+                { value: "all", label: "All Assigned Courses" },
+                ...assignedCourses.map((course) => ({
+                  value: course.code,
+                  label: `${course.code}: ${course.title}`,
+                })),
+              ]}
+              size="md"
+              variant="surface2"
+              menuAlign="right"
+              className="w-full md:w-64"
+            />
           </div>
         </div>
 

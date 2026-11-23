@@ -143,27 +143,29 @@ export function PaymentHistoryTab({
           {/* Quick Date Presets */}
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="text-xs text-fg-muted mr-1">Presets:</span>
-            {(
-              [
-                { id: "all", label: "All Time" },
-                { id: "30", label: "Last 30 Days" },
-                { id: "90", label: "Last 90 Days" },
-                { id: "year", label: "This Year" },
-              ] as const
-            ).map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => handlePresetChange(p.id)}
-                className={`min-h-[36px] px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-colors ${
-                  datePreset === p.id
-                    ? "bg-brand text-on-brand"
-                    : "bg-surface-2 text-fg-muted hover:text-fg hover:bg-surface-2/80"
-                }`}
-              >
-                {p.label}
-              </button>
-            ))}
+            <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-surface-2 border border-line">
+              {(
+                [
+                  { id: "all", label: "All Time" },
+                  { id: "30", label: "Last 30 Days" },
+                  { id: "90", label: "Last 90 Days" },
+                  { id: "year", label: "This Year" },
+                ] as const
+              ).map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => handlePresetChange(p.id)}
+                  className={`min-h-[34px] px-3 py-1 rounded-lg text-xs font-medium cursor-pointer transition-colors ${
+                    datePreset === p.id
+                      ? "bg-surface text-fg font-semibold border border-line/80 shadow-2xs"
+                      : "text-fg-muted hover:text-fg"
+                  }`}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Export CSV CTA */}

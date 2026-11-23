@@ -1,8 +1,9 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useRef, useSyncExternalStore } from "react";
 import { useTheme } from "next-themes";
-import { Sun, Moon } from "lucide-react";
+import { SunIcon, type SunIconHandle } from "@/components/icons/sun";
+import { MoonIcon, type MoonIconHandle } from "@/components/icons/moon";
 import { executeThemeTransition } from "@/lib/themeTransition";
 
 const emptySubscribe = () => () => {};
@@ -19,6 +20,9 @@ export function ThemeToggle({ className = "", size = "md" }: ThemeToggleProps) {
     () => true,
     () => false
   );
+
+  const sunRef = useRef<SunIconHandle>(null);
+  const moonRef = useRef<MoonIconHandle>(null);
 
   const isDark = mounted ? resolvedTheme === "dark" : false;
 
@@ -37,12 +41,19 @@ export function ThemeToggle({ className = "", size = "md" }: ThemeToggleProps) {
     size === "sm"
       ? "w-11 h-11 min-h-[44px] min-w-[44px] sm:w-9 sm:h-9 sm:min-h-0 sm:min-w-0"
       : "w-11 h-11 min-h-[44px] min-w-[44px] sm:w-10 sm:h-10 sm:min-h-0 sm:min-w-0";
-  const iconSize = "w-4 h-4";
 
   return (
     <button
       type="button"
       onClick={handleToggle}
+      onMouseEnter={() => {
+        sunRef.current?.startAnimation();
+        moonRef.current?.startAnimation();
+      }}
+      onMouseLeave={() => {
+        sunRef.current?.stopAnimation();
+        moonRef.current?.stopAnimation();
+      }}
       title={mounted ? (isDark ? "Switch to light theme" : "Switch to dark theme") : "Toggle theme"}
       aria-label={mounted ? (isDark ? "Switch to light theme" : "Switch to dark theme") : "Toggle theme"}
       suppressHydrationWarning
@@ -50,15 +61,13 @@ export function ThemeToggle({ className = "", size = "md" }: ThemeToggleProps) {
     >
       <span className="sr-only">Toggle theme</span>
       {/* Sun icon visible in dark mode */}
-      <Sun
-        className={`${iconSize} hidden dark:block text-warning group-hover:rotate-45 transition-transform duration-200`}
-        aria-hidden="true"
-      />
+      <span className="hidden dark:inline-flex items-center justify-center text-warning" aria-hidden="true">
+        <SunIcon ref={sunRef} size={16} />
+      </span>
       {/* Moon icon visible in light mode */}
-      <Moon
-        className={`${iconSize} block dark:hidden text-fg-muted group-hover:-rotate-12 transition-transform duration-200`}
-        aria-hidden="true"
-      />
+      <span className="inline-flex dark:hidden items-center justify-center text-fg-muted" aria-hidden="true">
+        <MoonIcon ref={moonRef} size={16} />
+      </span>
     </button>
   );
 }

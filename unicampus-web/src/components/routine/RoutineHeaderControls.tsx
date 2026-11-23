@@ -108,7 +108,7 @@ export const RoutineHeaderControls = memo(function RoutineHeaderControls({
       {viewMode === "daily" && (
         <section aria-label="Schedule Filters" className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           {/* Independent UI Track 1: Day Selector */}
-          <div className="flex-1 min-w-0 bg-surface border border-line rounded-2xl p-1.5 flex items-center overflow-x-auto gap-1">
+          <div className="flex-1 min-w-0 bg-surface-2 border border-line rounded-xl p-1 flex items-center overflow-x-auto gap-1">
             {DAYS_LIST.map((day) => {
               const isActive = selectedDay === day;
               const count =
@@ -118,14 +118,14 @@ export const RoutineHeaderControls = memo(function RoutineHeaderControls({
                   key={day}
                   type="button"
                   onClick={() => onSelectDay(day)}
-                  className={`relative flex-1 min-w-[105px] min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-semibold tracking-tight transition-colors flex items-center justify-center gap-1.5 shrink-0 cursor-pointer z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
-                    isActive ? "text-on-brand" : "text-fg-muted hover:text-fg"
+                  className={`relative flex-1 min-w-[105px] min-h-[36px] px-3 py-1.5 rounded-lg text-xs font-medium tracking-tight transition-colors flex items-center justify-center gap-1.5 shrink-0 cursor-pointer z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
+                    isActive ? "text-fg font-semibold" : "text-fg-muted hover:text-fg"
                   }`}
                 >
                   {isActive && (
                     <motion.div
                       layoutId="routine-student-day-pill"
-                      className="absolute inset-0 bg-brand rounded-xl -z-10 shadow-xs"
+                      className="absolute inset-0 bg-surface border border-line/80 rounded-lg -z-10 shadow-2xs"
                       transition={{
                         type: "spring",
                         stiffness: 450,
@@ -137,8 +137,8 @@ export const RoutineHeaderControls = memo(function RoutineHeaderControls({
                   <span
                     className={`text-xs font-sans tabular-nums px-1.5 py-0.5 rounded-full transition-colors ${
                       isActive
-                        ? "bg-on-brand/20 text-on-brand font-semibold"
-                        : "bg-surface-2 text-fg-muted"
+                        ? "bg-brand-soft text-brand font-semibold"
+                        : "bg-surface text-fg-muted"
                     }`}
                   >
                     {count}

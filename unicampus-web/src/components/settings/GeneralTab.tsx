@@ -5,6 +5,7 @@ import { Camera, Lock } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { Select } from "@/components/ui/Select";
 import { CANONICAL_FACULTY, CANONICAL_STUDENT } from "@/lib/canonicalCampus";
 import { SETTINGS_INPUT_CLASS, type SettingsFormState } from "./settingsTypes";
 
@@ -205,15 +206,18 @@ export const GeneralTab = memo(function GeneralTab({
             >
               Primary Campus
             </label>
-            <select
+            <Select
               id="settings-campus"
+              ariaLabel="Primary Campus"
               value={form.campus}
-              onChange={(e) => onUpdateField("campus", e.target.value)}
-              className={`${SETTINGS_INPUT_CLASS} cursor-pointer`}
-            >
-              <option value="permanent">Main Campus (Birulia)</option>
-              <option value="city">City Campus (Dhanmondi)</option>
-            </select>
+              onChange={(val) => onUpdateField("campus", val)}
+              options={[
+                { value: "permanent", label: "Main Campus (Birulia)" },
+                { value: "city", label: "City Campus (Dhanmondi)" },
+              ]}
+              size="md"
+              variant="surface2"
+            />
           </div>
 
           <div className="space-y-1.5 sm:col-span-2 pt-2 border-t border-line">

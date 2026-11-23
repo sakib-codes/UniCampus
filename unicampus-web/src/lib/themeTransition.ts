@@ -17,6 +17,15 @@ export interface ThemeTransitionOptions {
 }
 
 let isTransitioning = false;
+let safetyTimer: ReturnType<typeof setTimeout> | null = null;
+
+function releaseLock() {
+  isTransitioning = false;
+  if (safetyTimer) {
+    clearTimeout(safetyTimer);
+    safetyTimer = null;
+  }
+}
 
 export function executeThemeTransition({
   theme,
@@ -25,7 +34,7 @@ export function executeThemeTransition({
   currentTheme,
   duration = 750,
 }: ThemeTransitionOptions) {
-  // If target theme is already active or a transition is in-flight, safely guard against flicker
+  // Guard against overlapping transitions or no-op switches
   if (isTransitioning) {
     return;
   }
@@ -74,19 +83,33 @@ export function executeThemeTransition({
     Math.max(y, window.innerHeight - y)
   );
 
+  // Resolve target class synchronously so ::view-transition-new(root) never snapshots the stale theme
+  const resolvedTarget: "dark" | "light" =
+    theme === "system"
+      ? window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light"
+      : theme;
+
   isTransitioning = true;
+  if (safetyTimer) clearTimeout(safetyTimer);
+  safetyTimer = setTimeout(releaseLock, duration + 200);
+
   try {
     const transition = (
       doc as unknown as {
-        startViewTransition: (cb: () => Promise<void>) => {
+        startViewTransition: (cb: () => void) => {
           ready: Promise<void>;
           finished?: Promise<void>;
         };
       }
-    ).startViewTransition(async () => {
+    ).startViewTransition(() => {
+      // Flip <html> class synchronously before the browser captures ::view-transition-new(root)
+      doc.documentElement.classList.remove("light", "dark");
+      doc.documentElement.classList.add(resolvedTarget);
+      doc.documentElement.style.colorScheme = resolvedTarget;
+      // Sync next-themes state & localStorage
       setTheme(theme);
-      // Allow next-themes & React DOM commit tick
-      await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
     transition.ready
@@ -102,30 +125,21 @@ export function executeThemeTransition({
           },
           {
             duration,
-            easing: "cubic-bezier(0.4, 0, 0.2, 1)", // Smooth ease-in-out expansion curve
+            easing: "cubic-bezier(0.4, 0, 0.2, 1)",
             pseudoElement: "::view-transition-new(root)",
           } as KeyframeAnimationOptions
         );
 
-        anim.onfinish = () => {
-          isTransitioning = false;
-        };
-        anim.oncancel = () => {
-          isTransitioning = false;
-        };
+        anim.onfinish = releaseLock;
+        anim.oncancel = releaseLock;
       })
-      .catch(() => {
-        isTransitioning = false;
-      });
+      .catch(releaseLock);
 
     if (transition.finished) {
-      transition.finished.finally(() => {
-        isTransitioning = false;
-      });
+      transition.finished.finally(releaseLock);
     }
   } catch {
-    isTransitioning = false;
-    // Fallback if startViewTransition throws
+    releaseLock();
     setTheme(theme);
   }
 }

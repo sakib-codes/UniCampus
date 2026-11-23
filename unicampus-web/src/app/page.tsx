@@ -24,7 +24,7 @@ export default function LandingPage() {
       {/* =========================================================================
           TOP NAVIGATION HEADER
       ========================================================================= */}
-      <header className="sticky top-0 z-40 backdrop-blur-md bg-surface/85 border-b border-line transition-colors">
+      <header className="sticky top-0 z-50 backdrop-blur-md bg-surface/85 border-b border-line transition-colors pointer-events-auto">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
           {/* Brand Logo */}
           <Link href="/" className="flex items-center gap-2.5 group shrink-0">

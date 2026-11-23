@@ -24,10 +24,12 @@ import {
   Phone,
 } from "lucide-react";
 import { ACTIVE_TERM, CANONICAL_FACULTY } from "@/lib/canonicalCampus";
+import { useAdminAuth } from "@/context/AdminAuthContext";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
+import { Select } from "@/components/ui/Select";
 import { Toast } from "@/components/ui/Toast";
 import { AcademicIdCard } from "@/components/common/AcademicIdCard";
 import { cn } from "@/components/ui/cn";
@@ -122,18 +124,42 @@ const INITIAL_OFFICE_SLOTS = [
 ];
 
 export default function TeacherProfilePage() {
+  const { currentUser } = useAdminAuth();
+  const isRegisteredTeacher = currentUser?.role === "teacher";
+  const qual = currentUser?.teacher_qualifications;
+
+  const facultyName = isRegisteredTeacher && currentUser?.full_name
+    ? currentUser.full_name
+    : CANONICAL_FACULTY.name;
+  const facultyEmail = isRegisteredTeacher && currentUser?.email
+    ? currentUser.email
+    : CANONICAL_FACULTY.email;
+  const facultyCode = isRegisteredTeacher && currentUser?.teacher_code
+    ? currentUser.teacher_code
+    : CANONICAL_FACULTY.facultyCode;
+  const facultyDepartment = isRegisteredTeacher && currentUser?.department_name
+    ? currentUser.department_name
+    : CANONICAL_FACULTY.departmentName;
+  const facultyDesignation = qual?.designation || CANONICAL_FACULTY.designation;
+
   const [availability, setAvailability] = useState<AvailabilityStatus>("In Office");
   const [bio, setBio] = useState(
     "Associate Professor in the Department of Computer Science & Engineering specializing in combinatorial optimization, network flow algorithms, and fault-tolerant distributed systems. Lead coordinator for the Undergraduate Algorithms & Competitive Programming Lab."
   );
-  const [researchInterests, setResearchInterests] = useState<string[]>([
-    "Algorithm Design",
-    "Network Flow",
-    "Distributed Systems",
-    "Graph Theory",
-    "Cloud Consensus",
-  ]);
-  const [phone, setPhone] = useState<string>(CANONICAL_FACULTY.phone);
+  const [researchInterests, setResearchInterests] = useState<string[]>(() =>
+    qual?.specialization
+      ? qual.specialization.split(",").map((s) => s.trim()).filter(Boolean)
+      : [
+          "Algorithm Design",
+          "Network Flow",
+          "Distributed Systems",
+          "Graph Theory",
+          "Cloud Consensus",
+        ]
+  );
+  const [phone, setPhone] = useState<string>(
+    (isRegisteredTeacher && currentUser?.phone) || CANONICAL_FACULTY.phone
+  );
   const [officeRoom, setOfficeRoom] = useState<string>(CANONICAL_FACULTY.office);
   const [officeHoursText, setOfficeHoursText] = useState<string>(
     CANONICAL_FACULTY.officeHours
@@ -244,8 +270,8 @@ export default function TeacherProfilePage() {
           <div className="flex flex-col items-center text-center">
             <div className="relative">
               <Avatar
-                name="Asif Rahman"
-                alt={CANONICAL_FACULTY.name}
+                name={facultyName}
+                alt={facultyName}
                 size="2xl"
                 className="bg-brand-soft text-brand border-brand/20"
               />
@@ -265,18 +291,19 @@ export default function TeacherProfilePage() {
             </div>
 
             <h2 className="text-lg font-semibold text-fg mt-4">
-              {CANONICAL_FACULTY.name}
+              {facultyName}
             </h2>
             <p className="text-sm text-fg-muted mt-0.5">
-              {CANONICAL_FACULTY.designation}
+              {facultyDesignation}
+              {qual?.employment_type ? ` · ${qual.employment_type}` : ""}
             </p>
             <p className="text-xs text-fg-muted mt-0.5">
-              {CANONICAL_FACULTY.departmentName}
+              {facultyDepartment}
             </p>
 
             <div className="flex flex-wrap items-center justify-center gap-2 mt-3">
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-sans tabular-nums font-medium bg-surface-2 text-fg border border-line">
-                {CANONICAL_FACULTY.facultyCode}
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-mono font-medium bg-surface-2 text-fg border border-line">
+                {facultyCode}
               </span>
               <span
                 className={cn(
@@ -304,20 +331,18 @@ export default function TeacherProfilePage() {
             >
               Live Availability Status
             </label>
-            <select
+            <Select
               id="faculty-availability-select"
+              ariaLabel="Live Availability Status"
               value={availability}
-              onChange={(e) =>
-                handleAvailabilityChange(e.target.value as AvailabilityStatus)
-              }
-              className="w-full min-h-[44px] px-3.5 py-2 rounded-xl bg-canvas border border-line text-fg text-sm font-sans font-medium cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:border-brand"
-            >
-              {AVAILABILITY_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.value}
-                </option>
-              ))}
-            </select>
+              onChange={(val) => handleAvailabilityChange(val as AvailabilityStatus)}
+              options={AVAILABILITY_OPTIONS.map((opt) => ({
+                value: opt.value,
+                label: opt.value,
+              }))}
+              size="md"
+              variant="surface2"
+            />
             <p className="text-xs text-fg-muted">
               Visible to students on the Faculty Directory and advising requests.
             </p>
@@ -332,14 +357,14 @@ export default function TeacherProfilePage() {
             {[
               {
                 key: "phone",
-                label: "Direct Phone",
+                label: currentUser?.phone_verified ? "Direct Phone · Verified" : "Direct Phone",
                 value: phone,
                 icon: Phone,
               },
               {
                 key: "email",
-                label: "Institutional Email",
-                value: CANONICAL_FACULTY.email,
+                label: currentUser?.email_verified ? "Institutional Email · Verified" : "Institutional Email",
+                value: facultyEmail,
                 icon: Mail,
               },
               {
@@ -415,12 +440,44 @@ export default function TeacherProfilePage() {
 
             {/* Educational Background */}
             <div className="pt-4 border-t border-line space-y-3">
-              <h3 className="text-xs font-semibold text-fg-muted uppercase tracking-wider flex items-center gap-1.5">
-                <Award className="w-3.5 h-3.5 text-brand" />
-                <span>Education &amp; Fellowships</span>
-              </h3>
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <h3 className="text-xs font-semibold text-fg-muted uppercase tracking-wider flex items-center gap-1.5">
+                  <Award className="w-3.5 h-3.5 text-brand" />
+                  <span>Education &amp; Fellowships</span>
+                </h3>
+                {(qual?.highest_degree || qual?.experience_years) && (
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {qual.highest_degree && (
+                      <Badge variant="brand">{qual.highest_degree}</Badge>
+                    )}
+                    {qual.experience_years && (
+                      <Badge variant="neutral">
+                        <span className="tabular-nums">{qual.experience_years} yrs exp</span>
+                      </Badge>
+                    )}
+                  </div>
+                )}
+              </div>
               <div className="space-y-2.5">
-                {EDUCATION_HISTORY.map((edu, idx) => (
+                {(qual
+                  ? [
+                      ...(qual.postgrad_degree
+                        ? [
+                            {
+                              degree: qual.postgrad_degree,
+                              institution: qual.postgrad_university || "Postgraduate Institution",
+                              year: qual.postgrad_year || "—",
+                            },
+                          ]
+                        : []),
+                      {
+                        degree: `${qual.undergrad_degree}${qual.undergrad_cgpa ? ` (CGPA ${qual.undergrad_cgpa})` : ""}`,
+                        institution: qual.undergrad_university,
+                        year: qual.undergrad_year,
+                      },
+                    ]
+                  : EDUCATION_HISTORY
+                ).map((edu, idx) => (
                   <div
                     key={idx}
                     className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs sm:text-sm"
@@ -475,9 +532,100 @@ export default function TeacherProfilePage() {
                     <ExternalLink className="w-3 h-3 text-fg-subtle" />
                   </a>
                 ))}
+                {qual?.cv_filename && (
+                  <span className="inline-flex items-center gap-1.5 min-h-[38px] px-3 py-1.5 rounded-xl bg-brand-soft border border-brand/25 text-xs font-medium text-brand">
+                    <FileText className="w-3.5 h-3.5 shrink-0" />
+                    <span>CV: {qual.cv_filename}</span>
+                  </span>
+                )}
+                {qual?.certificate_filename && (
+                  <span className="inline-flex items-center gap-1.5 min-h-[38px] px-3 py-1.5 rounded-xl bg-success-light border border-success/25 text-xs font-medium text-success">
+                    <Award className="w-3.5 h-3.5 shrink-0" />
+                    <span>Certificate: {qual.certificate_filename}</span>
+                  </span>
+                )}
               </div>
             </div>
           </div>
+
+          {/* Personal & Identity Details (from registration dossier) */}
+          {isRegisteredTeacher &&
+            (currentUser?.date_of_birth ||
+              currentUser?.gender ||
+              currentUser?.blood_group ||
+              currentUser?.religion ||
+              currentUser?.nationality ||
+              currentUser?.nid_or_birth_cert ||
+              currentUser?.emergency_phone ||
+              currentUser?.present_address ||
+              currentUser?.permanent_address) && (
+              <div className="rounded-2xl bg-surface border border-line p-6 space-y-4">
+                <div className="flex items-center justify-between gap-2 pb-3 border-b border-line">
+                  <h2 className="text-base font-semibold text-fg">
+                    Personal &amp; Identity Details
+                  </h2>
+                  <Badge variant="neutral">Verified Registration Record</Badge>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 divide-y divide-line sm:divide-y-0 text-xs">
+                  {currentUser.date_of_birth && (
+                    <div className="flex justify-between items-center gap-3 py-2.5 border-b border-line">
+                      <span className="text-fg-muted font-medium">Date of Birth</span>
+                      <span className="font-semibold text-fg tabular-nums">{currentUser.date_of_birth}</span>
+                    </div>
+                  )}
+                  {currentUser.gender && (
+                    <div className="flex justify-between items-center gap-3 py-2.5 border-b border-line">
+                      <span className="text-fg-muted font-medium">Gender</span>
+                      <span className="font-semibold text-fg">{currentUser.gender}</span>
+                    </div>
+                  )}
+                  {currentUser.blood_group && (
+                    <div className="flex justify-between items-center gap-3 py-2.5 border-b border-line">
+                      <span className="text-fg-muted font-medium">Blood Group</span>
+                      <span className="font-semibold text-fg">{currentUser.blood_group}</span>
+                    </div>
+                  )}
+                  {currentUser.religion && (
+                    <div className="flex justify-between items-center gap-3 py-2.5 border-b border-line">
+                      <span className="text-fg-muted font-medium">Religion</span>
+                      <span className="font-semibold text-fg">{currentUser.religion}</span>
+                    </div>
+                  )}
+                  {currentUser.nationality && (
+                    <div className="flex justify-between items-center gap-3 py-2.5 border-b border-line">
+                      <span className="text-fg-muted font-medium">Nationality</span>
+                      <span className="font-semibold text-fg">{currentUser.nationality}</span>
+                    </div>
+                  )}
+                  {currentUser.nid_or_birth_cert && (
+                    <div className="flex justify-between items-center gap-3 py-2.5 border-b border-line">
+                      <span className="text-fg-muted font-medium">
+                        {currentUser.id_document_type || "NID"} Number
+                      </span>
+                      <span className="font-mono font-medium text-fg">{currentUser.nid_or_birth_cert}</span>
+                    </div>
+                  )}
+                  {currentUser.emergency_phone && (
+                    <div className="flex justify-between items-center gap-3 py-2.5 border-b border-line">
+                      <span className="text-fg-muted font-medium">Emergency Contact</span>
+                      <span className="font-semibold text-fg tabular-nums">{currentUser.emergency_phone}</span>
+                    </div>
+                  )}
+                  {currentUser.present_address && (
+                    <div className="flex justify-between items-center gap-3 py-2.5 border-b border-line sm:col-span-2">
+                      <span className="text-fg-muted font-medium shrink-0">Present Address</span>
+                      <span className="font-medium text-fg text-right">{currentUser.present_address}</span>
+                    </div>
+                  )}
+                  {currentUser.permanent_address && (
+                    <div className="flex justify-between items-center gap-3 py-2.5 border-b border-line sm:col-span-2">
+                      <span className="text-fg-muted font-medium shrink-0">Permanent Address</span>
+                      <span className="font-medium text-fg text-right">{currentUser.permanent_address}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
           {/* Courses Taught (Actionable) */}
           <div className="rounded-2xl bg-surface border border-line p-6 space-y-4">
@@ -712,18 +860,19 @@ export default function TeacherProfilePage() {
         onClose={() => setIdCardOpen(false)}
         title="Official Faculty Identity Card"
         description="Auto-issued institutional faculty ID card for campus access and academic verification."
-        size="md"
+        size="lg"
       >
         <div className="py-2">
           <AcademicIdCard
             role="teacher"
-            academicId={CANONICAL_FACULTY.facultyCode}
-            fullName={CANONICAL_FACULTY.name}
-            departmentName={CANONICAL_FACULTY.departmentName}
+            academicId={facultyCode}
+            fullName={facultyName}
+            departmentName={facultyDepartment}
             departmentCode={CANONICAL_FACULTY.departmentCode}
-            designation={CANONICAL_FACULTY.designation}
-            bloodGroup="O+"
+            designation={facultyDesignation}
+            bloodGroup={currentUser?.blood_group || "A+"}
             phone={phone}
+            emergencyPhone={currentUser?.emergency_phone}
           />
         </div>
       </Modal>

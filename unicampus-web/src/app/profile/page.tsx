@@ -142,8 +142,33 @@ export default function ProfilePage() {
   const departmentName =
     currentUser?.department_name ||
     (isTeacher ? CANONICAL_FACULTY.departmentName : CANONICAL_STUDENT.departmentName);
-  const phone = isTeacher ? CANONICAL_FACULTY.phone : profileData.phone;
-  const emergencyPhone = profileData.emergencyPhone;
+  const programName =
+    currentUser?.program_name || `B.Sc. in ${departmentName}`;
+  const academicYearLabel =
+    currentUser?.academic_year || CANONICAL_STUDENT.batch;
+  const semesterLabel =
+    currentUser?.semester_name || CANONICAL_STUDENT.semester;
+  const phone =
+    currentUser?.phone ||
+    (isTeacher ? CANONICAL_FACULTY.phone : profileData.phone);
+  const emergencyPhone =
+    currentUser?.emergency_phone || profileData.emergencyPhone;
+  const bloodGroup = currentUser?.blood_group || profileData.bloodGroup;
+  const gender = currentUser?.gender || "Male";
+  const nationality = currentUser?.nationality || "Bangladeshi";
+  const religion = currentUser?.religion || null;
+  const dateOfBirth = currentUser?.date_of_birth || null;
+  const idDocumentType = currentUser?.id_document_type || "NID";
+  const nidOrBirthCert = currentUser?.nid_or_birth_cert || null;
+  const fatherName = currentUser?.father_name || null;
+  const fatherPhone = currentUser?.father_phone || null;
+  const motherName = currentUser?.mother_name || null;
+  const motherPhone = currentUser?.mother_phone || null;
+  const presentAddress =
+    currentUser?.present_address || profileData.presentAddress;
+  const permanentAddress = currentUser?.permanent_address || null;
+  const boardExams = currentUser?.board_exams || [];
+  const admissionPayment = currentUser?.admission_payment || null;
 
   return (
     <div className="w-full space-y-6 pb-12">
@@ -187,10 +212,10 @@ export default function ProfilePage() {
 
               <p className="text-xs md:text-sm text-fg-muted font-medium">
                 {isTeacher
-                  ? `${CANONICAL_FACULTY.designation} · ${departmentName}`
+                  ? `${currentUser?.teacher_qualifications?.designation || CANONICAL_FACULTY.designation} · ${departmentName}`
                   : isAdmin
                   ? `${departmentName} Administration`
-                  : `B.Sc. in ${departmentName}`}
+                  : programName}
               </p>
 
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-fg-muted font-sans pt-0.5">
@@ -218,9 +243,9 @@ export default function ProfilePage() {
                       ID: <span className="font-mono">{studentId}</span>
                     </span>
                     <span>·</span>
-                    <span>{CANONICAL_STUDENT.batch}</span>
+                    <span>{academicYearLabel}</span>
                     <span>·</span>
-                    <span>{CANONICAL_STUDENT.semester}</span>
+                    <span>{semesterLabel}</span>
                   </>
                 )}
               </div>
@@ -354,16 +379,52 @@ export default function ProfilePage() {
             </div>
             <div className="flex justify-between items-center gap-3 flex-wrap py-3">
               <span className="text-fg-muted font-medium">Gender</span>
-              <span className="font-semibold text-fg">Male</span>
+              <span className="font-semibold text-fg">{gender}</span>
             </div>
+            {dateOfBirth && (
+              <div className="flex justify-between items-center gap-3 flex-wrap py-3">
+                <span className="text-fg-muted font-medium">Date of Birth</span>
+                <span className="font-semibold text-fg tabular-nums">{dateOfBirth}</span>
+              </div>
+            )}
             <div className="flex justify-between items-center gap-3 flex-wrap py-3">
               <span className="text-fg-muted font-medium">Blood Group</span>
-              <span className="font-semibold text-fg">{profileData.bloodGroup}</span>
+              <span className="font-semibold text-fg">{bloodGroup}</span>
             </div>
+            {religion && (
+              <div className="flex justify-between items-center gap-3 flex-wrap py-3">
+                <span className="text-fg-muted font-medium">Religion</span>
+                <span className="font-semibold text-fg">{religion}</span>
+              </div>
+            )}
             <div className="flex justify-between items-center gap-3 flex-wrap py-3">
               <span className="text-fg-muted font-medium">Nationality</span>
-              <span className="font-semibold text-fg">Bangladeshi</span>
+              <span className="font-semibold text-fg">{nationality}</span>
             </div>
+            {nidOrBirthCert && (
+              <div className="flex justify-between items-center gap-3 flex-wrap py-3">
+                <span className="text-fg-muted font-medium">{idDocumentType} Number</span>
+                <span className="font-mono font-medium text-fg">{nidOrBirthCert}</span>
+              </div>
+            )}
+            {fatherName && (
+              <div className="flex justify-between items-center gap-3 flex-wrap py-3">
+                <span className="text-fg-muted font-medium">Father&apos;s Name</span>
+                <span className="font-semibold text-fg">
+                  {fatherName}
+                  {fatherPhone ? <span className="text-fg-muted font-normal tabular-nums"> · {fatherPhone}</span> : null}
+                </span>
+              </div>
+            )}
+            {motherName && (
+              <div className="flex justify-between items-center gap-3 flex-wrap py-3">
+                <span className="text-fg-muted font-medium">Mother&apos;s Name</span>
+                <span className="font-semibold text-fg">
+                  {motherName}
+                  {motherPhone ? <span className="text-fg-muted font-normal tabular-nums"> · {motherPhone}</span> : null}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -420,6 +481,9 @@ export default function ProfilePage() {
             <div className="flex justify-between items-center gap-3 flex-wrap py-3">
               <span className="text-fg-muted font-medium">Institutional Email</span>
               <div className="flex items-center gap-2">
+                {currentUser?.email_verified && (
+                  <Badge variant="success">Verified</Badge>
+                )}
                 <span className="font-sans font-medium text-fg min-w-0 break-all">{email}</span>
                 <button
                   type="button"
@@ -440,6 +504,9 @@ export default function ProfilePage() {
             <div className="flex justify-between items-center gap-3 flex-wrap py-3">
               <span className="text-fg-muted font-medium">Phone Number</span>
               <div className="flex items-center gap-2">
+                {currentUser?.phone_verified && (
+                  <Badge variant="success">Verified</Badge>
+                )}
                 <span className="font-sans tabular-nums font-medium text-fg">{phone}</span>
                 <button
                   type="button"
@@ -479,8 +546,42 @@ export default function ProfilePage() {
 
             <div className="flex justify-between items-center gap-3 flex-wrap py-3">
               <span className="text-fg-muted font-medium">Present Address</span>
-              <span className="font-medium text-fg">{profileData.presentAddress}</span>
+              <span className="font-medium text-fg">{presentAddress}</span>
             </div>
+            {permanentAddress && (
+              <div className="flex justify-between items-center gap-3 flex-wrap py-3">
+                <span className="text-fg-muted font-medium">Permanent Address</span>
+                <span className="font-medium text-fg">{permanentAddress}</span>
+              </div>
+            )}
+            {admissionPayment && (
+              <div className="py-3 space-y-1.5">
+                <div className="flex justify-between items-center gap-3 flex-wrap">
+                  <span className="text-fg-muted font-medium">Admission Payment</span>
+                  <div className="flex items-center gap-2 flex-wrap justify-end">
+                    <span className="font-semibold text-fg">{admissionPayment.method}</span>
+                    {admissionPayment.amount && (
+                      <span className="font-semibold text-success tabular-nums">
+                        {admissionPayment.amount}
+                      </span>
+                    )}
+                    <span className="font-mono text-fg-muted">{admissionPayment.trx_id}</span>
+                  </div>
+                </div>
+                {(admissionPayment.paid_date || admissionPayment.slip_filename) && (
+                  <div className="flex items-center justify-end gap-2 text-xs text-fg-muted flex-wrap">
+                    {admissionPayment.paid_date && (
+                      <span className="tabular-nums">Paid {admissionPayment.paid_date}</span>
+                    )}
+                    {admissionPayment.slip_filename && (
+                      <span className="px-2 py-0.5 rounded-md bg-surface-2 border border-line text-fg font-medium">
+                        {admissionPayment.slip_filename}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -512,6 +613,69 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
+
+        {/* Previous Board Examinations (JSC / SSC / HSC) — populated from registration dossier */}
+        {!isTeacher && !isAdmin && boardExams.length > 0 && (
+          <div className="md:col-span-2 rounded-2xl bg-surface border border-line p-6 space-y-4">
+            <div className="flex items-center justify-between gap-2 pb-3 border-b border-line">
+              <div className="flex items-center gap-2">
+                <GraduationCap className="w-4 h-4 text-brand" />
+                <h2 className="font-semibold text-base text-fg">
+                  Prior Board Examinations
+                </h2>
+              </div>
+              <Badge variant="neutral">Verified Registration Record</Badge>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="border-b border-line text-fg-muted">
+                    <th className="py-2.5 pr-4 font-medium">Exam</th>
+                    <th className="py-2.5 px-3 font-medium">Board &amp; Institution</th>
+                    <th className="py-2.5 px-3 font-medium">Group</th>
+                    <th className="py-2.5 px-3 font-medium">Year</th>
+                    <th className="py-2.5 px-3 font-medium">Roll / Reg. No.</th>
+                    <th className="py-2.5 px-3 font-medium">Document</th>
+                    <th className="py-2.5 pl-3 font-medium text-right">GPA</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line">
+                  {boardExams.map((rec, idx) => (
+                    <tr key={`${rec.exam}-${idx}`}>
+                      <td className="py-3 pr-4 font-semibold text-fg whitespace-nowrap">{rec.exam}</td>
+                      <td className="py-3 px-3 text-fg">
+                        <div className="font-medium text-fg">{rec.board}</div>
+                        {rec.institution && (
+                          <div className="text-fg-muted truncate max-w-[200px]">{rec.institution}</div>
+                        )}
+                      </td>
+                      <td className="py-3 px-3 text-fg-muted whitespace-nowrap">{rec.group || "—"}</td>
+                      <td className="py-3 px-3 text-fg tabular-nums whitespace-nowrap">{rec.passing_year}</td>
+                      <td className="py-3 px-3 font-mono text-fg-muted whitespace-nowrap">
+                        <div>{rec.roll_number || "—"}</div>
+                        {rec.registration_number && (
+                          <div className="text-fg-subtle">{rec.registration_number}</div>
+                        )}
+                      </td>
+                      <td className="py-3 px-3 text-fg-muted">
+                        {rec.marksheet_filename ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-surface-2 border border-line text-fg font-medium max-w-[160px] truncate">
+                            {rec.marksheet_filename}
+                          </span>
+                        ) : (
+                          "—"
+                        )}
+                      </td>
+                      <td className="py-3 pl-3 font-semibold text-brand tabular-nums text-right whitespace-nowrap">
+                        {rec.gpa}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Official Printable Academic ID Card Modal */}
@@ -520,7 +684,7 @@ export default function ProfilePage() {
         onClose={() => setIdCardOpen(false)}
         title="Official Academic Identity Card"
         description="Auto-issued institutional identity card for campus and examination verification."
-        size="md"
+        size="lg"
       >
         <div className="py-2">
           <AcademicIdCard
@@ -530,9 +694,10 @@ export default function ProfilePage() {
             departmentName={departmentName}
             departmentCode={CANONICAL_STUDENT.departmentCode}
             photoUrl={!isTeacher && !isAdmin ? profileData.avatarUrl : null}
-            semesterName={currentUser?.semester_name || CANONICAL_STUDENT.semester}
-            designation={isTeacher ? CANONICAL_FACULTY.designation : undefined}
-            bloodGroup={profileData.bloodGroup}
+            section="Section A"
+            semesterName={semesterLabel}
+            designation={isTeacher ? currentUser?.teacher_qualifications?.designation || CANONICAL_FACULTY.designation : undefined}
+            bloodGroup={bloodGroup}
             phone={phone}
             emergencyPhone={emergencyPhone}
           />

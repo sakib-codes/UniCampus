@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import { useTheme } from "next-themes";
 import { AdminRoleGate } from "@/components/admin/AdminRoleGate";
 import { TeacherRoleGate } from "@/components/teacher/TeacherRoleGate";
+import { StudentRoleGate } from "@/components/layout/StudentRoleGate";
 import { PortalShell } from "@/components/shell/PortalShell";
 import type { PortalRole } from "@/lib/navigation";
 import { useAdminAuth } from "@/context/AdminAuthContext";
@@ -258,7 +259,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     } else if (isTeacher) {
       mainLayout = <TeacherRoleGate>{shell}</TeacherRoleGate>;
     } else {
-      mainLayout = shell;
+      mainLayout = <StudentRoleGate>{shell}</StudentRoleGate>;
     }
   }
 

@@ -2,7 +2,7 @@
 
 import React, { memo } from "react";
 import { Bell, BellOff } from "lucide-react";
-import ProfileAvatar from "@/components/common/ProfileAvatar";
+import { Avatar } from "@/components/ui/Avatar";
 import { Conversation } from "./types";
 
 interface ConversationRowProps {
@@ -20,6 +20,8 @@ export const ConversationRow = memo(function ConversationRow({
   onSelect,
   onToggleMute,
 }: ConversationRowProps) {
+  const hasUnread = conv.unreadCount > 0 && !isSelected;
+
   return (
     <div
       className={`group relative w-full p-2 rounded-2xl flex items-center transition-colors text-left ${
@@ -35,30 +37,30 @@ export const ConversationRow = memo(function ConversationRow({
         aria-current={isSelected ? "true" : undefined}
         className="w-full p-0.5 flex items-center gap-3 cursor-pointer text-left focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none rounded-xl"
       >
-        {/* Avatar with Messenger Active Dot */}
+        {/* Avatar with Active Dot */}
         <div className="relative shrink-0">
-          <ProfileAvatar
-            className="w-13 h-13 border border-line"
-            iconClassName="w-6 h-6"
+          <Avatar
+            name={conv.nickname || conv.name}
+            size="md"
           />
           {conv.isOnline && (
-            <span className="w-3.5 h-3.5 rounded-full bg-success border-2 border-surface absolute bottom-0 right-0 shadow-xs" />
+            <span className="w-3 h-3 rounded-full bg-success border-2 border-surface absolute bottom-0 right-0" />
           )}
         </div>
 
         {/* Metadata & Message Preview */}
         <div className="flex-1 min-w-0 pr-1">
-          <div className="flex items-center justify-between mb-0.5">
+          <div className="flex items-center justify-between gap-2 mb-0.5">
             <h3
               className={`text-sm truncate ${
-                conv.unreadCount > 0
+                hasUnread
                   ? "font-semibold text-fg"
                   : "font-medium text-fg"
               }`}
             >
               {conv.nickname || conv.name}
             </h3>
-            <span className="text-xs text-fg-muted shrink-0 font-medium tabular-nums">
+            <span className="text-xs text-fg-muted shrink-0 font-normal tabular-nums">
               {conv.lastTime}
             </span>
           </div>
@@ -75,8 +77,8 @@ export const ConversationRow = memo(function ConversationRow({
               </p>
             ) : (
               <p
-                className={`text-xs truncate ${
-                  conv.unreadCount > 0
+                className={`text-xs truncate pr-1 ${
+                  hasUnread
                     ? "font-semibold text-fg"
                     : "text-fg-muted"
                 }`}
@@ -85,8 +87,8 @@ export const ConversationRow = memo(function ConversationRow({
               </p>
             )}
 
-            {conv.unreadCount > 0 && (
-              <span className="w-2.5 h-2.5 rounded-full bg-brand shrink-0 shadow-xs" />
+            {hasUnread && (
+              <span className="w-2 h-2 rounded-full bg-brand shrink-0" />
             )}
           </div>
         </div>

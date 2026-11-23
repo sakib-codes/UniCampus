@@ -2,7 +2,7 @@
 
 import React, { memo, RefObject } from "react";
 import { MessageSquare, Pin } from "lucide-react";
-import ProfileAvatar from "@/components/common/ProfileAvatar";
+import { Avatar } from "@/components/ui/Avatar";
 import { MessageBubble } from "./MessageBubble";
 import { Conversation, MessageItem } from "./types";
 
@@ -62,13 +62,14 @@ export const MessageStream = memo(function MessageStream({
       )}
 
       {/* Message History Canvas */}
-      <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 space-y-4 [scrollbar-gutter:stable]">
+      <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 [scrollbar-gutter:stable]">
+        <div className="max-w-4xl mx-auto space-y-4">
         {activeConv.messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
             <div className="w-14 h-14 rounded-full bg-brand/10 text-brand flex items-center justify-center mb-3">
               <MessageSquare className="w-6 h-6" />
             </div>
-            <h4 className="text-sm font-bold text-fg">Start the conversation</h4>
+            <h4 className="text-sm font-semibold text-fg">Start the conversation</h4>
             <p className="text-xs text-fg-muted max-w-xs mt-1">
               Send a message, voice note, or shared file to begin collaborating with{" "}
               {activeConv.name}.
@@ -77,8 +78,8 @@ export const MessageStream = memo(function MessageStream({
         ) : (
           <>
             {/* Date Separator */}
-            <div className="flex items-center justify-center my-3">
-              <span className="px-3 py-1 rounded-full bg-surface-2 text-xs font-bold uppercase tracking-wider text-fg-muted">
+            <div className="flex items-center justify-center my-2">
+              <span className="px-3 py-1 rounded-full bg-surface-2 border border-line text-xs font-medium text-fg-muted">
                 Today
               </span>
             </div>
@@ -98,6 +99,7 @@ export const MessageStream = memo(function MessageStream({
                 <MessageBubble
                   key={msg.id}
                   msg={msg}
+                  senderName={activeConv.nickname || activeConv.name}
                   isMe={isMe}
                   isLastSent={isLastSent}
                   themeColor={activeConv.themeColor}
@@ -120,9 +122,10 @@ export const MessageStream = memo(function MessageStream({
         {/* LIVE TYPING INDICATOR */}
         {isTyping && (
           <div className="flex items-end gap-2">
-            <ProfileAvatar
-              className="w-7 h-7 border border-line mb-1 shrink-0"
-              iconClassName="w-3.5 h-3.5"
+            <Avatar
+              name={activeConv.nickname || activeConv.name}
+              size="sm"
+              className="mb-1 shrink-0"
             />
 
             <div className="px-4 py-3 rounded-2xl rounded-bl-[4px] bg-surface-2 flex items-center gap-1.5 shadow-2xs border border-line">
@@ -134,6 +137,7 @@ export const MessageStream = memo(function MessageStream({
         )}
 
         <div ref={messagesEndRef} />
+        </div>
       </div>
     </div>
   );

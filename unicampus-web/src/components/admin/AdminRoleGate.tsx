@@ -18,6 +18,7 @@ export function AdminRoleGate({ children }: { children: React.ReactNode }) {
     accountStatus,
     isLoaded,
     hasExplicitSession,
+    isDemoMode,
     loginAsAdmin,
     logout,
   } = useAdminAuth();
@@ -25,23 +26,32 @@ export function AdminRoleGate({ children }: { children: React.ReactNode }) {
   const hasAutoLoggedIn = useRef(false);
 
   useEffect(() => {
-    // Only auto-login if the context is fresh/unseeded (e.g. fresh E2E browser context without stored user)
-    if (isLoaded && !hasExplicitSession && !hasAutoLoggedIn.current) {
+    if (!isLoaded) return;
+
+    // Live mode: NEVER auto-login — redirect unauthenticated visitors to /login
+    if (!isDemoMode && !currentUser) {
+      const next = pathname && pathname !== '/admin' ? `?next=${encodeURIComponent(pathname)}` : '';
+      router.replace(`/login${next}`);
+      return;
+    }
+
+    // Demo mode only: auto-seed demo admin if context is unseeded
+    if (isDemoMode && !hasExplicitSession && !hasAutoLoggedIn.current) {
       hasAutoLoggedIn.current = true;
       loginAsAdmin();
     }
-  }, [isLoaded, hasExplicitSession, loginAsAdmin]);
+  }, [isLoaded, isDemoMode, currentUser, hasExplicitSession, loginAsAdmin, pathname, router]);
 
   // Allow the /admin route alias to pass through and execute its redirect('/admin/dashboard')
   if (pathname === '/admin') {
     return <>{children}</>;
   }
 
-  // Before auth context is loaded, render centered circular loader
-  if (!isLoaded) {
+  // Before auth context is loaded, or while redirecting unauthenticated user in live mode
+  if (!isLoaded || (!isDemoMode && !currentUser)) {
     return (
       <div className="min-h-[60dvh] w-full flex flex-col items-center justify-center gap-3 p-6">
-        <InlineSpinner size="lg" label="Loading admin workspace" />
+        <InlineSpinner size="lg" label="Verifying admin session" />
       </div>
     );
   }

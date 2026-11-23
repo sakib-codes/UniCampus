@@ -153,7 +153,7 @@ export default function TeacherAdvisingPage() {
           )}
         </div>
 
-        <div className="flex items-center gap-1.5 overflow-x-auto [scrollbar-width:none]">
+        <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-surface-2 border border-line overflow-x-auto max-w-full [scrollbar-width:none]">
           {(
             [
               { id: "all", label: "All Plans" },
@@ -166,10 +166,10 @@ export default function TeacherAdvisingPage() {
               key={tab.id}
               type="button"
               onClick={() => setFilter(tab.id)}
-              className={`min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors shrink-0 cursor-pointer border ${
+              className={`min-h-[36px] px-3 py-1.5 rounded-lg text-xs font-medium transition-colors shrink-0 cursor-pointer ${
                 filter === tab.id
-                  ? "bg-brand text-on-brand border-brand"
-                  : "bg-surface-2 text-fg-muted border-line hover:text-fg"
+                  ? "bg-surface text-fg font-semibold border border-line/80 shadow-2xs"
+                  : "text-fg-muted hover:text-fg"
               }`}
             >
               {tab.label}

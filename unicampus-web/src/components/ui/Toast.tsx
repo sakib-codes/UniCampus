@@ -2,7 +2,12 @@
 
 import React, { useEffect, useRef } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { AlertCircle, AlertTriangle, CheckCircle2, Info, X } from "lucide-react";
+import { AlertCircle, Info, X } from "lucide-react";
+import { CheckIcon, type CheckIconHandle } from "@/components/icons/check";
+import {
+  TriangleAlertIcon,
+  type TriangleAlertIconHandle,
+} from "@/components/icons/triangle-alert";
 import { cn } from "./cn";
 
 export type ToastTone = "neutral" | "success" | "warning" | "danger";
@@ -18,12 +23,29 @@ export interface ToastProps {
   className?: string;
 }
 
-const toneIcons: Record<ToastTone, React.ReactNode> = {
-  neutral: <Info className="w-4 h-4 text-brand shrink-0" aria-hidden="true" />,
-  success: <CheckCircle2 className="w-4 h-4 text-success shrink-0" aria-hidden="true" />,
-  warning: <AlertTriangle className="w-4 h-4 text-warning shrink-0" aria-hidden="true" />,
-  danger: <AlertCircle className="w-4 h-4 text-danger shrink-0" aria-hidden="true" />,
-};
+function ToastToneIcon({ tone }: { tone: ToastTone }) {
+  const checkRef = useRef<CheckIconHandle>(null);
+  const alertRef = useRef<TriangleAlertIconHandle>(null);
+
+  useEffect(() => {
+    if (tone === "success") {
+      checkRef.current?.startAnimation();
+    } else if (tone === "warning") {
+      alertRef.current?.startAnimation();
+    }
+  }, [tone]);
+
+  if (tone === "success") {
+    return <CheckIcon ref={checkRef} size={16} className="text-success shrink-0" aria-hidden="true" />;
+  }
+  if (tone === "warning") {
+    return <TriangleAlertIcon ref={alertRef} size={16} className="text-warning shrink-0" aria-hidden="true" />;
+  }
+  if (tone === "danger") {
+    return <AlertCircle className="w-4 h-4 text-danger shrink-0" aria-hidden="true" />;
+  }
+  return <Info className="w-4 h-4 text-brand shrink-0" aria-hidden="true" />;
+}
 
 export function Toast({
   open,
@@ -71,7 +93,7 @@ export function Toast({
             className
           )}
         >
-          <div className="mt-0.5">{toneIcons[tone]}</div>
+          <div className="mt-0.5"><ToastToneIcon tone={tone} /></div>
 
           <div className="min-w-0 flex-1">
             {title && (

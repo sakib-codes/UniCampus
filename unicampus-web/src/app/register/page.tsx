@@ -6,12 +6,14 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
   ArrowLeft,
+  Briefcase,
   Camera,
   CheckCircle2,
   Clock,
   Eye,
   EyeOff,
   FileSearch,
+  GraduationCap,
   ShieldAlert,
   Upload,
 } from "lucide-react";
@@ -684,13 +686,13 @@ export default function RegisterPage() {
   );
   const currentPhotoUrl = role === "student" ? studentForm.photoUrl : teacherForm.photoUrl;
   const stepMeta = getStepMeta(step, role);
-  const progressPct = step === 0 ? 8 : Math.round((step / totalFormSteps) * 100);
+  const progressPct = Math.round(((step + 1) / (totalFormSteps + 1)) * 100);
 
   return (
-    <div className="min-h-dvh flex flex-col justify-between bg-canvas text-fg px-4 py-5 sm:py-7">
+    <div className="min-h-dvh flex flex-col bg-canvas text-fg px-4 py-5 sm:py-7">
       {/* Clean Minimal Top Bar (Google / Discord / X pattern) */}
       <header className="w-full max-w-[540px] mx-auto flex items-center justify-between gap-3 print:hidden">
-        <Link href="/" className="inline-flex items-center gap-2.5 group">
+        <Link href="/" className="inline-flex items-center gap-2.5 min-h-[44px] group">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/images/unicampus_logo.png"
@@ -708,22 +710,24 @@ export default function RegisterPage() {
                 setViewMode((prev) => (prev === "register" ? "status" : "register"));
                 setErrorMsg("");
               }}
-              className={`min-h-[38px] px-3 rounded-xl border text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer ${
+              className={`h-11 px-3.5 rounded-xl border text-[13px] font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 whitespace-nowrap ${
                 viewMode === "status"
                   ? "bg-brand-soft border-brand text-brand"
-                  : "bg-surface border-line text-fg-muted hover:text-fg"
+                  : "bg-surface border-line text-fg-muted hover:text-fg hover:border-line-strong"
               }`}
             >
-              <FileSearch className="w-3.5 h-3.5" />
+              <FileSearch className="w-4 h-4" />
               <span>{viewMode === "status" ? "New Application" : "Check Status"}</span>
             </button>
           )}
-          <ThemeToggle />
+          <div className="h-11 w-11 rounded-xl bg-surface border border-line flex items-center justify-center">
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 
       {/* Main Centered Onboarding Card */}
-      <main className="w-full max-w-[540px] mx-auto my-auto py-5">
+      <main className="w-full max-w-[540px] mx-auto flex-1 flex flex-col justify-center py-6">
         {viewMode === "status" && !createdProfile ? (
           <div className="p-6 sm:p-8 rounded-2xl bg-surface border border-line shadow-sm">
             <ApplicationStatusPanel
@@ -801,9 +805,9 @@ export default function RegisterPage() {
           </div>
         ) : (
           /* Progressive Micro-Step Card */
-          <div className="rounded-2xl bg-surface border border-line shadow-sm overflow-hidden">
+          <div className="rounded-[20px] bg-surface border border-line overflow-hidden">
             {/* Thin Top Progress Bar */}
-            <div className="h-1 w-full bg-surface-2">
+            <div className="h-1 w-full bg-line/70">
               <div
                 className="h-full bg-brand transition-[width] duration-200 ease-out"
                 style={{ width: `${progressPct}%` }}
@@ -812,7 +816,7 @@ export default function RegisterPage() {
 
             <div className="p-6 sm:p-8 space-y-5">
               {/* Top Step Navigation Bar */}
-              <div className="flex items-center justify-between min-h-[32px]">
+              <div className="flex items-center justify-between min-h-[36px]">
                 {step > 0 ? (
                   <button
                     type="button"
@@ -820,22 +824,20 @@ export default function RegisterPage() {
                       setErrorMsg("");
                       setStep((prev) => Math.max(0, prev - 1));
                     }}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-fg-muted hover:text-fg min-h-[36px] -ml-1 px-1.5 rounded-lg cursor-pointer transition-colors"
+                    className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-fg-muted hover:text-fg min-h-[44px] -ml-2 px-2 rounded-xl cursor-pointer transition-colors"
                   >
                     <ArrowLeft className="w-4 h-4" />
                     <span>Back</span>
                   </button>
                 ) : (
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-brand">
+                  <span className="text-xs font-semibold tracking-wide text-brand">
                     Admissions &amp; Onboarding
                   </span>
                 )}
 
-                {step > 0 && (
-                  <span className="text-xs font-medium text-fg-muted tabular-nums">
-                    Step {step} of {totalFormSteps}
-                  </span>
-                )}
+                <span className="text-xs font-medium text-fg-muted tabular-nums">
+                  Step {step + 1} of {totalFormSteps + 1}
+                </span>
               </div>
 
               {/* Re-Apply Banner */}
@@ -864,7 +866,7 @@ export default function RegisterPage() {
                 <h1 className="text-xl sm:text-2xl font-semibold text-fg tracking-tight">
                   {stepMeta.title}
                 </h1>
-                <p className="text-xs sm:text-sm text-fg-muted">
+                <p className="text-[13px] sm:text-sm text-fg-muted">
                   {stepMeta.subtitle}
                 </p>
               </div>
@@ -880,7 +882,7 @@ export default function RegisterPage() {
                     transition={{ duration: 0.16, ease: "easeOut" }}
                   >
                     {step === 0 ? (
-                      /* Step 0: Visual Role Picker (using Mobile's role_student.png & role_teacher.png) */
+                      /* Step 0: Cohesive Visual Role Picker */
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
                         <button
                           type="button"
@@ -889,18 +891,18 @@ export default function RegisterPage() {
                             setErrorMsg("");
                             setStep(1);
                           }}
-                          className="group p-5 rounded-2xl bg-surface-2 border border-line hover:border-brand text-left flex flex-col items-center text-center gap-3 transition-colors cursor-pointer"
+                          className="group p-5 rounded-2xl bg-surface border border-line hover:border-brand hover:bg-brand-soft/30 text-left flex flex-col gap-4 transition-colors cursor-pointer"
                         >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src="/images/role_student.png"
-                            alt="Student Portal"
-                            className="w-20 h-20 object-contain group-hover:scale-105 transition-transform"
-                          />
+                          <div className="flex items-center justify-between w-full">
+                            <div className="w-11 h-11 rounded-xl bg-brand-soft text-brand flex items-center justify-center">
+                              <GraduationCap className="w-5 h-5" />
+                            </div>
+                            <ArrowRight className="w-4 h-4 text-fg-muted group-hover:text-brand group-hover:translate-x-0.5 transition-transform" />
+                          </div>
                           <div>
-                            <div className="text-sm font-semibold text-fg">I&apos;m a Student</div>
-                            <p className="text-xs text-fg-muted mt-0.5">
-                              4-Year / 8-Semester admission &amp; Student ID Card
+                            <div className="text-[15px] font-semibold text-fg">I&apos;m a Student</div>
+                            <p className="text-[13px] text-fg-muted mt-1 leading-snug">
+                              4-Year undergraduate admission &amp; Student ID.
                             </p>
                           </div>
                         </button>
@@ -912,18 +914,18 @@ export default function RegisterPage() {
                             setErrorMsg("");
                             setStep(1);
                           }}
-                          className="group p-5 rounded-2xl bg-surface-2 border border-line hover:border-brand text-left flex flex-col items-center text-center gap-3 transition-colors cursor-pointer"
+                          className="group p-5 rounded-2xl bg-surface border border-line hover:border-brand hover:bg-brand-soft/30 text-left flex flex-col gap-4 transition-colors cursor-pointer"
                         >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src="/images/role_teacher.png"
-                            alt="Faculty Portal"
-                            className="w-20 h-20 object-contain group-hover:scale-105 transition-transform"
-                          />
+                          <div className="flex items-center justify-between w-full">
+                            <div className="w-11 h-11 rounded-xl bg-brand-soft text-brand flex items-center justify-center">
+                              <Briefcase className="w-5 h-5" />
+                            </div>
+                            <ArrowRight className="w-4 h-4 text-fg-muted group-hover:text-brand group-hover:translate-x-0.5 transition-transform" />
+                          </div>
                           <div>
-                            <div className="text-sm font-semibold text-fg">I&apos;m Faculty</div>
-                            <p className="text-xs text-fg-muted mt-0.5">
-                              Academic appointment &amp; Faculty ID Card
+                            <div className="text-[15px] font-semibold text-fg">I&apos;m Faculty</div>
+                            <p className="text-[13px] text-fg-muted mt-1 leading-snug">
+                              Academic appointment &amp; Faculty ID.
                             </p>
                           </div>
                         </button>
@@ -1118,15 +1120,15 @@ export default function RegisterPage() {
             </div>
           </div>
         )}
-      </main>
 
-      {/* Minimal Footer */}
-      <footer className="w-full max-w-[540px] mx-auto text-center text-xs text-fg-muted pt-3 print:hidden">
-        Already have an account?{" "}
-        <Link href="/login" className="font-semibold text-brand hover:underline">
-          Sign in
-        </Link>
-      </footer>
+        {/* Minimal Footer anchored directly below the card */}
+        <footer className="w-full text-center text-[13px] text-fg-muted mt-6 print:hidden">
+          Already have an account?{" "}
+          <Link href="/login" className="font-semibold text-brand hover:underline">
+            Sign in
+          </Link>
+        </footer>
+      </main>
     </div>
   );
 }

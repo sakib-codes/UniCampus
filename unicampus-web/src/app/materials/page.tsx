@@ -7,8 +7,8 @@ import {
   RefreshCw,
   Bookmark,
   X,
-  ChevronDown,
 } from "lucide-react";
+import { Select } from "@/components/ui/Select";
 import {
   COURSE_GROUPS,
   COURSE_FILTER_OPTIONS,
@@ -253,10 +253,10 @@ export default function StudentMaterialsPage() {
                     key={opt.id}
                     type="button"
                     onClick={() => setSelectedCourse(opt.id)}
-                    className={`min-h-[36px] px-3 py-1.5 rounded-lg text-xs font-semibold tracking-tight transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
+                    className={`min-h-[36px] px-3 py-1.5 rounded-lg text-xs font-medium tracking-tight transition-colors shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                       isActive
-                        ? "bg-brand text-on-brand"
-                        : "text-fg-muted hover:text-fg hover:bg-surface"
+                        ? "bg-surface text-fg font-semibold border border-line/80 shadow-2xs"
+                        : "text-fg-muted hover:text-fg"
                     }`}
                   >
                     {opt.label}
@@ -265,24 +265,16 @@ export default function StudentMaterialsPage() {
               })}
             </div>
 
-            <div className="relative shrink-0">
-              <select
-                aria-label="Filter by material type"
-                value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value)}
-                className="min-h-[44px] pl-3.5 pr-8 rounded-xl bg-surface-2 border border-line text-xs font-semibold text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:border-brand cursor-pointer appearance-none"
-              >
-                {TYPE_FILTER_OPTIONS.map((t) => (
-                  <option key={t.id} value={t.id} className="bg-surface text-fg">
-                    {t.label}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown
-                className="w-3.5 h-3.5 text-fg-muted absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
-                aria-hidden="true"
-              />
-            </div>
+            <Select
+              ariaLabel="Filter by material type"
+              value={selectedType}
+              onChange={setSelectedType}
+              options={TYPE_FILTER_OPTIONS.map((t) => ({ value: t.id, label: t.label }))}
+              size="md"
+              variant="surface2"
+              menuAlign="right"
+              className="w-40 shrink-0"
+            />
           </div>
         </section>
       </div>

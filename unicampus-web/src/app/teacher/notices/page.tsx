@@ -13,6 +13,7 @@ import { ACTIVE_TERM } from "@/lib/canonicalCampus";
 import { adminService } from "@/lib/services/adminService";
 import { Notice } from "@/types/admin";
 import { Modal } from "@/components/ui/Modal";
+import { Select } from "@/components/ui/Select";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Badge } from "@/components/ui/Badge";
 import { Tabs, TabOption } from "@/components/ui/Tabs";
@@ -186,19 +187,23 @@ export default function TeacherNoticesPage() {
             )}
           </div>
 
-          <select
-            aria-label="Filter notices by category"
+          <Select
+            ariaLabel="Filter notices by category"
             value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="w-full sm:w-44 min-h-[44px] sm:min-h-[38px] px-3 py-2 bg-canvas border border-line text-fg rounded-xl text-xs font-sans font-medium cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:border-brand"
-          >
-            <option value="all">All Categories</option>
-            <option value="Academics">Academics</option>
-            <option value="Administrative">Administrative</option>
-            <option value="Exams">Exams &amp; Grading</option>
-            <option value="Events">Campus Events</option>
-            <option value="Emergency">Emergency Alert</option>
-          </select>
+            onChange={setSelectedCategory}
+            options={[
+              { value: "all", label: "All Categories" },
+              { value: "Academics", label: "Academics" },
+              { value: "Administrative", label: "Administrative" },
+              { value: "Exams", label: "Exams & Grading" },
+              { value: "Events", label: "Campus Events" },
+              { value: "Emergency", label: "Emergency Alert" },
+            ]}
+            size="sm"
+            variant="surface2"
+            menuAlign="right"
+            className="w-full sm:w-48"
+          />
         </div>
       </div>
 

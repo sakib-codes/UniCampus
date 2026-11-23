@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, Bell, CheckCheck } from "lucide-react";
+import { ArrowRight, CheckCheck } from "lucide-react";
+import { BellIcon, type BellIconHandle } from "@/components/icons/bell";
 import { ACTIVE_TERM } from "@/lib/canonicalCampus";
 import { supabaseSyncBridge } from "@/lib/supabase/syncBridge";
 import { adminService } from "@/lib/services/adminService";
@@ -34,6 +35,7 @@ export function NotificationsMenu({
   const [pendingCount, setPendingCount] = useState(0);
   const [hasUnread, setHasUnread] = useState(!isLive);
   const containerRef = useRef<HTMLDivElement>(null);
+  const bellRef = useRef<BellIconHandle>(null);
   const reduceMotion = useReducedMotion();
 
   useEffect(() => {
@@ -171,12 +173,14 @@ export function NotificationsMenu({
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
+        onMouseEnter={() => bellRef.current?.startAnimation()}
+        onMouseLeave={() => bellRef.current?.stopAnimation()}
         aria-label="Notifications"
         aria-expanded={open}
         aria-haspopup="dialog"
         className="relative w-11 h-11 min-w-[44px] min-h-[44px] sm:w-9 sm:h-9 sm:min-w-0 sm:min-h-0 rounded-lg bg-transparent border border-transparent text-fg-muted hover:text-fg hover:bg-surface-2 flex items-center justify-center transition-colors cursor-pointer"
       >
-        <Bell className="w-[18px] h-[18px]" />
+        <BellIcon ref={bellRef} size={18} aria-hidden="true" />
         {hasUnread && (
           <span
             aria-hidden="true"

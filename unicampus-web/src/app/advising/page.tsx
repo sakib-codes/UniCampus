@@ -241,18 +241,18 @@ export default function AdvisingPage() {
                     key={cat.id}
                     type="button"
                     onClick={() => setCategoryFilter(cat.id)}
-                    className={`min-h-[36px] px-3 py-1.5 rounded-lg text-xs font-semibold tracking-tight transition-colors shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                    className={`min-h-[36px] px-3 py-1.5 rounded-lg text-xs font-medium tracking-tight transition-colors shrink-0 cursor-pointer flex items-center gap-1.5 ${
                       isActive
-                        ? "bg-brand text-on-brand"
-                        : "text-fg-muted hover:text-fg hover:bg-surface"
+                        ? "bg-surface text-fg font-semibold border border-line/80 shadow-2xs"
+                        : "text-fg-muted hover:text-fg"
                     }`}
                   >
                     <span>{cat.label}</span>
                     <span
-                      className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                      className={`text-[12px] leading-none px-1.5 py-0.5 rounded-full tabular-nums ${
                         isActive
-                          ? "bg-on-brand/20 text-on-brand"
-                          : "bg-surface text-fg-muted border border-line"
+                          ? "bg-brand-soft text-brand font-semibold"
+                          : "bg-surface text-fg-muted"
                       }`}
                     >
                       {cat.count}

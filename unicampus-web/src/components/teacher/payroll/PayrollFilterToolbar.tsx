@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { Select } from "@/components/ui/Select";
 import { RotateCcw, Search, X } from "lucide-react";
 
 interface PayrollFilterToolbarProps {
@@ -100,16 +101,19 @@ export function PayrollFilterToolbar({
           <label htmlFor="payroll-year-select" className="text-xs font-medium text-fg-muted">
             Year / Term
           </label>
-          <select
+          <Select
             id="payroll-year-select"
+            ariaLabel="Year / Term"
             value={selectedYear}
-            onChange={(e) => onYearChange(e.target.value)}
-            className="w-full min-h-[44px] px-3 text-sm bg-canvas border border-line rounded-xl text-fg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand transition-colors"
-          >
-            <option value="all">All Years</option>
-            <option value="2026">2026 (Active Fiscal Year)</option>
-            <option value="2025">2025 (Historical)</option>
-          </select>
+            onChange={onYearChange}
+            options={[
+              { value: "all", label: "All Years" },
+              { value: "2026", label: "2026 (Active Fiscal Year)" },
+              { value: "2025", label: "2025 (Historical)" },
+            ]}
+            size="md"
+            variant="surface2"
+          />
         </div>
 
         {/* Status Filter */}
@@ -117,16 +121,19 @@ export function PayrollFilterToolbar({
           <label htmlFor="payroll-status-select" className="text-xs font-medium text-fg-muted">
             Disbursement Status
           </label>
-          <select
+          <Select
             id="payroll-status-select"
+            ariaLabel="Disbursement Status"
             value={selectedStatus}
-            onChange={(e) => onStatusChange(e.target.value)}
-            className="w-full min-h-[44px] px-3 text-sm bg-canvas border border-line rounded-xl text-fg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand transition-colors"
-          >
-            <option value="all">All Statuses</option>
-            <option value="Disbursed">Disbursed Only</option>
-            <option value="Pending">Pending Only</option>
-          </select>
+            onChange={onStatusChange}
+            options={[
+              { value: "all", label: "All Statuses" },
+              { value: "Disbursed", label: "Disbursed Only" },
+              { value: "Pending", label: "Pending Only" },
+            ]}
+            size="md"
+            variant="surface2"
+          />
         </div>
 
         {/* From Date Filter */}

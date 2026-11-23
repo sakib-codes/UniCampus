@@ -14,8 +14,11 @@ import { TeachingSchedulePanel } from "@/components/teacher/dashboard/TeachingSc
 import { StudentInquiriesPanel } from "@/components/teacher/dashboard/StudentInquiriesPanel";
 import { TeacherMetricBento } from "@/components/teacher/dashboard/TeacherMetricBento";
 import { TeacherDashboardModals } from "@/components/teacher/dashboard/TeacherDashboardModals";
+import { IdCardStatusWidget } from "@/components/common/IdCardStatusWidget";
+import { useAdminAuth } from "@/context/AdminAuthContext";
 
 export default function TeacherCommandCenterPage() {
+  const { currentUser } = useAdminAuth();
   const [inquiries, setInquiries] = useState<StudentInquiry[]>(INITIAL_INQUIRIES);
   const [activeSessionModal, setActiveSessionModal] = useState<TeachingSession | null>(null);
   const [isAnnouncementOpen, setIsAnnouncementOpen] = useState(false);
@@ -81,6 +84,12 @@ export default function TeacherCommandCenterPage() {
           </div>
         </div>
       </div>
+
+      {/* ID Card Issuance & Print Status Tracker */}
+      <IdCardStatusWidget
+        academicId={currentUser?.teacher_code || CANONICAL_FACULTY.facultyCode}
+        profileHref="/teacher/profile"
+      />
 
       {/* 2. TODAY'S TEACHING SCHEDULE & INQUIRIES WORKSPACE SPLIT GRID */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-7">

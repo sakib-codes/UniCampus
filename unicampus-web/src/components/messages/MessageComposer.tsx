@@ -2,6 +2,7 @@
 
 import React, { memo, useState, useEffect, useRef } from "react";
 import { Paperclip, Reply, Send, Smile, X } from "lucide-react";
+import { SendIcon, type SendIconHandle } from "@/components/icons/send";
 import { Conversation, MessageItem, THEME_GRADIENTS, formatTimer } from "./types";
 
 interface MessageComposerProps {
@@ -29,6 +30,7 @@ export const MessageComposer = memo(function MessageComposer({
   const [recordingSeconds, setRecordingSeconds] = useState(0);
 
   const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const sendIconRef = useRef<SendIconHandle>(null);
   const activeTheme = THEME_GRADIENTS[activeConv?.themeColor || "classic"];
 
   useEffect(() => {
@@ -133,15 +135,15 @@ export const MessageComposer = memo(function MessageComposer({
           /* Regular Messenger Input Composer */
           <form
             onSubmit={handleSubmit}
-            className="flex items-center gap-2.5 w-full max-w-5xl mx-auto"
+            className="flex items-center gap-2 w-full max-w-4xl mx-auto"
           >
-            {/* Attachment Action (Clean single button) */}
+            {/* Attachment Action (44px tap target) */}
             <button
               type="button"
               onClick={() =>
                 onSendMessage("Shared assignment PDF: 3NF_Review.pdf")
               }
-              className="p-2 rounded-full hover:bg-surface-2 text-fg-muted hover:text-brand transition-colors cursor-pointer shrink-0"
+              className="w-11 h-11 min-w-[44px] min-h-[44px] rounded-full hover:bg-surface-2 text-fg-muted hover:text-fg flex items-center justify-center transition-colors cursor-pointer shrink-0"
               title="Attach files"
               aria-label="Attach files"
             >
@@ -156,11 +158,11 @@ export const MessageComposer = memo(function MessageComposer({
                 onChange={(e) => setInputText(e.target.value)}
                 placeholder={`Message ${
                   activeConv.nickname || activeConv.name.split(" ")[0]
-                }...`}
+                }…`}
                 aria-label={`Message ${
                   activeConv.nickname || activeConv.name.split(" ")[0]
                 }`}
-                className="w-full h-11 pl-4.5 pr-11 text-xs sm:text-sm font-medium rounded-full bg-surface-2 text-fg placeholder:text-fg-muted outline-none border border-line hover:border-fg-muted/40 focus:border-brand focus-visible:ring-2 focus-visible:ring-brand shadow-2xs transition-colors"
+                className="w-full h-11 pl-4 pr-11 text-sm font-normal rounded-full bg-surface-2 text-fg placeholder:text-fg-muted outline-none border border-line hover:border-fg-muted/40 focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
               />
               <button
                 type="button"
@@ -207,11 +209,13 @@ export const MessageComposer = memo(function MessageComposer({
             ) : (
               <button
                 type="submit"
+                onMouseEnter={() => sendIconRef.current?.startAnimation()}
+                onMouseLeave={() => sendIconRef.current?.stopAnimation()}
                 className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors cursor-pointer shadow-2xs ${activeTheme.bubble}`}
                 title="Send message"
                 aria-label="Send message"
               >
-                <Send className="w-4 h-4 ml-0.5" />
+                <SendIcon ref={sendIconRef} size={16} className="ml-0.5" aria-hidden="true" />
               </button>
             )}
           </form>

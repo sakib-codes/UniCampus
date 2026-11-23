@@ -115,7 +115,7 @@ export function Modal({
             exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96, y: -6, transition: { duration: 0.14, ease: "easeIn" } }}
             transition={transition}
             className={cn(
-              "relative z-10 w-full bg-surface border border-line rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand",
+              "relative z-10 w-full bg-surface border border-line rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh] focus:outline-none focus-visible:outline-none",
               sizeClasses[size],
               className
             )}

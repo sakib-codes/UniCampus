@@ -18,6 +18,8 @@ import ProfileAvatar from "@/components/common/ProfileAvatar";
 import LectureScheduleCard from "@/components/common/LectureScheduleCard";
 import NoticeSnippetCard from "@/components/common/NoticeSnippetCard";
 import AttendanceScannerModal from "@/components/attendance/AttendanceScannerModal";
+import { IdCardStatusWidget } from "@/components/common/IdCardStatusWidget";
+import { useAdminAuth } from "@/context/AdminAuthContext";
 import { Button } from "@/components/ui/Button";
 import { Stat } from "@/components/ui/Stat";
 import { getRoster, subscribeToAttendance, StudentRosterRecord } from "@/lib/attendanceService";
@@ -71,6 +73,7 @@ const MONDAY_SCHEDULE: DashboardScheduleSlot[] = [
 ];
 
 export default function DashboardPage() {
+  const { currentUser } = useAdminAuth();
   const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
   const [attendanceRecord, setAttendanceRecord] = useState<StudentRosterRecord | null>(null);
   const [studentProfile, setStudentProfile] = useState<Profile | null>(() => {
@@ -197,6 +200,12 @@ export default function DashboardPage() {
           )}
         </div>
       )}
+
+      {/* ID Card Issuance & Print Status Tracker */}
+      <IdCardStatusWidget
+        academicId={currentUser?.student_id || studentProfile?.student_id || CANONICAL_STUDENT.studentId}
+        profileHref="/profile"
+      />
 
       {/* 1. Welcome Banner Card */}
       <section className="rounded-2xl bg-surface border border-line p-6 md:p-8 transition-colors">

@@ -105,7 +105,7 @@ export default function StudentAssignmentsPage() {
       />
 
       {/* Filter Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none]">
+      <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-surface-2 border border-line overflow-x-auto max-w-full [scrollbar-width:none]">
         {(
           [
             { id: "all", label: `All Tasks (${assignments.length})` },
@@ -118,10 +118,10 @@ export default function StudentAssignmentsPage() {
             key={tab.id}
             type="button"
             onClick={() => setFilter(tab.id)}
-            className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition-colors shrink-0 cursor-pointer ${
+            className={`min-h-[36px] px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors shrink-0 cursor-pointer ${
               filter === tab.id
-                ? "bg-brand text-on-brand border-brand"
-                : "bg-surface text-fg-muted border-line hover:text-fg"
+                ? "bg-surface text-fg font-semibold border border-line/80 shadow-2xs"
+                : "text-fg-muted hover:text-fg"
             }`}
           >
             {tab.label}
