@@ -310,7 +310,7 @@ export default function AdminAnalyticsPage() {
             },
             {
               label: "Curriculum Subjects",
-              sub: "4-Year / 8-Semester catalog",
+              sub: "Department semester catalog",
               value: stats.coursesCount.toLocaleString(),
               icon: BookOpen,
               tone: "bg-success-light text-success",

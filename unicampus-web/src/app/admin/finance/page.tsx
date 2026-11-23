@@ -11,6 +11,7 @@ import {
   Smartphone,
 } from "lucide-react";
 import { adminService } from "@/lib/services/adminService";
+import { TabPanel } from "@/components/ui/Tabs";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import {
   PaymentTransaction,
@@ -372,6 +373,7 @@ export default function AdminFinancePage() {
         })}
       </div>
 
+      <TabPanel tabKey={activeTab}>
       {/* Tab 1: Financial Overview */}
       {activeTab === "overview" && (
         <FinanceOverviewTab
@@ -475,6 +477,7 @@ export default function AdminFinancePage() {
           />
         </SuperAdminGate>
       )}
+      </TabPanel>
 
       {/* Global Digital Receipt Voucher Modal */}
       <OfficialReceiptModal

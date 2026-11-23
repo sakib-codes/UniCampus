@@ -61,8 +61,10 @@ export {
 
 export {
   Tabs,
+  TabPanel,
   type TabsProps,
   type TabOption,
+  type TabPanelProps,
 } from "./Tabs";
 
 export {

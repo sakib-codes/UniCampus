@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { adminService } from "@/lib/services/adminService";
@@ -88,6 +88,7 @@ export function PortalShell({
 
   const [collapsedOverride, setCollapsedOverride] = useState<boolean | null>(null);
   const [storageVersion, setStorageVersion] = useState(0);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   const collapsed = collapsedOverride ?? !isXl;
 
@@ -161,6 +162,9 @@ export function PortalShell({
   useEffect(() => {
     syncAdminDensityFromStorage();
     onCloseMore();
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0;
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
@@ -201,6 +205,7 @@ export function PortalShell({
           </div>
         ) : (
           <div
+            ref={scrollContainerRef}
             className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-4 sm:px-6 ${
               isWideWorkspace ? "xl:px-8" : "xl:px-10"
             } py-6 pb-24 md:pb-10`}

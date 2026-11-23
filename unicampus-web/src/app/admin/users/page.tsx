@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { Upload, UserPlus, Trash2, CreditCard, Users } from "lucide-react";
-import { Button, Modal, PageHeader, Tabs, Toast } from "@/components/ui";
+import { Button, Modal, PageHeader, Tabs, TabPanel, Toast } from "@/components/ui";
 import { IdCardPrintQueue } from "@/components/admin/users/IdCardPrintQueue";
 import { ID_CARD_REQUESTS_EVENT, idCardService } from "@/lib/services/idCardService";
 import { TableRowsSkeleton } from "@/components/ui/Skeleton";
@@ -445,71 +445,75 @@ export default function AdminUsersPage() {
         ]}
       />
 
-      {adminView === "id_cards" ? (
-        <IdCardPrintQueue
-          deptFilter={selectedDept}
-          adminName={currentUser?.full_name || "Academic Administration"}
-          onNotify={triggerToast}
-        />
-      ) : (
-        <>
-          <UsersFilterBar
-        searchQuery={searchQuery}
-        onSearchChange={(q) => {
-          setSearchQuery(q);
-          setCurrentPage(1);
-        }}
-        selectedDept={selectedDept}
-        onDeptChange={(dept) => {
-          setSelectedDept(dept);
-          setCurrentPage(1);
-        }}
-        selectedStatus={selectedStatus}
-        onStatusChange={(status) => {
-          setSelectedStatus(status);
-          setCurrentPage(1);
-        }}
-        activeTab={activeTab}
-        onTabChange={(nextTab) => {
-          setActiveTab(nextTab);
-          setCurrentPage(1);
-        }}
-        roleTabs={roleTabs}
-        departments={liveDepartments}
-        onClearFilters={handleClearFilters}
-        isDeptAdmin={isDeptAdmin}
-      />
-
-      {isHydrating && users.length === 0 ? (
-        <TableRowsSkeleton rows={5} />
-      ) : (
-        <UsersDirectoryTable
-          paginatedUsers={paginatedUsers}
-          totalFilteredCount={filteredUsers.length}
-          startIdx={startIdx}
-          pageSize={pageSize}
-          safePage={safePage}
-          totalPages={totalPages}
-          openPopoverId={openPopoverId}
-          popoverRef={popoverRef}
-          onPageChange={setCurrentPage}
+      <TabPanel tabKey={adminView} className="space-y-4">
+        {adminView === "id_cards" ? (
+          <IdCardPrintQueue
+            deptFilter={selectedDept}
+            adminName={currentUser?.full_name || "Academic Administration"}
+            onNotify={triggerToast}
+          />
+        ) : (
+          <>
+            <UsersFilterBar
+          searchQuery={searchQuery}
+          onSearchChange={(q) => {
+            setSearchQuery(q);
+            setCurrentPage(1);
+          }}
+          selectedDept={selectedDept}
+          onDeptChange={(dept) => {
+            setSelectedDept(dept);
+            setCurrentPage(1);
+          }}
+          selectedStatus={selectedStatus}
+          onStatusChange={(status) => {
+            setSelectedStatus(status);
+            setCurrentPage(1);
+          }}
+          activeTab={activeTab}
+          onTabChange={(nextTab) => {
+            setActiveTab(nextTab);
+            setCurrentPage(1);
+          }}
+          roleTabs={roleTabs}
+          departments={liveDepartments}
           onClearFilters={handleClearFilters}
-          onTogglePopover={handleTogglePopover}
-          onEditRole={handleEditRole}
-          onResetPassword={handleResetPassword}
-          onImpersonate={handleImpersonate}
-          onSuspendToggle={handleSuspendToggle}
-          onToggleHold={handleToggleHold}
-          onApprove={handleApproveUser}
-          onReject={handleOpenRejectWithReason}
-          onReview={handleOpenReview}
-          onDelete={handleRequestDeleteUser}
-          currentUserEmail={currentUser?.email}
-          statusSummary={`${directoryCounts.active} Active · ${directoryCounts.pending} Pending · ${directoryCounts.rejected} Rejected · ${directoryCounts.suspended} Suspended`}
+          isDeptAdmin={isDeptAdmin}
         />
-      )}
-        </>
-      )}
+
+        <TabPanel tabKey={activeTab}>
+        {isHydrating && users.length === 0 ? (
+          <TableRowsSkeleton rows={5} />
+        ) : (
+          <UsersDirectoryTable
+            paginatedUsers={paginatedUsers}
+            totalFilteredCount={filteredUsers.length}
+            startIdx={startIdx}
+            pageSize={pageSize}
+            safePage={safePage}
+            totalPages={totalPages}
+            openPopoverId={openPopoverId}
+            popoverRef={popoverRef}
+            onPageChange={setCurrentPage}
+            onClearFilters={handleClearFilters}
+            onTogglePopover={handleTogglePopover}
+            onEditRole={handleEditRole}
+            onResetPassword={handleResetPassword}
+            onImpersonate={handleImpersonate}
+            onSuspendToggle={handleSuspendToggle}
+            onToggleHold={handleToggleHold}
+            onApprove={handleApproveUser}
+            onReject={handleOpenRejectWithReason}
+            onReview={handleOpenReview}
+            onDelete={handleRequestDeleteUser}
+            currentUserEmail={currentUser?.email}
+            statusSummary={`${directoryCounts.active} Active · ${directoryCounts.pending} Pending · ${directoryCounts.rejected} Rejected · ${directoryCounts.suspended} Suspended`}
+          />
+        )}
+        </TabPanel>
+          </>
+        )}
+      </TabPanel>
 
       <RegistrationReviewModal
         key={reviewingUser ? `${reviewingUser.profileId}-${reviewRejectMode}` : "closed"}

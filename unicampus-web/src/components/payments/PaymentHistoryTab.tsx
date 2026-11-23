@@ -1,5 +1,7 @@
 "use client";
 
+import { Select } from "@/components/ui/Select";
+
 import React, { useState, useMemo } from "react";
 import {
   CheckCircle2,
@@ -231,20 +233,20 @@ export function PaymentHistoryTab({
             >
               Semester
             </label>
-            <select
+            <Select
               id="history-semester-select"
+              ariaLabel="Semester"
               value={selectedSemester}
-              onChange={(e) => setSelectedSemester(e.target.value)}
-              className="w-full min-h-[44px] px-3 py-2 rounded-xl border border-line bg-surface text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-            >
-              <option value="all">All Semesters</option>
-              <option value="1st Semester">1st Semester</option>
-              <option value="2nd Semester">2nd Semester</option>
-              <option value="3rd Semester">3rd Semester</option>
-              <option value="4th Semester">4th Semester</option>
-              <option value="5th Semester">5th Semester</option>
-              <option value="6th Semester">6th Semester</option>
-            </select>
+              onChange={setSelectedSemester}
+              options={[
+                { value: "all", label: "All Semesters" },
+                ...adminService
+                  .getDepartmentSemesters(transactions[0]?.department_name || "dept-cse")
+                  .map((sem) => ({ value: sem, label: sem })),
+              ]}
+              size="md"
+              variant="surface"
+            />
           </div>
 
           {/* Payment Method Filter */}
@@ -255,19 +257,22 @@ export function PaymentHistoryTab({
             >
               Payment Method
             </label>
-            <select
+            <Select
               id="history-method-select"
+              ariaLabel="Payment Method"
               value={selectedMethod}
-              onChange={(e) => setSelectedMethod(e.target.value)}
-              className="w-full min-h-[44px] px-3 py-2 rounded-xl border border-line bg-surface text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-            >
-              <option value="all">All Gateways</option>
-              <option value="bKash">bKash</option>
-              <option value="SSLCommerz">SSLCommerz</option>
-              <option value="Nagad">Nagad</option>
-              <option value="Bank Transfer">Bank Transfer</option>
-              <option value="Card">Card</option>
-            </select>
+              onChange={setSelectedMethod}
+              options={[
+                { value: "all", label: "All Gateways" },
+                { value: "bKash", label: "bKash" },
+                { value: "SSLCommerz", label: "SSLCommerz" },
+                { value: "Nagad", label: "Nagad" },
+                { value: "Bank Transfer", label: "Bank Transfer" },
+                { value: "Card", label: "Card" },
+              ]}
+              size="md"
+              variant="surface"
+            />
           </div>
         </div>
       </div>

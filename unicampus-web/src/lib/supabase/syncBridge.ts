@@ -2,7 +2,7 @@ import { getSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { queryWithSwr, invalidateQueryCache } from "@/lib/scalability/queryCache";
 import { supabaseCircuitBreaker, withExponentialBackoff } from "@/lib/scalability/resilience";
 import type { Department, Profile, Semester, Subject } from "@/types/admin";
-import { ORDINAL_SEMESTERS } from "@/lib/mockData";
+import { clampProgramSemesters, getSemestersForCount } from "@/lib/canonicalCampus";
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -590,24 +590,38 @@ export const supabaseSyncBridge = {
     const client = getSupabaseClient();
     if (!client) return null;
 
+    const totalSemesters = clampProgramSemesters(data.total_semesters);
+
     return supabaseCircuitBreaker.execute(
       async () =>
         withExponentialBackoff(async () => {
-          const { data: inserted, error } = await client
+          const basePayload = {
+            name: data.name,
+            code: data.code.toUpperCase(),
+            faculty: data.faculty || null,
+            dept_admin_name: data.dept_admin_name || data.head_teacher_name || null,
+            head_teacher_id: isUuid(data.head_teacher_id) ? data.head_teacher_id : null,
+          };
+
+          let { data: inserted, error } = await client
             .from("departments")
-            .insert({
-              name: data.name,
-              code: data.code.toUpperCase(),
-              faculty: data.faculty || null,
-              dept_admin_name: data.dept_admin_name || data.head_teacher_name || null,
-              head_teacher_id: isUuid(data.head_teacher_id) ? data.head_teacher_id : null,
-            })
+            .insert({ ...basePayload, total_semesters: totalSemesters })
             .select("*")
             .single();
 
+          if (error && error.message?.toLowerCase().includes("total_semesters")) {
+            const fallbackRes = await client
+              .from("departments")
+              .insert(basePayload)
+              .select("*")
+              .single();
+            inserted = fallbackRes.data;
+            error = fallbackRes.error;
+          }
+
           if (error || !inserted) throw error || new Error("Department insert failed");
 
-          const semRows = ORDINAL_SEMESTERS.map((name, idx) => ({
+          const semRows = getSemestersForCount(totalSemesters).map((name, idx) => ({
             department_id: inserted.id,
             name,
             order_index: idx + 1,
@@ -616,9 +630,78 @@ export const supabaseSyncBridge = {
 
           invalidateQueryCache("departments:");
           invalidateQueryCache("semesters:");
-          return inserted as Department;
+          return { ...(inserted as Department), total_semesters: totalSemesters };
         }),
       () => null
+    );
+  },
+
+  async updateDepartmentSemesterCount(
+    deptIdOrCode: string,
+    totalSemesters: number
+  ): Promise<boolean> {
+    const client = getSupabaseClient();
+    if (!client) return false;
+
+    const count = clampProgramSemesters(totalSemesters);
+
+    return supabaseCircuitBreaker.execute(
+      async () => {
+        // Resolve department UUID if code/slug was passed
+        let resolvedId = isUuid(deptIdOrCode) ? deptIdOrCode : null;
+        if (!resolvedId) {
+          const { data: deptRow } = await client
+            .from("departments")
+            .select("id")
+            .ilike("code", deptIdOrCode.replace(/^dept-/i, ""))
+            .maybeSingle();
+          resolvedId = deptRow?.id ?? null;
+        }
+        if (!resolvedId) return false;
+
+        // Best-effort update of total_semesters column (gracefully skipped if column not migrated yet)
+        const { error: colErr } = await client
+          .from("departments")
+          .update({ total_semesters: count })
+          .eq("id", resolvedId);
+        if (colErr && !colErr.message?.toLowerCase().includes("total_semesters")) {
+          throw colErr;
+        }
+
+        // Sync public.semesters rows for this department so count is authoritative even before column migration
+        const { data: existingSems } = await client
+          .from("semesters")
+          .select("id, order_index")
+          .eq("department_id", resolvedId);
+
+        const existingIndices = new Set(
+          (existingSems || []).map((s) => Number(s.order_index))
+        );
+        const targetNames = getSemestersForCount(count);
+        const toInsert = targetNames
+          .map((name, idx) => ({
+            department_id: resolvedId!,
+            name,
+            order_index: idx + 1,
+          }))
+          .filter((row) => !existingIndices.has(row.order_index));
+
+        if (toInsert.length > 0) {
+          await client.from("semesters").insert(toInsert);
+        }
+
+        const toDeleteIds = (existingSems || [])
+          .filter((s) => Number(s.order_index) > count)
+          .map((s) => s.id);
+        if (toDeleteIds.length > 0) {
+          await client.from("semesters").delete().in("id", toDeleteIds);
+        }
+
+        invalidateQueryCache("departments:");
+        invalidateQueryCache("semesters:");
+        return true;
+      },
+      () => false
     );
   },
 

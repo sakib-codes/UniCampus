@@ -8,6 +8,7 @@ import { AdminRoleGate } from "@/components/admin/AdminRoleGate";
 import { TeacherRoleGate } from "@/components/teacher/TeacherRoleGate";
 import { StudentRoleGate } from "@/components/layout/StudentRoleGate";
 import { PortalShell } from "@/components/shell/PortalShell";
+import { PageTransition } from "@/components/common/PageTransition";
 import type { PortalRole } from "@/lib/navigation";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { executeThemeTransition } from "@/lib/themeTransition";
@@ -235,7 +236,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   if (isSplash) {
     mainLayout = (
       <div className="min-h-dvh w-full bg-canvas text-fg selection:bg-brand selection:text-on-brand">
-        {children}
+        <PageTransition key={pathname} className="min-h-dvh">
+          {children}
+        </PageTransition>
       </div>
     );
   } else {

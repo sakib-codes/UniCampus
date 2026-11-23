@@ -602,18 +602,18 @@ export default function TeacherMaterialsPage() {
             >
               Assigned Course
             </label>
-            <select
+            <Select
               id="upload-course-select"
+              ariaLabel="Assigned Course"
               value={uploadCourse}
-              onChange={(e) => setUploadCourse(e.target.value)}
-              className="w-full min-h-[44px] bg-surface-2 border border-line text-fg rounded-xl px-3 py-2 text-xs font-sans font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:border-brand transition-colors cursor-pointer"
-            >
-              {assignedCourses.map((course) => (
-                <option key={course.code} value={course.code}>
-                  {course.code}: {course.title}
-                </option>
-              ))}
-            </select>
+              onChange={setUploadCourse}
+              options={assignedCourses.map((course) => ({
+                value: course.code,
+                label: `${course.code}: ${course.title}`,
+              }))}
+              size="md"
+              variant="surface2"
+            />
           </div>
 
           {/* Document Type Selector */}

@@ -1,5 +1,7 @@
 "use client";
 
+import { Select } from "@/components/ui/Select";
+
 import React, { useState } from "react";
 import {
   Crown,
@@ -451,17 +453,23 @@ export function TeacherPayrollTab({
             >
               Settlement Gateway Channel
             </label>
-            <select
+            <Select
               id="bulk-disburse-gateway-select"
+              ariaLabel="Settlement Gateway Channel"
               value={bulkGateway}
-              onChange={(e) => setBulkGateway(e.target.value as PaymentMethod)}
-              className="w-full min-h-[40px] px-3 py-2 rounded-xl bg-canvas border border-line text-xs font-semibold text-fg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-            >
-              <option value="Bank Transfer">Bank Electronic Clearing (Direct BEFTN / RTGS)</option>
-              <option value="bKash">bKash Corporate Payroll API</option>
-              <option value="SSLCommerz">SSLCommerz Corporate Mass Payout</option>
-              <option value="Nagad">Nagad Corporate Payroll</option>
-            </select>
+              onChange={(val) => setBulkGateway(val as PaymentMethod)}
+              options={[
+                {
+                  value: "Bank Transfer",
+                  label: "Bank Electronic Clearing (Direct BEFTN / RTGS)",
+                },
+                { value: "bKash", label: "bKash Corporate Payroll API" },
+                { value: "SSLCommerz", label: "SSLCommerz Corporate Mass Payout" },
+                { value: "Nagad", label: "Nagad Corporate Payroll" },
+              ]}
+              size="md"
+              variant="surface2"
+            />
           </div>
 
           <div className="p-3.5 rounded-xl bg-canvas border border-line text-xs space-y-1">

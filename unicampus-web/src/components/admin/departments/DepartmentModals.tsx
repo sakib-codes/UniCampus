@@ -1,11 +1,32 @@
 "use client";
 
+import { Select } from "@/components/ui/Select";
+import { TabPanel } from "@/components/ui/Tabs";
+
 import React, { useState, useEffect } from "react";
 import { Building2, Users, BookOpen, Settings, X, Plus, Trash2, Lock, Unlock } from "lucide-react";
 import type { DepartmentData } from "./departmentsData";
-import { ORDINAL_SEMESTERS } from "@/lib/mockData";
-import { ACADEMIC_YEARS, formatYearSemester, getAcademicYearForSemester } from "@/lib/canonicalCampus";
+import {
+  clampProgramSemesters,
+  formatProgramDuration,
+  formatYearSemester,
+  getSemestersForCount,
+  MAX_PROGRAM_SEMESTERS,
+  MIN_PROGRAM_SEMESTERS,
+} from "@/lib/canonicalCampus";
 import { adminService } from "@/lib/services/adminService";
+
+const SEMESTER_COUNT_OPTIONS = Array.from(
+  { length: MAX_PROGRAM_SEMESTERS - MIN_PROGRAM_SEMESTERS + 1 },
+  (_, idx) => {
+    const count = MIN_PROGRAM_SEMESTERS + idx;
+    const label =
+      count % 2 === 0
+        ? `${count} Semesters (${count / 2} ${count / 2 === 1 ? "Year" : "Years"})`
+        : `${count} Semesters`;
+    return { value: String(count), label };
+  }
+);
 
 interface DepartmentModalsProps {
   isAddModalOpen: boolean;
@@ -24,6 +45,8 @@ interface DepartmentModalsProps {
   onNewDeptCapacityChange: (v: string) => void;
   newDeptFacultyCount: string;
   onNewDeptFacultyCountChange: (v: string) => void;
+  newDeptSemesterCount?: string;
+  onNewDeptSemesterCountChange?: (v: string) => void;
   onCreateDepartment: (e: React.FormEvent) => void;
   selectedRosterDept: DepartmentData | null;
   onCloseRosterDept: () => void;
@@ -40,6 +63,7 @@ interface DepartmentModalsProps {
     teacherId: string | null,
     teacherName: string | null
   ) => void;
+  onUpdateSemesterCount?: (deptId: string, totalSemesters: number) => void;
   selectedSettingsDept: DepartmentData | null;
   onCloseSettingsDept: () => void;
   onSaveSettings: (
@@ -50,6 +74,7 @@ interface DepartmentModalsProps {
       office: string;
       status: "Accredited • Active" | "Pending Review";
       totalStudents: number;
+      totalSemesters?: number;
       deptAdminName?: string;
       deptAdminEmail?: string;
     }
@@ -76,6 +101,8 @@ export function DepartmentModals({
   onNewDeptCapacityChange,
   newDeptFacultyCount,
   onNewDeptFacultyCountChange,
+  newDeptSemesterCount = "8",
+  onNewDeptSemesterCountChange,
   onCreateDepartment,
   selectedRosterDept,
   onCloseRosterDept,
@@ -84,6 +111,7 @@ export function DepartmentModals({
   onCreateSubject,
   onDeleteSubject,
   onAssignSubjectTeacher,
+  onUpdateSemesterCount,
   selectedSettingsDept,
   onCloseSettingsDept,
   onSaveSettings,
@@ -97,18 +125,26 @@ export function DepartmentModals({
   const [settingsOffice, setSettingsOffice] = useState("");
   const [settingsStatus, setSettingsStatus] = useState<"Accredited • Active" | "Pending Review">("Accredited • Active");
   const [settingsStudents, setSettingsStudents] = useState("500");
+  const [settingsSemesterCount, setSettingsSemesterCount] = useState("8");
   const [settingsAdminName, setSettingsAdminName] = useState("");
   const [settingsAdminEmail, setSettingsAdminEmail] = useState("");
 
-  // Curriculum add form state
+  // Curriculum add form state (per-semester)
   const [isAddingCourse, setIsAddingCourse] = useState(false);
-  const [yearFilter, setYearFilter] = useState<string>("All");
+  const [selectedSemester, setSelectedSemester] = useState<string>("1st Semester");
   const [newCourseCode, setNewCourseCode] = useState("");
   const [newCourseTitle, setNewCourseTitle] = useState("");
   const [newCourseCredit, setNewCourseCredit] = useState("3.0");
   const [newCourseType, setNewCourseType] = useState<"Theory" | "Lab">("Theory");
-  const [newCourseSem, setNewCourseSem] = useState<string>("1st Semester");
   const [gradebookPolicies, setGradebookPolicies] = useState(() => adminService.getGradebookPolicies());
+
+  const activeDeptSemCount = clampProgramSemesters(selectedCurriculumDept?.totalSemesters);
+  const activeDeptSemesters = getSemestersForCount(activeDeptSemCount);
+  const activeSemester = activeDeptSemesters.includes(
+    selectedSemester as (typeof activeDeptSemesters)[number]
+  )
+    ? selectedSemester
+    : activeDeptSemesters[0];
 
   useEffect(() => {
     const syncPolicies = () => {
@@ -126,6 +162,7 @@ export function DepartmentModals({
         setSettingsOffice(selectedSettingsDept.office || "");
         setSettingsStatus(selectedSettingsDept.status || "Accredited • Active");
         setSettingsStudents(String(selectedSettingsDept.totalStudents || 500));
+        setSettingsSemesterCount(String(clampProgramSemesters(selectedSettingsDept.totalSemesters)));
         setSettingsAdminName(selectedSettingsDept.deptAdminName || "");
         setSettingsAdminEmail(selectedSettingsDept.deptAdminEmail || "");
       });
@@ -140,7 +177,7 @@ export function DepartmentModals({
       title: newCourseTitle.trim(),
       credit: parseFloat(newCourseCredit) || 3.0,
       type: newCourseType,
-      semester_name: newCourseSem,
+      semester_name: activeSemester,
     });
     setNewCourseCode("");
     setNewCourseTitle("");
@@ -155,6 +192,7 @@ export function DepartmentModals({
       office: settingsOffice.trim() || selectedSettingsDept.office,
       status: settingsStatus,
       totalStudents: parseInt(settingsStudents, 10) || selectedSettingsDept.totalStudents,
+      totalSemesters: clampProgramSemesters(parseInt(settingsSemesterCount, 10)),
       deptAdminName: settingsAdminName.trim() || undefined,
       deptAdminEmail: settingsAdminEmail.trim() || undefined,
     });
@@ -312,6 +350,27 @@ export function DepartmentModals({
                 </div>
               </div>
 
+              <div>
+                <label
+                  htmlFor="add-dept-semester-count"
+                  className="block text-xs font-semibold text-fg-muted mb-1.5"
+                >
+                  Program Semester Count
+                </label>
+                <Select
+                  id="add-dept-semester-count"
+                  ariaLabel="Program Semester Count"
+                  value={newDeptSemesterCount}
+                  onChange={(val) => onNewDeptSemesterCountChange?.(val)}
+                  options={SEMESTER_COUNT_OPTIONS}
+                  size="md"
+                  variant="surface2"
+                />
+                <p className="text-[11px] text-fg-muted mt-1">
+                  Sets the total semesters for this department across curriculum, registration, advising, and finance.
+                </p>
+              </div>
+
               <div className="pt-2 flex items-center justify-end gap-3 border-t border-line">
                 <button
                   type="button"
@@ -410,67 +469,145 @@ export function DepartmentModals({
         </div>
       )}
 
-      {/* MODAL 3: Curriculum Syllabus Modal */}
-      {selectedCurriculumDept && (
+      {/* MODAL 3: Curriculum Syllabus Modal (Per-Semester) */}
+      {selectedCurriculumDept && (() => {
+        const semCourses = selectedCurriculumDept.curriculumList.filter(
+          (course) => course.semester === activeSemester
+        );
+        const semCredits = semCourses.reduce((sum, c) => sum + c.credits, 0);
+
+        return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
           <div className="bg-surface border border-line rounded-2xl w-full max-w-2xl shadow-xl p-6 relative max-h-[90dvh] flex flex-col">
-            <div className="flex items-center justify-between border-b border-line pb-4 mb-5">
-              <div className="flex items-center gap-2.5">
+            <div className="flex items-center justify-between gap-3 border-b border-line pb-4 mb-4">
+              <div className="flex items-center gap-2.5 min-w-0">
                 <div className="w-9 h-9 rounded-xl bg-brand-soft border border-brand/30 text-brand flex items-center justify-center shrink-0">
                   <BookOpen className="w-5 h-5" />
                 </div>
-                <div>
-                  <h3 className="font-semibold text-base text-fg">
-                    Accredited Curriculum Syllabus •{" "}
-                    {selectedCurriculumDept.code}
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-base text-fg truncate">
+                    Accredited Curriculum Syllabus • {selectedCurriculumDept.code}
                   </h3>
-                  <p className="text-xs text-fg-muted font-sans">
-                    {selectedCurriculumDept.name} •{" "}
-                    {selectedCurriculumDept.activePrograms.join(", ")}
+                  <p className="text-xs text-fg-muted font-sans truncate">
+                    {selectedCurriculumDept.name} • {formatProgramDuration(activeDeptSemCount)}
                   </p>
                 </div>
               </div>
-              <button
-                type="button"
-                aria-label="Close modal"
-                onClick={onCloseCurriculumDept}
-                className="min-w-[36px] min-h-[36px] inline-flex items-center justify-center rounded-lg text-fg-muted hover:text-fg hover:bg-surface-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="space-y-2.5 max-h-[460px] overflow-y-auto pr-1">
-              <div className="flex flex-wrap items-center justify-between gap-2 pb-1">
-                <span className="text-xs font-semibold text-fg-muted">
-                  4-Year / 8-Semester Subjects ({selectedCurriculumDept.curriculumList.length})
-                </span>
+              <div className="flex items-center gap-2 shrink-0">
+                {onUpdateSemesterCount && (
+                  <div className="w-44 hidden sm:block">
+                    <Select
+                      ariaLabel="Edit department semester count"
+                      value={String(activeDeptSemCount)}
+                      onChange={(val) => {
+                        const nextCount = clampProgramSemesters(parseInt(val, 10));
+                        onUpdateSemesterCount(selectedCurriculumDept.id, nextCount);
+                      }}
+                      options={SEMESTER_COUNT_OPTIONS}
+                      size="sm"
+                      variant="surface2"
+                      menuAlign="right"
+                    />
+                  </div>
+                )}
                 <button
                   type="button"
-                  onClick={() => setIsAddingCourse(!isAddingCourse)}
-                  className="px-2.5 py-1 rounded-lg bg-brand-soft text-brand hover:bg-brand/20 border border-brand/25 text-xs font-semibold inline-flex items-center gap-1 cursor-pointer transition-colors"
+                  aria-label="Close modal"
+                  onClick={onCloseCurriculumDept}
+                  className="min-w-[36px] min-h-[36px] inline-flex items-center justify-center rounded-lg text-fg-muted hover:text-fg hover:bg-surface-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                 >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>{isAddingCourse ? "Cancel" : "Add Subject"}</span>
+                  <X className="w-4 h-4" />
                 </button>
               </div>
+            </div>
 
-              {/* 4-Year Filter Strip */}
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none]">
-                {["All", ...ACADEMIC_YEARS.map((y) => y.label)].map((yr) => (
+            <div className="space-y-3.5 max-h-[480px] overflow-y-auto pr-1">
+              {/* Mobile semester count editor */}
+              {onUpdateSemesterCount && (
+                <div className="sm:hidden">
+                  <label className="block text-xs font-semibold text-fg-muted mb-1">
+                    Program Semester Count
+                  </label>
+                  <Select
+                    ariaLabel="Edit department semester count"
+                    value={String(activeDeptSemCount)}
+                    onChange={(val) => {
+                      const nextCount = clampProgramSemesters(parseInt(val, 10));
+                      onUpdateSemesterCount(selectedCurriculumDept.id, nextCount);
+                    }}
+                    options={SEMESTER_COUNT_OPTIONS}
+                    size="sm"
+                    variant="surface2"
+                  />
+                </div>
+              )}
+
+              {/* Per-Semester Segmented Tabs */}
+              <div
+                role="tablist"
+                aria-label="Select semester to view or add subjects"
+                className="flex items-center gap-1 p-1 rounded-xl bg-surface-2 border border-line overflow-x-auto max-w-full [scrollbar-width:none]"
+              >
+                {activeDeptSemesters.map((sem) => {
+                  const isActive = activeSemester === sem;
+                  const countInSem = selectedCurriculumDept.curriculumList.filter(
+                    (c) => c.semester === sem
+                  ).length;
+                  return (
+                    <button
+                      key={sem}
+                      type="button"
+                      role="tab"
+                      aria-selected={isActive}
+                      onClick={() => {
+                        setSelectedSemester(sem);
+                        setIsAddingCourse(false);
+                      }}
+                      className={`h-8 px-2.5 rounded-lg text-xs font-medium transition-colors shrink-0 cursor-pointer whitespace-nowrap inline-flex items-center gap-1.5 ${
+                        isActive
+                          ? "bg-surface text-fg font-semibold border border-line/80 shadow-2xs"
+                          : "text-fg-muted hover:text-fg"
+                      }`}
+                    >
+                      <span>{sem.replace(" Semester", " Sem")}</span>
+                      {countInSem > 0 && (
+                        <span
+                          className={`px-1.5 py-0.2 rounded-full text-[10px] font-semibold tabular-nums ${
+                            isActive
+                              ? "bg-brand-soft text-brand"
+                              : "bg-surface text-fg-muted border border-line"
+                          }`}
+                        >
+                          {countInSem}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Active Semester Header + Add CTA + Subject List (160ms ease-out tab transition) */}
+              <TabPanel tabKey={activeSemester} className="space-y-3.5">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs font-semibold text-fg">
+                    {formatYearSemester(activeSemester)}
+                  </span>
+                  <span className="text-xs text-fg-muted tabular-nums">
+                    • {semCourses.length} {semCourses.length === 1 ? "subject" : "subjects"}
+                    {semCredits > 0 ? ` (${semCredits.toFixed(1)} cr)` : ""}
+                  </span>
+                </div>
+                {(semCourses.length > 0 || isAddingCourse) && (
                   <button
-                    key={yr}
                     type="button"
-                    onClick={() => setYearFilter(yr)}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-colors shrink-0 cursor-pointer ${
-                      yearFilter === yr
-                        ? "bg-brand text-on-brand border-brand"
-                        : "bg-surface-2 text-fg-muted border-line hover:text-fg"
-                    }`}
+                    onClick={() => setIsAddingCourse(!isAddingCourse)}
+                    className="h-9 px-3 rounded-xl bg-brand-soft text-brand hover:bg-brand/15 border border-brand/25 text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
                   >
-                    {yr === "All" ? "All Years (Sem 1–8)" : yr}
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>{isAddingCourse ? "Cancel" : `Add to ${activeSemester.replace(" Semester", " Sem")}`}</span>
                   </button>
-                ))}
+                )}
               </div>
 
               {isAddingCourse && (
@@ -478,11 +615,16 @@ export function DepartmentModals({
                   onSubmit={handleAddCourseSubmit}
                   className="p-3.5 rounded-xl bg-surface-2 border border-brand/40 space-y-3 mb-2"
                 >
-                  <div className="text-xs font-semibold text-fg flex items-center gap-1.5">
-                    <Plus className="w-3.5 h-3.5 text-brand" />
-                    <span>Add New Subject to Curriculum</span>
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div className="text-xs font-semibold text-fg flex items-center gap-1.5">
+                      <Plus className="w-3.5 h-3.5 text-brand" />
+                      <span>Add Subject to {activeSemester}</span>
+                    </div>
+                    <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-brand-soft text-brand border border-brand/20">
+                      {formatYearSemester(activeSemester)}
+                    </span>
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <div>
                       <label className="block text-xs font-semibold text-fg-muted mb-1">
                         Course Code
@@ -490,10 +632,10 @@ export function DepartmentModals({
                       <input
                         type="text"
                         required
-                        placeholder="e.g. CSE-4201"
+                        placeholder={`e.g. ${selectedCurriculumDept.code}-1101`}
                         value={newCourseCode}
                         onChange={(e) => setNewCourseCode(e.target.value)}
-                        className="w-full bg-surface border border-line rounded-lg px-2.5 py-1.5 text-xs font-mono text-fg focus:border-brand focus-visible:outline-none"
+                        className="w-full min-h-[38px] bg-surface border border-line rounded-lg px-2.5 py-1.5 text-xs font-mono text-fg focus:border-brand focus-visible:outline-none"
                       />
                     </div>
                     <div>
@@ -506,11 +648,11 @@ export function DepartmentModals({
                         placeholder="e.g. Machine Learning"
                         value={newCourseTitle}
                         onChange={(e) => setNewCourseTitle(e.target.value)}
-                        className="w-full bg-surface border border-line rounded-lg px-2.5 py-1.5 text-xs text-fg focus:border-brand focus-visible:outline-none"
+                        className="w-full min-h-[38px] bg-surface border border-line rounded-lg px-2.5 py-1.5 text-xs text-fg focus:border-brand focus-visible:outline-none"
                       />
                     </div>
                   </div>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="block text-xs font-semibold text-fg-muted mb-1">
                         Credits
@@ -518,90 +660,69 @@ export function DepartmentModals({
                       <input
                         type="number"
                         step="0.5"
+                        min="0.5"
+                        max="6"
                         value={newCourseCredit}
                         onChange={(e) => setNewCourseCredit(e.target.value)}
-                        className="w-full bg-surface border border-line rounded-lg px-2.5 py-1.5 text-xs font-mono text-fg focus:border-brand focus-visible:outline-none"
+                        className="w-full min-h-[38px] bg-surface border border-line rounded-lg px-2.5 py-1.5 text-xs font-mono tabular-nums text-fg focus:border-brand focus-visible:outline-none"
                       />
                     </div>
                     <div>
                       <label className="block text-xs font-semibold text-fg-muted mb-1">
-                        Type
+                        Course Type
                       </label>
-                      <select
+                      <Select
+                        ariaLabel="Course Type"
                         value={newCourseType}
-                        onChange={(e) => setNewCourseType(e.target.value as "Theory" | "Lab")}
-                        className="w-full bg-surface border border-line rounded-lg px-2.5 py-1.5 text-xs text-fg focus:border-brand focus-visible:outline-none cursor-pointer"
-                      >
-                        <option value="Theory">Theory</option>
-                        <option value="Lab">Lab</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-fg-muted mb-1">
-                        Year &amp; Semester
-                      </label>
-                      <select
-                        value={newCourseSem}
-                        onChange={(e) => setNewCourseSem(e.target.value)}
-                        className="w-full bg-surface border border-line rounded-lg px-2.5 py-1.5 text-xs text-fg focus:border-brand focus-visible:outline-none cursor-pointer"
-                      >
-                        {ORDINAL_SEMESTERS.map((sem) => (
-                          <option key={sem} value={sem}>
-                            {formatYearSemester(sem)}
-                          </option>
-                        ))}
-                      </select>
+                        onChange={(val) => setNewCourseType(val as "Theory" | "Lab")}
+                        options={[
+                          { value: "Theory", label: "Theory" },
+                          { value: "Lab", label: "Lab" },
+                        ]}
+                        size="sm"
+                        variant="surface"
+                      />
                     </div>
                   </div>
                   <div className="flex justify-end gap-2 pt-1">
                     <button
                       type="button"
                       onClick={() => setIsAddingCourse(false)}
-                      className="px-3 py-1 rounded-lg text-xs font-medium text-fg-muted hover:text-fg"
+                      className="h-9 px-3 rounded-lg text-xs font-medium text-fg-muted hover:text-fg cursor-pointer"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      className="px-3 py-1 rounded-lg bg-brand hover:bg-brand-hover text-on-brand text-xs font-semibold"
+                      className="h-9 px-3.5 rounded-lg bg-brand hover:bg-brand-hover text-on-brand text-xs font-semibold cursor-pointer"
                     >
-                      Save Subject
+                      Save to {activeSemester.replace(" Semester", " Sem")}
                     </button>
                   </div>
                 </form>
               )}
 
-              {selectedCurriculumDept.curriculumList.filter(
-                (course) =>
-                  yearFilter === "All" ||
-                  getAcademicYearForSemester(course.semester) === yearFilter
-              ).length === 0 ? (
+              {semCourses.length === 0 ? (
                 <div className="p-8 rounded-xl bg-surface-2 border border-dashed border-line text-center space-y-2">
                   <p className="text-xs font-semibold text-fg">
-                    No subjects listed {yearFilter === "All" ? `in ${selectedCurriculumDept.code}` : `for ${yearFilter}`} yet
+                    No subjects listed for {activeSemester} yet
                   </p>
                   <p className="text-xs text-fg-muted">
-                    Add subjects with their official course codes, credits, and 4-year semester placement.
+                    Add subjects with their official course codes and credits for {formatYearSemester(activeSemester)}.
                   </p>
                   {!isAddingCourse && (
                     <button
                       type="button"
                       onClick={() => setIsAddingCourse(true)}
-                      className="mt-1 px-3 py-1.5 rounded-lg bg-brand text-on-brand text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer"
+                      className="mt-1 h-9 px-3.5 rounded-xl bg-brand hover:bg-brand-hover text-on-brand text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
                     >
                       <Plus className="w-3.5 h-3.5" />
-                      <span>Add First Subject</span>
+                      <span>Add Subject to {activeSemester}</span>
                     </button>
                   )}
                 </div>
               ) : (
-              selectedCurriculumDept.curriculumList
-                .filter(
-                  (course) =>
-                    yearFilter === "All" ||
-                    getAcademicYearForSemester(course.semester) === yearFilter
-                )
-                .map((course, idx) => (
+              semCourses.map((course, idx) => (
                 <div
                   key={course.id || `${course.code}-${idx}`}
                   className="p-3.5 rounded-xl bg-surface-2 border border-line flex flex-wrap items-center justify-between gap-3"
@@ -621,11 +742,11 @@ export function DepartmentModals({
                     {course.id && allFaculty.length > 0 && (
                       <div className="mt-1.5 flex items-center gap-1.5">
                         <span className="text-[11px] text-fg-muted shrink-0">Instructor:</span>
-                        <select
-                          aria-label={`Assign instructor for ${course.code}`}
+                        <Select
+                          ariaLabel={`Assign instructor for ${course.code}`}
                           value={course.assignedTeacherId || ""}
-                          onChange={(e) => {
-                            const tid = e.target.value || null;
+                          onChange={(val) => {
+                            const tid = val || null;
                             const match = allFaculty.find((f) => f.id === tid);
                             onAssignSubjectTeacher?.(
                               course.id!,
@@ -634,24 +755,19 @@ export function DepartmentModals({
                               match?.name || null
                             );
                           }}
-                          className="bg-surface border border-line rounded-md px-2 py-0.5 text-[11px] text-fg focus:border-brand focus-visible:outline-none cursor-pointer max-w-[210px]"
-                        >
-                          <option value="">Unassigned</option>
-                          {allFaculty
-                            .filter((f) => f.departmentId === selectedCurriculumDept.id)
-                            .map((f) => (
-                              <option key={f.id} value={f.id}>
-                                {f.name}
-                              </option>
-                            ))}
-                          {allFaculty
-                            .filter((f) => f.departmentId !== selectedCurriculumDept.id)
-                            .map((f) => (
-                              <option key={f.id} value={f.id}>
-                                {f.name} (Cross-Dept)
-                              </option>
-                            ))}
-                        </select>
+                          options={[
+                            { value: "", label: "Unassigned" },
+                            ...allFaculty
+                              .filter((f) => f.departmentId === selectedCurriculumDept.id)
+                              .map((f) => ({ value: f.id, label: f.name })),
+                            ...allFaculty
+                              .filter((f) => f.departmentId !== selectedCurriculumDept.id)
+                              .map((f) => ({ value: f.id, label: `${f.name} (Cross-Dept)` })),
+                          ]}
+                          size="sm"
+                          variant="surface"
+                          className="w-52"
+                        />
                       </div>
                     )}
                   </div>
@@ -711,11 +827,12 @@ export function DepartmentModals({
                   </div>
                 </div>
               )))}
+              </TabPanel>
             </div>
 
             <div className="pt-4 mt-4 border-t border-line flex items-center justify-between text-xs text-fg-muted">
               <span className="font-sans">
-                Outcome-Based Education (OBE) Standard Compliant
+                Total in {selectedCurriculumDept.code}: {selectedCurriculumDept.curriculumList.length} subjects across {activeDeptSemCount} semesters
               </span>
               <button
                 type="button"
@@ -727,7 +844,8 @@ export function DepartmentModals({
             </div>
           </div>
         </div>
-      )}
+        );
+      })()}
 
       {/* MODAL 4: Manage Settings Modal */}
       {selectedSettingsDept && (
@@ -775,36 +893,39 @@ export function DepartmentModals({
                 </div>
 
                 {allFaculty.length > 0 && (
-                  <select
+                  <Select
                     id="dept-settings-hod-select"
+                    ariaLabel="Assign Head of Department"
                     disabled={isDeptAdmin}
                     value={settingsHodId}
-                    onChange={(e) => {
-                      const pickedId = e.target.value;
+                    onChange={(pickedId) => {
                       setSettingsHodId(pickedId);
                       const match = allFaculty.find((f) => f.id === pickedId);
                       if (match) {
                         setSettingsHod(match.name);
                       }
                     }}
-                    className="w-full min-h-[42px] bg-surface border border-line focus:border-brand rounded-xl px-3 py-2 text-xs text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    <option value="">Select registered faculty or type custom name below...</option>
-                    {allFaculty
-                      .filter((f) => f.departmentId === selectedSettingsDept.id)
-                      .map((f) => (
-                        <option key={f.id} value={f.id}>
-                          {f.name} ({selectedSettingsDept.code}{f.code ? ` · ${f.code}` : ""})
-                        </option>
-                      ))}
-                    {allFaculty
-                      .filter((f) => f.departmentId !== selectedSettingsDept.id)
-                      .map((f) => (
-                        <option key={f.id} value={f.id}>
-                          {f.name}{f.code ? ` (${f.code})` : ""}
-                        </option>
-                      ))}
-                  </select>
+                    options={[
+                      {
+                        value: "",
+                        label: "Select registered faculty or type custom name below...",
+                      },
+                      ...allFaculty
+                        .filter((f) => f.departmentId === selectedSettingsDept.id)
+                        .map((f) => ({
+                          value: f.id,
+                          label: `${f.name} (${selectedSettingsDept.code}${f.code ? ` · ${f.code}` : ""})`,
+                        })),
+                      ...allFaculty
+                        .filter((f) => f.departmentId !== selectedSettingsDept.id)
+                        .map((f) => ({
+                          value: f.id,
+                          label: `${f.name}${f.code ? ` (${f.code})` : ""}`,
+                        })),
+                    ]}
+                    size="md"
+                    variant="surface"
+                  />
                 )}
 
                 <div>
@@ -878,6 +999,27 @@ export function DepartmentModals({
                 />
               </div>
 
+              <div>
+                <label
+                  htmlFor="dept-settings-semester-count"
+                  className="block text-xs font-semibold text-fg-muted mb-1.5"
+                >
+                  Program Semester Count
+                </label>
+                <Select
+                  id="dept-settings-semester-count"
+                  ariaLabel="Program Semester Count"
+                  value={settingsSemesterCount}
+                  onChange={setSettingsSemesterCount}
+                  options={SEMESTER_COUNT_OPTIONS}
+                  size="md"
+                  variant="surface2"
+                />
+                <p className="text-[11px] text-fg-muted mt-1">
+                  Updates semester options for this department across Curriculum, Registration, Advising, Users, and Finance.
+                </p>
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label
@@ -886,17 +1028,20 @@ export function DepartmentModals({
                   >
                     Accreditation Status
                   </label>
-                  <select
+                  <Select
                     id="dept-settings-status"
+                    ariaLabel="Accreditation Status"
                     value={settingsStatus}
-                    onChange={(e) => setSettingsStatus(e.target.value as "Accredited • Active" | "Pending Review")}
-                    className="w-full min-h-[44px] bg-surface-2 border border-line focus:border-brand rounded-xl px-3 py-2 text-xs text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand cursor-pointer"
-                  >
-                    <option value="Accredited • Active">
-                      Accredited • Active
-                    </option>
-                    <option value="Pending Review">Pending Review</option>
-                  </select>
+                    onChange={(val) =>
+                      setSettingsStatus(val as "Accredited • Active" | "Pending Review")
+                    }
+                    options={[
+                      { value: "Accredited • Active", label: "Accredited • Active" },
+                      { value: "Pending Review", label: "Pending Review" },
+                    ]}
+                    size="md"
+                    variant="surface2"
+                  />
                 </div>
                 <div>
                   <label

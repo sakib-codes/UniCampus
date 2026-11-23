@@ -3,6 +3,7 @@
 import React from "react";
 import { Users, BookOpen, Settings, UserCog } from "lucide-react";
 import type { DepartmentData } from "./departmentsData";
+import { clampProgramSemesters } from "@/lib/canonicalCampus";
 
 interface DepartmentCardProps {
   dept: DepartmentData;
@@ -103,10 +104,10 @@ export const DepartmentCard = React.memo(function DepartmentCard({
 
           <div className="bg-surface-2 border border-line rounded-xl p-3 text-center">
             <div className="text-xs font-sans text-fg-muted">
-              Active Programs
+              Program Length
             </div>
-            <div className="text-xs font-sans font-semibold text-brand mt-1.5 truncate">
-              {dept.activePrograms.join(", ")}
+            <div className="text-lg font-sans font-bold text-brand tabular-nums mt-0.5">
+              {clampProgramSemesters(dept.totalSemesters)} Sem
             </div>
           </div>
         </div>

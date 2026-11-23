@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Download } from "lucide-react";
 import { TeacherRoleGate } from "@/components/teacher/TeacherRoleGate";
-import { Tabs } from "@/components/ui/Tabs";
+import { Tabs, TabPanel } from "@/components/ui/Tabs";
 import { Toast } from "@/components/ui/Toast";
 import { CANONICAL_FACULTY } from "@/lib/canonicalCampus";
 import { adminService } from "@/lib/services/adminService";
@@ -295,39 +295,41 @@ function TeacherPayrollContent() {
         />
       </div>
 
-      {/* Tab 1: Salary Ledger & Payslips */}
-      {activeTab === "ledger" && (
-        <div className="space-y-4">
-          <PayrollFilterToolbar
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            selectedYear={selectedYear}
-            onYearChange={setSelectedYear}
-            selectedStatus={selectedStatus}
-            onStatusChange={setSelectedStatus}
-            fromDate={fromDate}
-            onFromDateChange={setFromDate}
-            toDate={toDate}
-            onToDateChange={setToDate}
-            onResetFilters={handleResetFilters}
-            totalResults={filteredWages.length}
-          />
+      <TabPanel tabKey={activeTab}>
+        {/* Tab 1: Salary Ledger & Payslips */}
+        {activeTab === "ledger" && (
+          <div className="space-y-4">
+            <PayrollFilterToolbar
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              selectedYear={selectedYear}
+              onYearChange={setSelectedYear}
+              selectedStatus={selectedStatus}
+              onStatusChange={setSelectedStatus}
+              fromDate={fromDate}
+              onFromDateChange={setFromDate}
+              toDate={toDate}
+              onToDateChange={setToDate}
+              onResetFilters={handleResetFilters}
+              totalResults={filteredWages.length}
+            />
 
-          <PayrollLedgerTable
-            wages={filteredWages}
-            onViewPayslip={(wage) => setSelectedWageForSlip(wage)}
-            onClearFilters={handleResetFilters}
-          />
-        </div>
-      )}
+            <PayrollLedgerTable
+              wages={filteredWages}
+              onViewPayslip={(wage) => setSelectedWageForSlip(wage)}
+              onClearFilters={handleResetFilters}
+            />
+          </div>
+        )}
 
-      {/* Tab 2: Payout Account & Preferences */}
-      {activeTab === "payout" && (
-        <PayoutPreferencesForm
-          onSaved={handlePreferencesSaved}
-          onShowToast={showToast}
-        />
-      )}
+        {/* Tab 2: Payout Account & Preferences */}
+        {activeTab === "payout" && (
+          <PayoutPreferencesForm
+            onSaved={handlePreferencesSaved}
+            onShowToast={showToast}
+          />
+        )}
+      </TabPanel>
 
       {/* Salary Slip Modal */}
       <SalarySlipModal

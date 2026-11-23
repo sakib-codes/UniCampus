@@ -15,6 +15,7 @@ export interface DepartmentData {
   office: string;
   totalStudents: number;
   totalFaculty: number;
+  totalSemesters?: number;
   activePrograms: string[];
   status: "Accredited • Active" | "Pending Review";
   facultyList: {

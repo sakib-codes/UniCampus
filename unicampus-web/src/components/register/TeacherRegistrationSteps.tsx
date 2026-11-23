@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Upload, FileCheck2, CheckCircle2 } from "lucide-react";
+import { Select } from "@/components/ui/Select";
 import type { Department } from "@/types/admin";
 import {
   BLOOD_GROUPS,
@@ -146,18 +147,14 @@ export function TeacherRegistrationSteps({
             <label htmlFor="teach-gender" className={LABEL_CLASS}>
               Gender *
             </label>
-            <select
+            <Select
               id="teach-gender"
+              size="lg"
+              variant="surface"
               value={form.gender}
-              onChange={(e) => onChange("gender", e.target.value)}
-              className={INPUT_CLASS}
-            >
-              {GENDERS.map((g) => (
-                <option key={g} value={g}>
-                  {g}
-                </option>
-              ))}
-            </select>
+              onChange={(v) => onChange("gender", v)}
+              options={GENDERS.map((g) => ({ value: g, label: g }))}
+            />
           </div>
         </div>
 
@@ -277,23 +274,20 @@ export function TeacherRegistrationSteps({
           <label htmlFor="teach-dept" className={LABEL_CLASS}>
             Academic Department *
           </label>
-          <select
+          <Select
             id="teach-dept"
+            size="lg"
+            variant="surface"
             value={form.deptId}
             disabled={departments.length === 0}
-            onChange={(e) => onChange("deptId", e.target.value)}
-            className={INPUT_CLASS}
-          >
-            {departments.length === 0 ? (
-              <option value="">No departments available yet — ask Admin to create one</option>
-            ) : (
-              departments.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name} ({d.code})
-                </option>
-              ))
-            )}
-          </select>
+            onChange={(v) => onChange("deptId", v)}
+            placeholder="No departments available yet — ask Admin to create one"
+            options={
+              departments.length === 0
+                ? [{ value: "", label: "No departments available yet — ask Admin to create one" }]
+                : departments.map((d) => ({ value: d.id, label: `${d.name} (${d.code})` }))
+            }
+          />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -301,36 +295,28 @@ export function TeacherRegistrationSteps({
             <label htmlFor="teach-desig" className={LABEL_CLASS}>
               Designation *
             </label>
-            <select
+            <Select
               id="teach-desig"
+              size="lg"
+              variant="surface"
               value={form.designation}
-              onChange={(e) => onChange("designation", e.target.value)}
-              className={INPUT_CLASS}
-            >
-              {FACULTY_DESIGNATIONS.map((desig) => (
-                <option key={desig} value={desig}>
-                  {desig}
-                </option>
-              ))}
-            </select>
+              onChange={(v) => onChange("designation", v)}
+              options={FACULTY_DESIGNATIONS.map((desig) => ({ value: desig, label: desig }))}
+            />
           </div>
 
           <div>
             <label htmlFor="teach-degree" className={LABEL_CLASS}>
               Highest Degree *
             </label>
-            <select
+            <Select
               id="teach-degree"
+              size="lg"
+              variant="surface"
               value={form.highestDegree}
-              onChange={(e) => onChange("highestDegree", e.target.value)}
-              className={INPUT_CLASS}
-            >
-              {HIGHEST_DEGREES.map((deg) => (
-                <option key={deg} value={deg}>
-                  {deg}
-                </option>
-              ))}
-            </select>
+              onChange={(v) => onChange("highestDegree", v)}
+              options={HIGHEST_DEGREES.map((deg) => ({ value: deg, label: deg }))}
+            />
           </div>
         </div>
 
@@ -339,18 +325,20 @@ export function TeacherRegistrationSteps({
             <label htmlFor="teach-emp" className={LABEL_CLASS}>
               Appointment Type
             </label>
-            <select
+            <Select
               id="teach-emp"
+              size="lg"
+              variant="surface"
               value={form.employmentType}
-              onChange={(e) =>
-                onChange("employmentType", e.target.value as TeacherRegistrationForm["employmentType"])
+              onChange={(v) =>
+                onChange("employmentType", v as TeacherRegistrationForm["employmentType"])
               }
-              className={INPUT_CLASS}
-            >
-              <option value="Full-Time">Full-Time</option>
-              <option value="Adjunct">Adjunct</option>
-              <option value="Visiting">Visiting</option>
-            </select>
+              options={[
+                { value: "Full-Time", label: "Full-Time" },
+                { value: "Adjunct", label: "Adjunct" },
+                { value: "Visiting", label: "Visiting" },
+              ]}
+            />
           </div>
 
           <div>

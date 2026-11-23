@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/Button";
-import { Tabs } from "@/components/ui/Tabs";
+import { Tabs, TabPanel } from "@/components/ui/Tabs";
 import {
   ACTIVE_TERM,
   CAMPUS_METRICS,
@@ -92,6 +92,7 @@ export default function ProductHero({ onOpenDemoModal }: ProductHeroProps) {
 
             {/* Preview Body */}
             <div className="p-4 sm:p-6 md:p-8 bg-canvas">
+              <TabPanel tabKey={activeTab}>
               {activeTab === "student" && (
                 <div className="space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 rounded-2xl bg-surface border border-line">
@@ -246,6 +247,7 @@ export default function ProductHero({ onOpenDemoModal }: ProductHeroProps) {
                   </div>
                 </div>
               )}
+              </TabPanel>
             </div>
           </div>
         </div>

@@ -3,9 +3,15 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Upload, FileCheck2, CheckCircle2 } from "lucide-react";
+import { Select } from "@/components/ui/Select";
 import type { Department, OrdinalSemesterName } from "@/types/admin";
-import { ORDINAL_SEMESTERS } from "@/lib/mockData";
-import { ACADEMIC_YEARS, formatYearSemester } from "@/lib/canonicalCampus";
+import {
+  clampProgramSemesters,
+  formatProgramDuration,
+  formatYearSemester,
+  getAcademicYearsForCount,
+  getSemestersForCount,
+} from "@/lib/canonicalCampus";
 import {
   ADMISSION_PAYMENT_METHODS,
   BD_ACADEMIC_GROUPS,
@@ -150,18 +156,14 @@ export function StudentRegistrationSteps({
             <label htmlFor="stud-gender" className={LABEL_CLASS}>
               Gender *
             </label>
-            <select
+            <Select
               id="stud-gender"
+              size="lg"
+              variant="surface"
               value={form.gender}
-              onChange={(e) => onChange("gender", e.target.value)}
-              className={INPUT_CLASS}
-            >
-              {GENDERS.map((g) => (
-                <option key={g} value={g}>
-                  {g}
-                </option>
-              ))}
-            </select>
+              onChange={(v) => onChange("gender", v)}
+              options={GENDERS.map((g) => ({ value: g, label: g }))}
+            />
           </div>
         </div>
 
@@ -339,10 +341,13 @@ export function StudentRegistrationSteps({
     );
   }
 
-  // Step 4: Department, Program & 4-Year / 8-Semester Track
+  // Step 4: Department, Program & Dynamic Semester Track
   if (step === 4) {
     const activeDept = departments.find((d) => d.id === form.deptId) || departments[0];
     const availablePrograms = getProgramsForDepartment(activeDept?.code, activeDept?.name);
+    const activeSemCount = clampProgramSemesters(activeDept?.total_semesters);
+    const activeDeptSemesters = getSemestersForCount(activeSemCount);
+    const activeAcademicYears = getAcademicYearsForCount(activeSemCount);
 
     return (
       <div className="space-y-4">
@@ -350,48 +355,43 @@ export function StudentRegistrationSteps({
           <label htmlFor="stud-dept" className={LABEL_CLASS}>
             Academic Department *
           </label>
-          <select
+          <Select
             id="stud-dept"
+            size="lg"
+            variant="surface"
             value={form.deptId}
             disabled={departments.length === 0}
-            onChange={(e) => {
-              const nextDeptId = e.target.value;
+            onChange={(nextDeptId) => {
               onChange("deptId", nextDeptId);
               const nextDept = departments.find((d) => d.id === nextDeptId);
               const nextPrograms = getProgramsForDepartment(nextDept?.code, nextDept?.name);
               onChange("programName", nextPrograms[0] || "");
+              const nextSems = getSemestersForCount(nextDept?.total_semesters);
+              if (!nextSems.includes(form.semesterName as (typeof nextSems)[number])) {
+                onChange("semesterName", nextSems[0] as OrdinalSemesterName);
+              }
             }}
-            className={INPUT_CLASS}
-          >
-            {departments.length === 0 ? (
-              <option value="">No departments available yet — ask Admin to create one</option>
-            ) : (
-              departments.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name} ({d.code})
-                </option>
-              ))
-            )}
-          </select>
+            placeholder="No departments available yet — ask Admin to create one"
+            options={
+              departments.length === 0
+                ? [{ value: "", label: "No departments available yet — ask Admin to create one" }]
+                : departments.map((d) => ({ value: d.id, label: `${d.name} (${d.code})` }))
+            }
+          />
         </div>
 
         <div>
           <label htmlFor="stud-program" className={LABEL_CLASS}>
             Program Applying / Admitted To *
           </label>
-          <select
+          <Select
             id="stud-program"
-            required
+            size="lg"
+            variant="surface"
             value={availablePrograms.includes(form.programName) ? form.programName : availablePrograms[0] || ""}
-            onChange={(e) => onChange("programName", e.target.value)}
-            className={INPUT_CLASS}
-          >
-            {availablePrograms.map((prog) => (
-              <option key={prog} value={prog}>
-                {prog}
-              </option>
-            ))}
-          </select>
+            onChange={(v) => onChange("programName", v)}
+            options={availablePrograms.map((prog) => ({ value: prog, label: prog }))}
+          />
         </div>
 
         <div className="space-y-2.5">
@@ -405,7 +405,7 @@ export function StudentRegistrationSteps({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {ACADEMIC_YEARS.map((yr) => (
+            {activeAcademicYears.map((yr) => (
               <div
                 key={yr.year}
                 className="p-2.5 rounded-xl bg-surface-2 border border-line space-y-2"
@@ -437,7 +437,9 @@ export function StudentRegistrationSteps({
           </div>
 
           <p className="text-[11px] text-fg-muted">
-            UniCampus uses the standard 4-Year / 8-Semester undergraduate system ({ORDINAL_SEMESTERS[0]} to {ORDINAL_SEMESTERS[7]}).
+            {activeDept?.code ? `${activeDept.code} uses` : "This department uses"} a{" "}
+            {formatProgramDuration(activeSemCount)} structure ({activeDeptSemesters[0]} to{" "}
+            {activeDeptSemesters[activeDeptSemesters.length - 1]}).
           </p>
         </div>
       </div>
@@ -619,29 +621,25 @@ export function StudentRegistrationSteps({
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <div>
               <label htmlFor="ssc-board" className={LABEL_CLASS}>Board *</label>
-              <select
+              <Select
                 id="ssc-board"
+                size="lg"
+                variant="surface"
                 value={form.sscBoard}
-                onChange={(e) => onChange("sscBoard", e.target.value)}
-                className={INPUT_CLASS}
-              >
-                {BD_EDUCATION_BOARDS.map((b) => (
-                  <option key={b} value={b}>{b}</option>
-                ))}
-              </select>
+                onChange={(v) => onChange("sscBoard", v)}
+                options={BD_EDUCATION_BOARDS.map((b) => ({ value: b, label: b }))}
+              />
             </div>
             <div>
               <label htmlFor="ssc-group" className={LABEL_CLASS}>Group *</label>
-              <select
+              <Select
                 id="ssc-group"
+                size="lg"
+                variant="surface"
                 value={form.sscGroup}
-                onChange={(e) => onChange("sscGroup", e.target.value)}
-                className={INPUT_CLASS}
-              >
-                {BD_ACADEMIC_GROUPS.map((g) => (
-                  <option key={g} value={g}>{g}</option>
-                ))}
-              </select>
+                onChange={(v) => onChange("sscGroup", v)}
+                options={BD_ACADEMIC_GROUPS.map((g) => ({ value: g, label: g }))}
+              />
             </div>
             <div className="col-span-2 sm:col-span-1">
               <label htmlFor="ssc-year" className={LABEL_CLASS}>Passing Year *</label>
@@ -737,29 +735,25 @@ export function StudentRegistrationSteps({
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <div>
               <label htmlFor="hsc-board" className={LABEL_CLASS}>Board *</label>
-              <select
+              <Select
                 id="hsc-board"
+                size="lg"
+                variant="surface"
                 value={form.hscBoard}
-                onChange={(e) => onChange("hscBoard", e.target.value)}
-                className={INPUT_CLASS}
-              >
-                {BD_EDUCATION_BOARDS.map((b) => (
-                  <option key={b} value={b}>{b}</option>
-                ))}
-              </select>
+                onChange={(v) => onChange("hscBoard", v)}
+                options={BD_EDUCATION_BOARDS.map((b) => ({ value: b, label: b }))}
+              />
             </div>
             <div>
               <label htmlFor="hsc-group" className={LABEL_CLASS}>Group *</label>
-              <select
+              <Select
                 id="hsc-group"
+                size="lg"
+                variant="surface"
                 value={form.hscGroup}
-                onChange={(e) => onChange("hscGroup", e.target.value)}
-                className={INPUT_CLASS}
-              >
-                {BD_ACADEMIC_GROUPS.map((g) => (
-                  <option key={g} value={g}>{g}</option>
-                ))}
-              </select>
+                onChange={(v) => onChange("hscGroup", v)}
+                options={BD_ACADEMIC_GROUPS.map((g) => ({ value: g, label: g }))}
+              />
             </div>
             <div className="col-span-2 sm:col-span-1">
               <label htmlFor="hsc-year" className={LABEL_CLASS}>Passing Year *</label>
@@ -848,16 +842,14 @@ export function StudentRegistrationSteps({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label htmlFor="jsc-board" className={LABEL_CLASS}>Board</label>
-              <select
+              <Select
                 id="jsc-board"
+                size="lg"
+                variant="surface"
                 value={form.jscBoard}
-                onChange={(e) => onChange("jscBoard", e.target.value)}
-                className={INPUT_CLASS}
-              >
-                {BD_EDUCATION_BOARDS.map((b) => (
-                  <option key={b} value={b}>{b}</option>
-                ))}
-              </select>
+                onChange={(v) => onChange("jscBoard", v)}
+                options={BD_EDUCATION_BOARDS.map((b) => ({ value: b, label: b }))}
+              />
             </div>
             <div>
               <label htmlFor="jsc-year" className={LABEL_CLASS}>Passing Year</label>

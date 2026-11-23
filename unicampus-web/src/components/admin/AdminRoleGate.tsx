@@ -50,7 +50,7 @@ export function AdminRoleGate({ children }: { children: React.ReactNode }) {
   // Before auth context is loaded, or while redirecting unauthenticated user in live mode
   if (!isLoaded || (!isDemoMode && !currentUser)) {
     return (
-      <div className="min-h-[60dvh] w-full flex flex-col items-center justify-center gap-3 p-6">
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-canvas p-6">
         <InlineSpinner size="lg" label="Verifying admin session" />
       </div>
     );

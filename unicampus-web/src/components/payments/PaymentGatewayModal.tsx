@@ -1,5 +1,7 @@
 "use client";
 
+import { Select } from "@/components/ui/Select";
+
 import React, { useState, useEffect } from "react";
 import {
   AlertCircle,
@@ -650,17 +652,20 @@ export function PaymentGatewayModal({
                   >
                     Select Internet Banking Gateway
                   </label>
-                  <select
+                  <Select
                     id="ssl-bank-select"
+                    ariaLabel="Select Internet Banking Gateway"
                     value={bankName}
-                    onChange={(e) => setBankName(e.target.value)}
-                    className="w-full min-h-[44px] px-3.5 py-2 rounded-xl border border-line bg-surface text-fg text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-                  >
-                    <option value="BRAC Bank">BRAC Bank Internet Banking</option>
-                    <option value="City Bank">City Bank CityTouch</option>
-                    <option value="DBBL">Dutch Bangla Bank NexusPay</option>
-                    <option value="Eastern Bank">Eastern Bank EBL Skybanking</option>
-                  </select>
+                    onChange={setBankName}
+                    options={[
+                      { value: "BRAC Bank", label: "BRAC Bank Internet Banking" },
+                      { value: "City Bank", label: "City Bank CityTouch" },
+                      { value: "DBBL", label: "Dutch Bangla Bank NexusPay" },
+                      { value: "Eastern Bank", label: "Eastern Bank EBL Skybanking" },
+                    ]}
+                    size="md"
+                    variant="surface"
+                  />
                 </div>
               )}
 

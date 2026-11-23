@@ -7,6 +7,90 @@
 
 export const ACTIVE_TERM = "Academic Year 2026" as const;
 
+export const MIN_PROGRAM_SEMESTERS = 2 as const;
+export const MAX_PROGRAM_SEMESTERS = 12 as const;
+export const DEFAULT_PROGRAM_SEMESTERS = 8 as const;
+
+export const ALL_ORDINAL_SEMESTERS = [
+  "1st Semester",
+  "2nd Semester",
+  "3rd Semester",
+  "4th Semester",
+  "5th Semester",
+  "6th Semester",
+  "7th Semester",
+  "8th Semester",
+  "9th Semester",
+  "10th Semester",
+  "11th Semester",
+  "12th Semester",
+] as const;
+
+export type CanonicalOrdinalSemester = (typeof ALL_ORDINAL_SEMESTERS)[number];
+
+export function clampProgramSemesters(count?: number | null): number {
+  if (typeof count !== "number" || !Number.isFinite(count)) {
+    return DEFAULT_PROGRAM_SEMESTERS;
+  }
+  return Math.min(MAX_PROGRAM_SEMESTERS, Math.max(MIN_PROGRAM_SEMESTERS, Math.round(count)));
+}
+
+export function getOrdinalSemesterName(index: number): CanonicalOrdinalSemester {
+  const clamped = Math.min(MAX_PROGRAM_SEMESTERS, Math.max(1, Math.round(index)));
+  return ALL_ORDINAL_SEMESTERS[clamped - 1];
+}
+
+export function getSemestersForCount(count?: number | null): CanonicalOrdinalSemester[] {
+  return ALL_ORDINAL_SEMESTERS.slice(0, clampProgramSemesters(count));
+}
+
+export function getSemesterIndex(semester: string): number {
+  const exactIdx = ALL_ORDINAL_SEMESTERS.indexOf(semester as CanonicalOrdinalSemester);
+  if (exactIdx >= 0) return exactIdx + 1;
+  const numMatch = semester.match(/(\d+)/);
+  if (numMatch) {
+    const parsed = parseInt(numMatch[1], 10);
+    if (parsed >= 1 && parsed <= MAX_PROGRAM_SEMESTERS) return parsed;
+  }
+  return 1;
+}
+
+const YEAR_LABELS = [
+  "1st Year",
+  "2nd Year",
+  "3rd Year",
+  "4th Year",
+  "5th Year",
+  "6th Year",
+] as const;
+
+export function getAcademicYearsForCount(count?: number | null): {
+  year: number;
+  label: string;
+  semesters: CanonicalOrdinalSemester[];
+}[] {
+  const sems = getSemestersForCount(count);
+  const groups: { year: number; label: string; semesters: CanonicalOrdinalSemester[] }[] = [];
+  for (let i = 0; i < sems.length; i += 2) {
+    const yearNum = Math.floor(i / 2) + 1;
+    groups.push({
+      year: yearNum,
+      label: YEAR_LABELS[yearNum - 1] ?? `${yearNum}th Year`,
+      semesters: sems.slice(i, i + 2),
+    });
+  }
+  return groups;
+}
+
+export function formatProgramDuration(count?: number | null): string {
+  const n = clampProgramSemesters(count);
+  if (n % 2 === 0) {
+    const years = n / 2;
+    return `${years}-Year / ${n}-Semester`;
+  }
+  return `${n}-Semester Program`;
+}
+
 export const ACADEMIC_YEARS = [
   { year: 1, label: "1st Year", semesters: ["1st Semester", "2nd Semester"] as const },
   { year: 2, label: "2nd Year", semesters: ["3rd Semester", "4th Semester"] as const },
@@ -15,20 +99,9 @@ export const ACADEMIC_YEARS = [
 ] as const;
 
 export function getAcademicYearForSemester(semester: string): string {
-  const s = semester.toLowerCase();
-  if (s.includes("1st") || s.includes("2nd") || s === "1" || s === "2" || s.endsWith("-1") || s.endsWith("-2")) {
-    return "1st Year";
-  }
-  if (s.includes("3rd") || s.includes("4th") || s === "3" || s === "4" || s.endsWith("-3") || s.endsWith("-4")) {
-    return "2nd Year";
-  }
-  if (s.includes("5th") || s.includes("6th") || s === "5" || s === "6" || s.endsWith("-5") || s.endsWith("-6")) {
-    return "3rd Year";
-  }
-  if (s.includes("7th") || s.includes("8th") || s === "7" || s === "8" || s.endsWith("-7") || s.endsWith("-8")) {
-    return "4th Year";
-  }
-  return "1st Year";
+  const idx = getSemesterIndex(semester);
+  const yearNum = Math.ceil(idx / 2);
+  return YEAR_LABELS[yearNum - 1] ?? `${yearNum}th Year`;
 }
 
 export function formatYearSemester(semester: string): string {

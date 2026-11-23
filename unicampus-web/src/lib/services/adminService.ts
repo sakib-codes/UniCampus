@@ -8,6 +8,7 @@ import {
   TeacherWage, 
   PaymentMethod,
   Semester,
+  OrdinalSemesterName,
   AuditLogItem,
   GradebookPolicy
 } from '@/types/admin';
@@ -20,8 +21,12 @@ import {
   INITIAL_NOTICES, 
   INITIAL_TRANSACTIONS, 
   INITIAL_TEACHER_WAGES,
-  ORDINAL_SEMESTERS
 } from '@/lib/mockData';
+import {
+  clampProgramSemesters,
+  DEFAULT_PROGRAM_SEMESTERS,
+  getSemestersForCount,
+} from '@/lib/canonicalCampus';
 import { getSupabaseClient } from '@/lib/supabase/client';
 import { supabaseSyncBridge } from '@/lib/supabase/syncBridge';
 import {
@@ -535,6 +540,85 @@ class AdminService {
     return profiles.filter((p) => p.role === 'admin' && p.admin_role === 'super_admin');
   }
 
+  getDepartmentSemesterCount(departmentIdOrCode?: string | null): number {
+    if (!departmentIdOrCode) return DEFAULT_PROGRAM_SEMESTERS;
+    const depts = this.getDepartments();
+    const target = departmentIdOrCode.toLowerCase();
+    const match = depts.find(
+      (d) =>
+        d.id.toLowerCase() === target ||
+        d.code.toLowerCase() === target ||
+        d.name.toLowerCase() === target
+    );
+    if (match && typeof match.total_semesters === 'number' && match.total_semesters >= 2) {
+      return clampProgramSemesters(match.total_semesters);
+    }
+    if (match) {
+      const deptSems = this.getSemesters(match.id);
+      if (deptSems.length >= 2) {
+        return clampProgramSemesters(deptSems.length);
+      }
+    }
+    return DEFAULT_PROGRAM_SEMESTERS;
+  }
+
+  getDepartmentSemesters(departmentIdOrCode?: string | null): OrdinalSemesterName[] {
+    return getSemestersForCount(this.getDepartmentSemesterCount(departmentIdOrCode));
+  }
+
+  getMaxSemesterCount(): number {
+    const depts = this.getDepartments();
+    if (depts.length === 0) return DEFAULT_PROGRAM_SEMESTERS;
+    return depts.reduce<number>(
+      (max, d) => Math.max(max, this.getDepartmentSemesterCount(d.id)),
+      DEFAULT_PROGRAM_SEMESTERS
+    );
+  }
+
+  updateDepartmentSemesterCount(deptId: string, totalSemesters: number): Department[] {
+    const count = clampProgramSemesters(totalSemesters);
+    const depts = this.getDepartments();
+    const targetDept = depts.find((d) => d.id === deptId);
+    const slug = (targetDept?.code || deptId.replace(/^dept-/, ''))
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '');
+
+    const updatedDepts = depts.map((d) =>
+      d.id === deptId ? { ...d, total_semesters: count } : d
+    );
+    setStoredItem(STORAGE_KEYS.DEPARTMENTS, updatedDepts);
+
+    // Synchronize stored semesters list for this department (1..count)
+    const allSemesters = this.getSemesters();
+    const otherSemesters = allSemesters.filter((s) => s.department_id !== deptId);
+    const existingByIndex = new Map(
+      allSemesters
+        .filter((s) => s.department_id === deptId)
+        .map((s) => [s.order_index, s])
+    );
+
+    const nextDeptSemesters: Semester[] = getSemestersForCount(count).map((name, idx) => {
+      const orderIndex = idx + 1;
+      const existing = existingByIndex.get(orderIndex);
+      return (
+        existing ?? {
+          id: `sem-${slug}-${orderIndex}`,
+          department_id: deptId,
+          name,
+          order_index: orderIndex,
+        }
+      );
+    });
+
+    setStoredItem(STORAGE_KEYS.SEMESTERS, [...otherSemesters, ...nextDeptSemesters]);
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('unicampus:departments-updated'));
+    }
+    void supabaseSyncBridge.updateDepartmentSemesterCount(deptId, count);
+    return updatedDepts;
+  }
+
   createDepartment(data: Omit<Department, 'id'>): Department {
     const depts = this.getDepartments();
     const slug = data.code.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -542,13 +626,14 @@ class AdminService {
     if (depts.some((d) => d.id === id)) {
       id = `dept-${slug}-${Date.now().toString().slice(-4)}`;
     }
-    const newDept: Department = { ...data, id };
+    const totalSemesters = clampProgramSemesters(data.total_semesters);
+    const newDept: Department = { ...data, id, total_semesters: totalSemesters };
     const updated = [...depts, newDept];
     setStoredItem(STORAGE_KEYS.DEPARTMENTS, updated);
 
-    // Auto-generate 4-Year / 8-Semester structure (1st through 8th Semester) for this department
+    // Auto-generate configured semester structure (1st through Nth Semester) for this department
     const semesters = this.getSemesters();
-    const newSemesters: Semester[] = ORDINAL_SEMESTERS.map((name, index) => ({
+    const newSemesters: Semester[] = getSemestersForCount(totalSemesters).map((name, index) => ({
       id: `sem-${slug}-${index + 1}`,
       department_id: id,
       name,
@@ -559,7 +644,7 @@ class AdminService {
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new Event('unicampus:departments-updated'));
     }
-    void supabaseSyncBridge.createDepartmentWithSemesters(data);
+    void supabaseSyncBridge.createDepartmentWithSemesters({ ...data, total_semesters: totalSemesters });
     return newDept;
   }
 

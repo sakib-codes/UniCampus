@@ -1,5 +1,7 @@
 "use client";
 
+import { Select } from "@/components/ui/Select";
+
 import React, { useState, useRef, useEffect } from "react";
 import { 
   Camera, 
@@ -312,23 +314,25 @@ export function StudentEditProfileModal({
             <label className="block text-xs font-semibold text-fg">
               Blood Group
             </label>
-            <select
+            <Select
+              ariaLabel="Select blood group"
               value={formData.bloodGroup}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, bloodGroup: e.target.value }))
+              onChange={(val) =>
+                setFormData((prev) => ({ ...prev, bloodGroup: val }))
               }
-              aria-label="Select blood group"
-              className={`${inputClass} cursor-pointer`}
-            >
-              <option value="A+">A+ (A Positive)</option>
-              <option value="A-">A- (A Negative)</option>
-              <option value="B+">B+ (B Positive)</option>
-              <option value="B-">B- (B Negative)</option>
-              <option value="O+">O+ (O Positive)</option>
-              <option value="O-">O- (O Negative)</option>
-              <option value="AB+">AB+ (AB Positive)</option>
-              <option value="AB-">AB- (AB Negative)</option>
-            </select>
+              options={[
+                { value: "A+", label: "A+ (A Positive)" },
+                { value: "A-", label: "A- (A Negative)" },
+                { value: "B+", label: "B+ (B Positive)" },
+                { value: "B-", label: "B- (B Negative)" },
+                { value: "O+", label: "O+ (O Positive)" },
+                { value: "O-", label: "O- (O Negative)" },
+                { value: "AB+", label: "AB+ (AB Positive)" },
+                { value: "AB-", label: "AB- (AB Negative)" },
+              ]}
+              size="md"
+              variant="surface2"
+            />
           </div>
         </div>
 

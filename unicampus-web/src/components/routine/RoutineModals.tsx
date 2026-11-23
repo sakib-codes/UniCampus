@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import { Select } from "@/components/ui/Select";
+
 import { CalendarPlus, Send, CheckCircle2 } from "lucide-react";
 import { Modal, Button } from "@/components/ui";
 import { ACTIVE_TERM } from "@/lib/canonicalCampus";
@@ -97,6 +100,8 @@ export function SwapRequestModal({
   onClose,
   onSubmit,
 }: SwapRequestModalProps) {
+  const [selectedSlot, setSelectedSlot] = useState("CSE-3101");
+
   return (
     <Modal
       open={open}
@@ -131,21 +136,28 @@ export function SwapRequestModal({
             >
               Select Course Slot to Adjust
             </label>
-            <select
+            <Select
               id="swap-course-slot"
-              required
-              className="w-full min-h-[44px] px-3.5 py-2 rounded-xl bg-surface-2 border border-line text-xs text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:border-brand"
-            >
-              <option value="CSE-3101">
-                CSE-3101 • Design &amp; Analysis of Algorithms (Monday 10:15 AM)
-              </option>
-              <option value="CSE-3205">
-                CSE-3205 • Software Engineering &amp; System Design (Monday 01:00 PM)
-              </option>
-              <option value="CSE-3206">
-                CSE-3206 • Software Engineering Lab (Monday 02:45 PM)
-              </option>
-            </select>
+              ariaLabel="Select Course Slot to Adjust"
+              value={selectedSlot}
+              onChange={setSelectedSlot}
+              options={[
+                {
+                  value: "CSE-3101",
+                  label: "CSE-3101 • Design & Analysis of Algorithms (Monday 10:15 AM)",
+                },
+                {
+                  value: "CSE-3205",
+                  label: "CSE-3205 • Software Engineering & System Design (Monday 01:00 PM)",
+                },
+                {
+                  value: "CSE-3206",
+                  label: "CSE-3206 • Software Engineering Lab (Monday 02:45 PM)",
+                },
+              ]}
+              size="md"
+              variant="surface2"
+            />
           </div>
 
           <div className="space-y-1.5">

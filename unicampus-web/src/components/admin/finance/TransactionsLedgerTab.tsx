@@ -1,5 +1,7 @@
 "use client";
 
+import { Select } from "@/components/ui/Select";
+
 import React, { useState, useMemo } from "react";
 import {
   Search,
@@ -15,7 +17,7 @@ import {
 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { adminService } from "@/lib/services/adminService";
-import { ORDINAL_SEMESTERS } from "@/lib/mockData";
+import { getSemestersForCount } from "@/lib/canonicalCampus";
 import type {
   Department,
   OrdinalSemesterName,
@@ -611,19 +613,22 @@ export function TransactionsLedgerTab({
             >
               Gateway Processor
             </label>
-            <select
+            <Select
               id="finance-filter-gateway"
+              ariaLabel="Gateway Processor"
               value={selectedGateway}
-              onChange={(e) => setSelectedGateway(e.target.value)}
-              className="w-full min-h-[40px] px-3 py-1.5 font-semibold cursor-pointer rounded-xl bg-canvas border border-line text-fg text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand"
-            >
-              <option value="all">All Gateways</option>
-              <option value="bKash">bKash Tokenized (Sandbox)</option>
-              <option value="SSLCommerz">SSLCommerz Hosted (Sandbox)</option>
-              <option value="Nagad">Nagad MFS</option>
-              <option value="Bank Transfer">Bank Electronic Transfer</option>
-              <option value="Card">Credit/Debit Card</option>
-            </select>
+              onChange={setSelectedGateway}
+              options={[
+                { value: "all", label: "All Gateways" },
+                { value: "bKash", label: "bKash Tokenized (Sandbox)" },
+                { value: "SSLCommerz", label: "SSLCommerz Hosted (Sandbox)" },
+                { value: "Nagad", label: "Nagad MFS" },
+                { value: "Bank Transfer", label: "Bank Electronic Transfer" },
+                { value: "Card", label: "Credit/Debit Card" },
+              ]}
+              size="md"
+              variant="surface2"
+            />
           </div>
 
           {/* Status Filter */}
@@ -634,17 +639,20 @@ export function TransactionsLedgerTab({
             >
               Payment Status
             </label>
-            <select
+            <Select
               id="finance-filter-status"
+              ariaLabel="Payment Status"
               value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="w-full min-h-[40px] px-3 py-1.5 font-semibold cursor-pointer rounded-xl bg-canvas border border-line text-fg text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand"
-            >
-              <option value="all">All Statuses</option>
-              <option value="Paid">Paid</option>
-              <option value="Pending">Pending</option>
-              <option value="Overdue">Overdue</option>
-            </select>
+              onChange={setSelectedStatus}
+              options={[
+                { value: "all", label: "All Statuses" },
+                { value: "Paid", label: "Paid" },
+                { value: "Pending", label: "Pending" },
+                { value: "Overdue", label: "Overdue" },
+              ]}
+              size="md"
+              variant="surface2"
+            />
           </div>
 
           {/* Department Filter */}
@@ -655,22 +663,22 @@ export function TransactionsLedgerTab({
             >
               Academic Department
             </label>
-            <select
+            <Select
               id="finance-filter-dept"
+              ariaLabel="Academic Department"
               value={isDeptAdmin && defaultDepartment ? defaultDepartment : selectedDeptFilter}
-              onChange={(e) => setSelectedDeptFilter(e.target.value)}
+              onChange={setSelectedDeptFilter}
               disabled={isDeptAdmin}
-              className={`w-full min-h-[40px] px-3 py-1.5 font-semibold rounded-xl bg-canvas border border-line text-fg text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand ${
-                isDeptAdmin ? "opacity-75 cursor-not-allowed" : "cursor-pointer"
-              }`}
-            >
-              <option value="all">All Departments</option>
-              {departments.map((d) => (
-                <option key={d.id} value={d.name}>
-                  {d.name} ({d.code})
-                </option>
-              ))}
-            </select>
+              options={[
+                { value: "all", label: "All Departments" },
+                ...departments.map((d) => ({
+                  value: d.name,
+                  label: `${d.name} (${d.code})`,
+                })),
+              ]}
+              size="md"
+              variant="surface2"
+            />
           </div>
 
           {/* Semester Filter */}
@@ -681,19 +689,27 @@ export function TransactionsLedgerTab({
             >
               Semester Term
             </label>
-            <select
+            <Select
               id="finance-filter-semester"
+              ariaLabel="Semester Term"
               value={selectedSemesterFilter}
-              onChange={(e) => setSelectedSemesterFilter(e.target.value)}
-              className="w-full min-h-[40px] px-3 py-1.5 font-semibold cursor-pointer rounded-xl bg-canvas border border-line text-fg text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand"
-            >
-              <option value="all">All Semesters (1st – 8th)</option>
-              {ORDINAL_SEMESTERS.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
+              onChange={setSelectedSemesterFilter}
+              options={(() => {
+                const effectiveDept =
+                  isDeptAdmin && defaultDepartment ? defaultDepartment : selectedDeptFilter;
+                const sems =
+                  effectiveDept !== "all"
+                    ? adminService.getDepartmentSemesters(effectiveDept)
+                    : getSemestersForCount(adminService.getMaxSemesterCount());
+                return [
+                  { value: "all", label: `All Semesters (1st – ${sems[sems.length - 1].replace(" Semester", "")})` },
+                  ...sems.map((s) => ({ value: s, label: s })),
+                ];
+              })()}
+              size="md"
+              variant="surface2"
+              menuAlign="right"
+            />
           </div>
         </div>
 
@@ -925,21 +941,19 @@ export function TransactionsLedgerTab({
               >
                 Academic Department
               </label>
-              <select
+              <Select
                 id="counter-dept"
+                ariaLabel="Academic Department"
                 value={isDeptAdmin && defaultDepartment ? defaultDepartment : counterDept}
-                onChange={(e) => setCounterDept(e.target.value)}
+                onChange={setCounterDept}
                 disabled={isDeptAdmin}
-                className={`w-full min-h-[40px] px-3 py-2 rounded-xl bg-canvas border border-line text-xs font-semibold text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
-                  isDeptAdmin ? "opacity-75 cursor-not-allowed" : ""
-                }`}
-              >
-                {departments.map((d) => (
-                  <option key={d.id} value={d.name}>
-                    {d.name} ({d.code})
-                  </option>
-                ))}
-              </select>
+                options={departments.map((d) => ({
+                  value: d.name,
+                  label: `${d.name} (${d.code})`,
+                }))}
+                size="md"
+                variant="surface2"
+              />
             </div>
 
             <div>
@@ -949,18 +963,17 @@ export function TransactionsLedgerTab({
               >
                 Semester
               </label>
-              <select
+              <Select
                 id="counter-semester"
+                ariaLabel="Semester"
                 value={counterSemester}
-                onChange={(e) => setCounterSemester(e.target.value as OrdinalSemesterName)}
-                className="w-full min-h-[40px] px-3 py-2 rounded-xl bg-canvas border border-line text-xs font-semibold text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-              >
-                {ORDINAL_SEMESTERS.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setCounterSemester(val as OrdinalSemesterName)}
+                options={adminService
+                  .getDepartmentSemesters(counterDept)
+                  .map((s) => ({ value: s, label: s }))}
+                size="md"
+                variant="surface2"
+              />
             </div>
           </div>
 
@@ -972,15 +985,18 @@ export function TransactionsLedgerTab({
               >
                 Fee Category
               </label>
-              <select
+              <Select
                 id="counter-fee-type"
+                ariaLabel="Fee Category"
                 value={counterFeeType}
-                onChange={(e) => setCounterFeeType(e.target.value as TransactionType)}
-                className="w-full min-h-[40px] px-3 py-2 rounded-xl bg-canvas border border-line text-xs font-semibold text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-              >
-                <option value="student_fee">Semester Tuition Fee</option>
-                <option value="late_fine">Late Fine / Penalty</option>
-              </select>
+                onChange={(val) => setCounterFeeType(val as TransactionType)}
+                options={[
+                  { value: "student_fee", label: "Semester Tuition Fee" },
+                  { value: "late_fine", label: "Late Fine / Penalty" },
+                ]}
+                size="md"
+                variant="surface2"
+              />
             </div>
 
             <div>
@@ -998,7 +1014,7 @@ export function TransactionsLedgerTab({
                 required
                 value={counterAmount}
                 onChange={(e) => setCounterAmount(e.target.value)}
-                className="w-full min-h-[40px] px-3 py-2 rounded-xl bg-canvas border border-line text-xs text-fg tabular-nums font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                className="w-full min-h-[44px] px-3 py-2 rounded-xl bg-surface-2 border border-line text-xs text-fg tabular-nums font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
               />
             </div>
 
@@ -1009,18 +1025,22 @@ export function TransactionsLedgerTab({
               >
                 Collection Channel
               </label>
-              <select
+              <Select
                 id="counter-method"
+                ariaLabel="Collection Channel"
                 value={counterMethod}
-                onChange={(e) => setCounterMethod(e.target.value as PaymentMethod)}
-                className="w-full min-h-[40px] px-3 py-2 rounded-xl bg-canvas border border-line text-xs font-semibold text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-              >
-                <option value="Bank Transfer">Bank Transfer (Cash Desk)</option>
-                <option value="bKash">bKash (Counter QR)</option>
-                <option value="Nagad">Nagad (Counter QR)</option>
-                <option value="SSLCommerz">SSLCommerz POS</option>
-                <option value="Card">Card Swipe Terminal</option>
-              </select>
+                onChange={(val) => setCounterMethod(val as PaymentMethod)}
+                options={[
+                  { value: "Bank Transfer", label: "Bank Transfer (Cash Desk)" },
+                  { value: "bKash", label: "bKash (Counter QR)" },
+                  { value: "Nagad", label: "Nagad (Counter QR)" },
+                  { value: "SSLCommerz", label: "SSLCommerz POS" },
+                  { value: "Card", label: "Card Swipe Terminal" },
+                ]}
+                size="md"
+                variant="surface2"
+                menuAlign="right"
+              />
             </div>
           </div>
 

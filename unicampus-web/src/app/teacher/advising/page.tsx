@@ -20,7 +20,8 @@ import {
   calculateSubmissionCredits,
   type AdvisingSubmissionRecord,
 } from "@/lib/services/advisingService";
-import { CANONICAL_FACULTY, formatYearSemester } from "@/lib/canonicalCampus";
+import { CANONICAL_FACULTY, formatProgramDuration, formatYearSemester } from "@/lib/canonicalCampus";
+import { adminService } from "@/lib/services/adminService";
 
 type QueueFilter = "all" | "submitted" | "approved" | "revision_requested";
 
@@ -99,7 +100,7 @@ export default function TeacherAdvisingPage() {
     <div className="w-full space-y-6 pb-14">
       <PageHeader
         title="Course Advising Approvals"
-        description={`Review student 4-Year / 8-Semester course plans assigned to ${CANONICAL_FACULTY.name}, verify credit caps & timetable clashes, and authorize enrollment.`}
+        description={`Review student ${formatProgramDuration(adminService.getDepartmentSemesterCount(CANONICAL_FACULTY.departmentCode))} course plans assigned to ${CANONICAL_FACULTY.name}, verify credit caps & timetable clashes, and authorize enrollment.`}
       />
 
       {/* KPI Strip */}

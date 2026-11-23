@@ -6,7 +6,7 @@ import { CANONICAL_STUDENT, ACTIVE_TERM } from "@/lib/canonicalCampus";
 import { studentPaymentService } from "@/lib/services/studentPaymentService";
 import { adminService } from "@/lib/services/adminService";
 import { PaymentTransaction, Profile, SemesterInvoice } from "@/types/admin";
-import { Tabs, TabOption } from "@/components/ui/Tabs";
+import { Tabs, TabPanel, TabOption } from "@/components/ui/Tabs";
 import { Button } from "@/components/ui/Button";
 import { PaymentKpiStrip } from "@/components/payments/PaymentKpiStrip";
 import { SemesterFeesTab } from "@/components/payments/SemesterFeesTab";
@@ -280,22 +280,24 @@ export default function PaymentsPage() {
       </div>
 
       {/* Tab Panels */}
-      {activeTab === "semesters" && (
-        <SemesterFeesTab
-          invoices={invoices}
-          onOpenGateway={handleOpenGateway}
-          onViewReceipt={handleViewSemesterReceipt}
-        />
-      )}
+      <TabPanel tabKey={activeTab}>
+        {activeTab === "semesters" && (
+          <SemesterFeesTab
+            invoices={invoices}
+            onOpenGateway={handleOpenGateway}
+            onViewReceipt={handleViewSemesterReceipt}
+          />
+        )}
 
-      {activeTab === "history" && (
-        <PaymentHistoryTab
-          transactions={transactions}
-          onViewReceipt={handleViewTransactionReceipt}
-        />
-      )}
+        {activeTab === "history" && (
+          <PaymentHistoryTab
+            transactions={transactions}
+            onViewReceipt={handleViewTransactionReceipt}
+          />
+        )}
 
-      {activeTab === "guide" && <PaymentMethodsGuideTab />}
+        {activeTab === "guide" && <PaymentMethodsGuideTab />}
+      </TabPanel>
 
       {/* Modals */}
       {gatewayInvoice && (

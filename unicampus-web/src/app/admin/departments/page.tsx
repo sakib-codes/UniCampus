@@ -13,7 +13,13 @@ import {
   Download,
   ShieldCheck,
 } from "lucide-react";
-import { ORDINAL_SEMESTERS } from "@/lib/mockData";
+import {
+  ALL_ORDINAL_SEMESTERS,
+  clampProgramSemesters,
+  formatProgramDuration,
+  getOrdinalSemesterName,
+  getSemesterIndex,
+} from "@/lib/canonicalCampus";
 import {
   DEPARTMENTS,
   type DepartmentData,
@@ -30,9 +36,9 @@ function resolveSemesterName(semesterId: string, semestersMap: Map<string, strin
   }
   const match = semesterId.match(/-(\d+)$/);
   if (match) {
-    const idx = parseInt(match[1], 10) - 1;
-    if (idx >= 0 && idx < ORDINAL_SEMESTERS.length) {
-      return ORDINAL_SEMESTERS[idx];
+    const idx = parseInt(match[1], 10);
+    if (idx >= 1 && idx <= ALL_ORDINAL_SEMESTERS.length) {
+      return getOrdinalSemesterName(idx);
     }
   }
   return "1st Semester";
@@ -77,6 +83,7 @@ export default function AdminDepartmentsPage() {
   const [newDeptOffice, setNewDeptOffice] = useState("");
   const [newDeptCapacity, setNewDeptCapacity] = useState("500");
   const [newDeptFacultyCount, setNewDeptFacultyCount] = useState("20");
+  const [newDeptSemesterCount, setNewDeptSemesterCount] = useState("8");
 
   const showToast = useCallback((msg: string) => {
     setToastMessage(msg);
@@ -130,9 +137,7 @@ export default function AdminDepartmentsPage() {
           assignedTeacherName: s.assigned_teacher_name || null,
         }))
         .sort((a, b) => {
-          const semDiff =
-            ORDINAL_SEMESTERS.indexOf(a.semester as (typeof ORDINAL_SEMESTERS)[number]) -
-            ORDINAL_SEMESTERS.indexOf(b.semester as (typeof ORDINAL_SEMESTERS)[number]);
+          const semDiff = getSemesterIndex(a.semester) - getSemesterIndex(b.semester);
           if (semDiff !== 0) return semDiff;
           return a.code.localeCompare(b.code);
         });
@@ -148,12 +153,13 @@ export default function AdminDepartmentsPage() {
       const deptStudentCount = storedProfiles.filter(
         (p) => p.role === "student" && p.department_id === d.id
       ).length;
+      const totalSemesters = adminService.getDepartmentSemesterCount(d.id);
 
       return {
         id: d.id,
         code: d.code,
         codeNumber: existing?.codeNumber || `CODE ${d.code}`,
-        division: d.faculty || existing?.division || "4-Year Undergraduate Program",
+        division: d.faculty || existing?.division || formatProgramDuration(totalSemesters),
         name: d.name,
         initials,
         hodName: d.head_teacher_name || d.dept_admin_name || "Unassigned",
@@ -166,7 +172,8 @@ export default function AdminDepartmentsPage() {
         office: existing?.office || "Academic Wing",
         totalStudents: deptStudentCount,
         totalFaculty: deptFaculty.length,
-        activePrograms: existing?.activePrograms || ["4-Year / 8-Semester"],
+        totalSemesters,
+        activePrograms: existing?.activePrograms || [formatProgramDuration(totalSemesters)],
         status: "Accredited • Active" as const,
         facultyList: deptFaculty,
         curriculumList: deptSubjects,
@@ -212,11 +219,13 @@ export default function AdminDepartmentsPage() {
     e.preventDefault();
     if (!newDeptName.trim() || !newDeptCode.trim()) return;
 
+    const semCount = clampProgramSemesters(parseInt(newDeptSemesterCount, 10));
     const created = adminService.createDepartment({
       name: newDeptName.trim(),
       code: newDeptCode.toUpperCase().trim(),
       head_teacher_id: null,
       head_teacher_name: newDeptHod.trim() || "Dean Appointee",
+      total_semesters: semCount,
       stats: {
         students: parseInt(newDeptCapacity, 10) || 450,
         teachers: parseInt(newDeptFacultyCount, 10) || 18,
@@ -231,8 +240,9 @@ export default function AdminDepartmentsPage() {
     setNewDeptCodeNum("");
     setNewDeptHod("");
     setNewDeptOffice("");
+    setNewDeptSemesterCount("8");
     setSelectedCurriculumDeptId(created.id);
-    showToast(`Created ${created.name} (${created.code}) with 4-Year / 8-Semester curriculum. You can now add subjects.`);
+    showToast(`Created ${created.name} (${created.code}) with ${formatProgramDuration(semCount)} curriculum. You can now add subjects per semester.`);
   };
 
   const handleSaveSettings = (
@@ -243,6 +253,7 @@ export default function AdminDepartmentsPage() {
       office: string;
       status: "Accredited • Active" | "Pending Review";
       totalStudents: number;
+      totalSemesters?: number;
       deptAdminName?: string;
       deptAdminEmail?: string;
     }
@@ -262,9 +273,24 @@ export default function AdminDepartmentsPage() {
         updates.deptAdminEmail
       );
     }
+    if (
+      typeof updates.totalSemesters === "number" &&
+      updates.totalSemesters !== clampProgramSemesters(dept.totalSemesters)
+    ) {
+      adminService.updateDepartmentSemesterCount(dept.id, updates.totalSemesters);
+    }
     loadDepartmentsData();
     setSelectedSettingsDeptId(null);
-    showToast(`Saved governance parameters & HOD assignment for ${dept.code}.`);
+    showToast(`Saved governance parameters & semester configuration for ${dept.code}.`);
+  };
+
+  const handleUpdateSemesterCount = (deptId: string, totalSemesters: number) => {
+    const dept = departments.find((d) => d.id === deptId);
+    adminService.updateDepartmentSemesterCount(deptId, totalSemesters);
+    loadDepartmentsData();
+    showToast(
+      `Updated ${dept?.code || "department"} program to ${formatProgramDuration(totalSemesters)} across all portals.`
+    );
   };
 
   const handleCreateSubject = (
@@ -273,10 +299,7 @@ export default function AdminDepartmentsPage() {
   ) => {
     const dept = departments.find((d) => d.id === deptId);
     const deptSlug = (dept?.code || deptId.replace(/^dept-/, "")).toLowerCase();
-    const semIndex = Math.max(
-      1,
-      ORDINAL_SEMESTERS.indexOf(subject.semester_name as (typeof ORDINAL_SEMESTERS)[number]) + 1
-    );
+    const semIndex = getSemesterIndex(subject.semester_name);
     const normalizedCode = subject.code.trim().toUpperCase();
 
     const duplicate = dept?.curriculumList.some(
@@ -540,6 +563,8 @@ export default function AdminDepartmentsPage() {
         onNewDeptCapacityChange={setNewDeptCapacity}
         newDeptFacultyCount={newDeptFacultyCount}
         onNewDeptFacultyCountChange={setNewDeptFacultyCount}
+        newDeptSemesterCount={newDeptSemesterCount}
+        onNewDeptSemesterCountChange={setNewDeptSemesterCount}
         onCreateDepartment={handleCreateDepartment}
         selectedRosterDept={selectedRosterDept}
         onCloseRosterDept={() => setSelectedRosterDeptId(null)}
@@ -548,6 +573,7 @@ export default function AdminDepartmentsPage() {
         onCreateSubject={handleCreateSubject}
         onDeleteSubject={handleDeleteSubject}
         onAssignSubjectTeacher={handleAssignSubjectTeacher}
+        onUpdateSemesterCount={handleUpdateSemesterCount}
         selectedSettingsDept={selectedSettingsDept}
         onCloseSettingsDept={() => setSelectedSettingsDeptId(null)}
         onSaveSettings={handleSaveSettings}

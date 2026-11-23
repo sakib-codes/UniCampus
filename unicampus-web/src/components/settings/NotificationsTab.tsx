@@ -1,8 +1,10 @@
 "use client";
 
+import { Select } from "@/components/ui/Select";
+
 import { memo } from "react";
 import { Switch } from "@/components/common/Switch";
-import { SETTINGS_INPUT_CLASS, type SettingsFormState } from "./settingsTypes";
+import { type SettingsFormState } from "./settingsTypes";
 
 interface NotificationsTabProps {
   form: SettingsFormState;
@@ -97,21 +99,24 @@ export const NotificationsTab = memo(function NotificationsTab({
             >
               Email Digest Frequency
             </label>
-            <select
+            <Select
               id="settings-email-digest"
+              ariaLabel="Email Digest Frequency"
               value={form.emailDigest}
-              onChange={(e) =>
+              onChange={(val) =>
                 onUpdateField(
                   "emailDigest",
-                  e.target.value as SettingsFormState["emailDigest"]
+                  val as SettingsFormState["emailDigest"]
                 )
               }
-              className={`${SETTINGS_INPUT_CLASS} cursor-pointer`}
-            >
-              <option value="Instant">Instant</option>
-              <option value="Daily">Daily Summary</option>
-              <option value="Off">Off</option>
-            </select>
+              options={[
+                { value: "Instant", label: "Instant" },
+                { value: "Daily", label: "Daily Summary" },
+                { value: "Off", label: "Off" },
+              ]}
+              size="md"
+              variant="surface2"
+            />
           </div>
         </div>
       ) : (

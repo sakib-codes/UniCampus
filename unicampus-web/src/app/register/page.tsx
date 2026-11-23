@@ -26,7 +26,8 @@ import {
   type Profile,
   type UserRoleType,
 } from "@/types/admin";
-import { INITIAL_DEPARTMENTS, ORDINAL_SEMESTERS } from "@/lib/mockData";
+import { INITIAL_DEPARTMENTS } from "@/lib/mockData";
+import { getSemesterIndex } from "@/lib/canonicalCampus";
 import { getAcademicYearForSemester } from "@/lib/canonicalCampus";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { Button, buttonVariants } from "@/components/ui/Button";
@@ -95,7 +96,7 @@ function getStepMeta(step: number, role: "student" | "teacher"): StepMeta {
     return role === "student"
       ? {
           title: "Choose your department & program",
-          subtitle: "Select your department, degree program, and 4-Year / 8-Semester track.",
+          subtitle: "Select your department, degree program, and semester track.",
           animation: "routine",
         }
       : {
@@ -491,7 +492,7 @@ export default function RegisterPage() {
 
     if (role === "student") {
       const selectedDept = departments.find((d) => d.id === studentForm.deptId);
-      const semIdx = Math.max(1, ORDINAL_SEMESTERS.indexOf(studentForm.semesterName) + 1);
+      const semIdx = getSemesterIndex(studentForm.semesterName);
       const deptSlug = (selectedDept?.code || studentForm.deptId.replace(/^dept-/, "") || "cse").toLowerCase();
 
       const boardExams: BoardExamRecord[] = [

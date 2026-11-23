@@ -1,9 +1,11 @@
 "use client";
 
+import { Select } from "@/components/ui/Select";
+
 import { memo } from "react";
 import { Switch } from "@/components/common/Switch";
 import { Badge } from "@/components/ui/Badge";
-import { SETTINGS_INPUT_CLASS, type SettingsFormState } from "./settingsTypes";
+import { type SettingsFormState } from "./settingsTypes";
 
 interface TeachingTabProps {
   form: SettingsFormState;
@@ -32,21 +34,24 @@ export const TeachingTab = memo(function TeachingTab({
           >
             Default Availability Status
           </label>
-          <select
+          <Select
             id="settings-default-availability"
+            ariaLabel="Default Availability Status"
             value={form.defaultAvailability}
-            onChange={(e) =>
+            onChange={(val) =>
               onUpdateField(
                 "defaultAvailability",
-                e.target.value as SettingsFormState["defaultAvailability"]
+                val as SettingsFormState["defaultAvailability"]
               )
             }
-            className={`${SETTINGS_INPUT_CLASS} cursor-pointer`}
-          >
-            <option value="In Office">In Office</option>
-            <option value="Online">Online</option>
-            <option value="By Appointment">By Appointment</option>
-          </select>
+            options={[
+              { value: "In Office", label: "In Office" },
+              { value: "Online", label: "Online" },
+              { value: "By Appointment", label: "By Appointment" },
+            ]}
+            size="md"
+            variant="surface2"
+          />
         </div>
 
         <div className="flex items-center justify-between gap-4 p-4 rounded-xl bg-canvas border border-line">
@@ -80,21 +85,24 @@ export const TeachingTab = memo(function TeachingTab({
             >
               Default QR Rotation Interval
             </label>
-            <select
+            <Select
               id="settings-qr-interval"
+              ariaLabel="Default QR Rotation Interval"
               value={form.qrInterval}
-              onChange={(e) =>
+              onChange={(val) =>
                 onUpdateField(
                   "qrInterval",
-                  e.target.value as SettingsFormState["qrInterval"]
+                  val as SettingsFormState["qrInterval"]
                 )
               }
-              className={`${SETTINGS_INPUT_CLASS} cursor-pointer`}
-            >
-              <option value="15s">15 seconds (Recommended)</option>
-              <option value="30s">30 seconds</option>
-              <option value="60s">60 seconds</option>
-            </select>
+              options={[
+                { value: "15s", label: "15 seconds (Recommended)" },
+                { value: "30s", label: "30 seconds" },
+                { value: "60s", label: "60 seconds" },
+              ]}
+              size="md"
+              variant="surface2"
+            />
           </div>
 
           <div className="space-y-1.5">
@@ -104,20 +112,23 @@ export const TeachingTab = memo(function TeachingTab({
             >
               Late Check-in Grace Period
             </label>
-            <select
+            <Select
               id="settings-grace-period"
+              ariaLabel="Late Check-in Grace Period"
               value={form.lateGracePeriod}
-              onChange={(e) =>
+              onChange={(val) =>
                 onUpdateField(
                   "lateGracePeriod",
-                  e.target.value as SettingsFormState["lateGracePeriod"]
+                  val as SettingsFormState["lateGracePeriod"]
                 )
               }
-              className={`${SETTINGS_INPUT_CLASS} cursor-pointer`}
-            >
-              <option value="10 min">10 minutes</option>
-              <option value="15 min">15 minutes</option>
-            </select>
+              options={[
+                { value: "10 min", label: "10 minutes" },
+                { value: "15 min", label: "15 minutes" },
+              ]}
+              size="md"
+              variant="surface2"
+            />
           </div>
         </div>
 

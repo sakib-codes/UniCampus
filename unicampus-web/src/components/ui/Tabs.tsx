@@ -125,3 +125,25 @@ export function Tabs<T extends string = string>({
     </div>
   );
 }
+
+export interface TabPanelProps {
+  tabKey: string;
+  children: React.ReactNode;
+  className?: string;
+}
+
+/**
+ * Animated tab content container using a crisp 160ms ease-out reveal
+ * synced with the segmented Tabs pill transition (honors prefers-reduced-motion).
+ */
+export function TabPanel({ tabKey, children, className }: TabPanelProps) {
+  return (
+    <div
+      key={tabKey}
+      role="tabpanel"
+      className={cn("uc-tab-enter motion-reduce:animate-none", className)}
+    >
+      {children}
+    </div>
+  );
+}

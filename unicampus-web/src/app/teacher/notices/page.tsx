@@ -16,7 +16,7 @@ import { Modal } from "@/components/ui/Modal";
 import { Select } from "@/components/ui/Select";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Badge } from "@/components/ui/Badge";
-import { Tabs, TabOption } from "@/components/ui/Tabs";
+import { Tabs, TabPanel, TabOption } from "@/components/ui/Tabs";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/components/ui/cn";
 
@@ -208,6 +208,7 @@ export default function TeacherNoticesPage() {
       </div>
 
       {/* Notices Grid or Empty State */}
+      <TabPanel tabKey={activeTab}>
       {filteredNotices.length === 0 ? (
         <div className="rounded-2xl bg-surface border border-line">
           <EmptyState
@@ -303,6 +304,7 @@ export default function TeacherNoticesPage() {
           ))}
         </div>
       )}
+      </TabPanel>
 
       {/* Notice Detail View Modal */}
       <Modal

@@ -1,5 +1,7 @@
 "use client";
 
+import { Select } from "@/components/ui/Select";
+
 import React, { useState } from "react";
 import {
   Smartphone,
@@ -15,7 +17,6 @@ import {
   Lock,
 } from "lucide-react";
 import { adminService } from "@/lib/services/adminService";
-import { ORDINAL_SEMESTERS } from "@/lib/mockData";
 import type { Department, OrdinalSemesterName, PaymentTransaction } from "@/types/admin";
 
 interface GatewayConfigPanelProps {
@@ -270,15 +271,18 @@ export function GatewayConfigPanel({
               >
                 Sandbox Gateway
               </label>
-              <select
+              <Select
                 id="sandbox-gateway-choice"
+                ariaLabel="Sandbox Gateway"
                 value={selectedGateway}
-                onChange={(e) => setSelectedGateway(e.target.value as "bKash" | "SSLCommerz")}
-                className="w-full min-h-[40px] px-3 py-2 rounded-xl bg-canvas border border-line text-xs font-semibold text-fg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-              >
-                <option value="bKash">bKash Tokenized Checkout (Sandbox)</option>
-                <option value="SSLCommerz">SSLCommerz Hosted Checkout (Sandbox)</option>
-              </select>
+                onChange={(val) => setSelectedGateway(val as "bKash" | "SSLCommerz")}
+                options={[
+                  { value: "bKash", label: "bKash Tokenized Checkout (Sandbox)" },
+                  { value: "SSLCommerz", label: "SSLCommerz Hosted Checkout (Sandbox)" },
+                ]}
+                size="md"
+                variant="surface2"
+              />
             </div>
 
             {/* Student Name */}
@@ -325,18 +329,18 @@ export function GatewayConfigPanel({
               >
                 Department
               </label>
-              <select
+              <Select
                 id="sandbox-dept"
+                ariaLabel="Department"
                 value={testDept}
-                onChange={(e) => setTestDept(e.target.value)}
-                className="w-full min-h-[40px] px-3 py-2 rounded-xl bg-canvas border border-line text-xs font-semibold text-fg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-              >
-                {departments.map((d) => (
-                  <option key={d.id} value={d.name}>
-                    {d.name} ({d.code})
-                  </option>
-                ))}
-              </select>
+                onChange={setTestDept}
+                options={departments.map((d) => ({
+                  value: d.name,
+                  label: `${d.name} (${d.code})`,
+                }))}
+                size="md"
+                variant="surface2"
+              />
             </div>
 
             {/* Semester */}
@@ -347,18 +351,20 @@ export function GatewayConfigPanel({
               >
                 Semester
               </label>
-              <select
+              <Select
                 id="sandbox-semester"
+                ariaLabel="Semester"
                 value={testSemester}
-                onChange={(e) => setTestSemester(e.target.value as OrdinalSemesterName)}
-                className="w-full min-h-[40px] px-3 py-2 rounded-xl bg-canvas border border-line text-xs font-semibold text-fg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-              >
-                {ORDINAL_SEMESTERS.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setTestSemester(val as OrdinalSemesterName)}
+                options={adminService
+                  .getDepartmentSemesters(testDept)
+                  .map((s) => ({
+                    value: s,
+                    label: s,
+                  }))}
+                size="md"
+                variant="surface2"
+              />
             </div>
 
             {/* Amount */}

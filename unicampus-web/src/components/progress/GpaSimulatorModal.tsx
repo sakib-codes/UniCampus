@@ -1,5 +1,7 @@
 "use client";
 
+import { Select } from "@/components/ui/Select";
+
 import { memo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { RotateCcw, Sliders, X } from "lucide-react";
@@ -30,23 +32,26 @@ export const SimCourseRow = memo(function SimCourseRow({
         </div>
       </div>
 
-      <div className="flex items-center gap-1.5 shrink-0">
-        <select
-          aria-label={`Target grade for ${course.code}`}
+      <div className="flex items-center gap-1.5 shrink-0 w-32">
+        <Select
+          ariaLabel={`Target grade for ${course.code}`}
           value={course.grade}
-          onChange={(e) => onUpdateGrade(index, e.target.value as GradeScale)}
-          className="bg-surface border border-line rounded-lg px-2.5 py-1 font-sans tabular-nums text-xs font-semibold text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:border-brand"
-        >
-          <option value="A+">A+ (4.00)</option>
-          <option value="A">A (3.75)</option>
-          <option value="A-">A- (3.50)</option>
-          <option value="B+">B+ (3.25)</option>
-          <option value="B">B (3.00)</option>
-          <option value="B-">B- (2.75)</option>
-          <option value="C+">C+ (2.50)</option>
-          <option value="C">C (2.25)</option>
-          <option value="F">F (0.00)</option>
-        </select>
+          onChange={(val) => onUpdateGrade(index, val as GradeScale)}
+          options={[
+            { value: "A+", label: "A+ (4.00)" },
+            { value: "A", label: "A (3.75)" },
+            { value: "A-", label: "A- (3.50)" },
+            { value: "B+", label: "B+ (3.25)" },
+            { value: "B", label: "B (3.00)" },
+            { value: "B-", label: "B- (2.75)" },
+            { value: "C+", label: "C+ (2.50)" },
+            { value: "C", label: "C (2.25)" },
+            { value: "F", label: "F (0.00)" },
+          ]}
+          size="sm"
+          variant="surface"
+          menuAlign="right"
+        />
       </div>
     </div>
   );

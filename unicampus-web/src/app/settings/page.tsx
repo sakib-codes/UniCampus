@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { Button } from "@/components/ui/Button";
-import { Tabs, TabOption } from "@/components/ui/Tabs";
+import { Tabs, TabPanel, TabOption } from "@/components/ui/Tabs";
 import { Toast } from "@/components/ui/Toast";
 import { CANONICAL_FACULTY, CANONICAL_STUDENT } from "@/lib/canonicalCampus";
 import {
@@ -232,47 +232,49 @@ export default function SettingsPage() {
         />
       </div>
 
-      {activeTab === "general" && (
-        <GeneralTab
-          form={form}
-          isTeacher={isTeacher}
-          isAdmin={isAdmin}
-          resolvedEmail={resolvedEmail}
-          resolvedDepartment={resolvedDepartment}
-          teacherCode={currentUser?.teacher_code}
-          studentId={currentUser?.student_id}
-          onUpdateField={updateField}
-          onNotifyPhotoSync={handleNotifyPhotoSync}
-        />
-      )}
+      <TabPanel tabKey={activeTab}>
+        {activeTab === "general" && (
+          <GeneralTab
+            form={form}
+            isTeacher={isTeacher}
+            isAdmin={isAdmin}
+            resolvedEmail={resolvedEmail}
+            resolvedDepartment={resolvedDepartment}
+            teacherCode={currentUser?.teacher_code}
+            studentId={currentUser?.student_id}
+            onUpdateField={updateField}
+            onNotifyPhotoSync={handleNotifyPhotoSync}
+          />
+        )}
 
-      {activeTab === "teaching" && isTeacher && (
-        <TeachingTab form={form} onUpdateField={updateField} />
-      )}
+        {activeTab === "teaching" && isTeacher && (
+          <TeachingTab form={form} onUpdateField={updateField} />
+        )}
 
-      {activeTab === "notifications" && (
-        <NotificationsTab
-          form={form}
-          isTeacher={isTeacher}
-          onUpdateField={updateField}
-        />
-      )}
+        {activeTab === "notifications" && (
+          <NotificationsTab
+            form={form}
+            isTeacher={isTeacher}
+            onUpdateField={updateField}
+          />
+        )}
 
-      {activeTab === "security" && (
-        <SecurityTab
-          twoFactor={form.twoFactor}
-          currentPassword={currentPassword}
-          newPassword={newPassword}
-          confirmPassword={confirmPassword}
-          otherSessionsActive={otherSessionsActive}
-          onToggleTwoFactor={(val) => updateField("twoFactor", val)}
-          onCurrentPasswordChange={setCurrentPassword}
-          onNewPasswordChange={setNewPassword}
-          onConfirmPasswordChange={setConfirmPassword}
-          onPasswordSubmit={handlePasswordSubmit}
-          onSignOutOtherSessions={handleSignOutOtherSessions}
-        />
-      )}
+        {activeTab === "security" && (
+          <SecurityTab
+            twoFactor={form.twoFactor}
+            currentPassword={currentPassword}
+            newPassword={newPassword}
+            confirmPassword={confirmPassword}
+            otherSessionsActive={otherSessionsActive}
+            onToggleTwoFactor={(val) => updateField("twoFactor", val)}
+            onCurrentPasswordChange={setCurrentPassword}
+            onNewPasswordChange={setNewPassword}
+            onConfirmPasswordChange={setConfirmPassword}
+            onPasswordSubmit={handlePasswordSubmit}
+            onSignOutOtherSessions={handleSignOutOtherSessions}
+          />
+        )}
+      </TabPanel>
 
       <Toast
         open={toast.open}

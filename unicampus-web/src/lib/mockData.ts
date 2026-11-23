@@ -17,6 +17,8 @@ import {
   CANONICAL_DEPARTMENTS,
   CANONICAL_FACULTY,
   CANONICAL_STUDENT,
+  DEFAULT_PROGRAM_SEMESTERS,
+  getSemestersForCount,
 } from '@/lib/canonicalCampus';
 
 export const ORDINAL_SEMESTERS: OrdinalSemesterName[] = [
@@ -41,6 +43,7 @@ export const INITIAL_DEPARTMENTS: Department[] = CANONICAL_DEPARTMENTS.map((dept
   dept_admin_email: dept.deptAdminEmail,
   faculty: dept.facultyGroup,
   color: dept.color,
+  total_semesters: DEFAULT_PROGRAM_SEMESTERS,
   stats: {
     students: dept.students,
     teachers: dept.faculty,
@@ -49,7 +52,7 @@ export const INITIAL_DEPARTMENTS: Department[] = CANONICAL_DEPARTMENTS.map((dept
 }));
 
 export const INITIAL_SEMESTERS: Semester[] = INITIAL_DEPARTMENTS.flatMap((dept) =>
-  ORDINAL_SEMESTERS.map((name, index) => ({
+  getSemestersForCount(dept.total_semesters).map((name, index) => ({
     id: `sem-${dept.code.toLowerCase()}-${index + 1}`,
     department_id: dept.id,
     name,

@@ -106,6 +106,8 @@ export interface Department {
   dept_admin_email?: string | null;
   faculty?: string;
   color?: string;
+  /** Number of semesters in this department's degree program (2–12, default 8). */
+  total_semesters?: number;
   stats?: {
     students: number;
     teachers: number;
@@ -121,7 +123,11 @@ export type OrdinalSemesterName =
   | '5th Semester'
   | '6th Semester'
   | '7th Semester'
-  | '8th Semester';
+  | '8th Semester'
+  | '9th Semester'
+  | '10th Semester'
+  | '11th Semester'
+  | '12th Semester';
 
 export interface Semester {
   id: string;

@@ -6,7 +6,7 @@ import React from "react";
 import { UserPlus, Upload, Shield, X, FileSpreadsheet, Download } from "lucide-react";
 import { Button } from "@/components/ui";
 import { CANONICAL_DEPARTMENTS } from "@/lib/canonicalCampus";
-import { ORDINAL_SEMESTERS } from "@/lib/mockData";
+import { adminService } from "@/lib/services/adminService";
 import { DEPT_META, type DeptKey, type UserRecord } from "./usersData";
 
 interface UsersModalsProps {
@@ -342,20 +342,23 @@ export function UsersModals({
                 >
                   Assigned Role
                 </label>
-                <select
+                <Select
                   id="edit-user-role"
+                  ariaLabel="Assigned Role"
                   value={editRole}
-                  onChange={(e) =>
-                    onEditRoleChange(
-                      e.target.value as "student" | "teacher" | "admin"
-                    )
+                  onChange={(val) =>
+                    onEditRoleChange(val as "student" | "teacher" | "admin")
                   }
-                  className="w-full min-h-[44px] bg-surface-2 border border-line focus:border-brand rounded-xl px-3.5 py-2 text-xs text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand cursor-pointer"
-                >
-                  <option value="student">Student</option>
-                  <option value="teacher">Teacher / Faculty</option>
-                  {!isDeptAdmin && <option value="admin">Administrator</option>}
-                </select>
+                  options={[
+                    { value: "student", label: "Student" },
+                    { value: "teacher", label: "Teacher / Faculty" },
+                    ...(!isDeptAdmin
+                      ? [{ value: "admin", label: "Administrator" }]
+                      : []),
+                  ]}
+                  size="md"
+                  variant="surface2"
+                />
               </div>
 
               <div>
@@ -365,25 +368,24 @@ export function UsersModals({
                 >
                   Academic Department
                 </label>
-                <select
+                <Select
                   id="edit-user-dept"
+                  ariaLabel="Academic Department"
                   value={editDeptKey}
                   disabled={isDeptAdmin}
-                  onChange={(e) =>
-                    onEditDeptKeyChange(e.target.value as DeptKey)
-                  }
-                  className="w-full min-h-[44px] bg-surface-2 border border-line focus:border-brand rounded-xl px-3.5 py-2 text-xs text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {CANONICAL_DEPARTMENTS.map((d) => {
-                    const key = d.code.toLowerCase() as DeptKey;
-                    return (
-                      <option key={d.id} value={key}>
-                        {DEPT_META[key].fullName}
-                      </option>
-                    );
-                  })}
-                  {!isDeptAdmin && <option value="it">Central University Administration</option>}
-                </select>
+                  onChange={(val) => onEditDeptKeyChange(val as DeptKey)}
+                  options={[
+                    ...CANONICAL_DEPARTMENTS.map((d) => {
+                      const key = d.code.toLowerCase() as DeptKey;
+                      return { value: key, label: DEPT_META[key].fullName };
+                    }),
+                    ...(!isDeptAdmin
+                      ? [{ value: "it", label: "Central University Administration" }]
+                      : []),
+                  ]}
+                  size="md"
+                  variant="surface2"
+                />
               </div>
 
               {/* Dynamic Role Fields */}
@@ -395,18 +397,20 @@ export function UsersModals({
                   >
                     Assigned Semester &amp; Batch
                   </label>
-                  <select
+                  <Select
                     id="edit-user-semester"
+                    ariaLabel="Assigned Semester and Batch"
                     value={editSemester}
-                    onChange={(e) => onEditSemesterChange?.(e.target.value)}
-                    className="w-full min-h-[44px] bg-surface-2 border border-line focus:border-brand rounded-xl px-3.5 py-2 text-xs text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand cursor-pointer"
-                  >
-                    {ORDINAL_SEMESTERS.map((sem) => (
-                      <option key={sem} value={sem}>
-                        {sem}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => onEditSemesterChange?.(val)}
+                    options={adminService
+                      .getDepartmentSemesters(editDeptKey)
+                      .map((sem) => ({
+                        value: sem,
+                        label: sem,
+                      }))}
+                    size="md"
+                    variant="surface2"
+                  />
                 </div>
               )}
 

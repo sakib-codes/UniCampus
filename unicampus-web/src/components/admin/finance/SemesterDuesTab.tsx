@@ -1,5 +1,7 @@
 "use client";
 
+import { Select } from "@/components/ui/Select";
+
 import React, { useState, useMemo } from "react";
 import {
   Download,
@@ -13,7 +15,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
-import { ORDINAL_SEMESTERS } from "@/lib/mockData";
+import { adminService } from "@/lib/services/adminService";
 import { CANONICAL_STUDENT } from "@/lib/canonicalCampus";
 import { studentPaymentService } from "@/lib/services/studentPaymentService";
 import type {
@@ -291,9 +293,14 @@ export function SemesterDuesTab({
     }, 1200);
   };
 
-  // Compute 1st to 8th Semester metrics
+  const deptSemesters = useMemo(
+    () => adminService.getDepartmentSemesters(currentDeptObj.id || activeDeptTab),
+    [currentDeptObj.id, activeDeptTab]
+  );
+
+  // Compute dynamic 1st to Nth Semester metrics for this department
   const semesterBreakdown = useMemo(() => {
-    return ORDINAL_SEMESTERS.map((semName) => {
+    return deptSemesters.map((semName) => {
       const semTxns = departmentTransactions.filter(
         (t) => t.semester_name === semName && (t.type === "student_fee" || t.type === "late_fine")
       );
@@ -330,7 +337,7 @@ export function SemesterDuesTab({
         overdueCount: dueTxns.length,
       };
     });
-  }, [departmentTransactions]);
+  }, [departmentTransactions, deptSemesters]);
 
   const totalOverdueInDept = useMemo(() => {
     return semesterBreakdown.reduce((sum, s) => sum + s.overdueCount, 0);
@@ -432,11 +439,11 @@ export function SemesterDuesTab({
         </div>
       </div>
 
-      {/* Accordion by Ordinal Semester (1st to 8th Semester) */}
+      {/* Accordion by Ordinal Semester (1st to Nth Semester) */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-xs font-semibold text-fg-muted">
-            Semester-Wise Due vs. Collected Ledger (1st Semester to 8th Semester)
+            Semester-Wise Due vs. Collected Ledger ({deptSemesters[0]} to {deptSemesters[deptSemesters.length - 1]})
           </h3>
           <span className="text-xs text-fg-muted">
             {totalOverdueInDept} pending / overdue balance{totalOverdueInDept !== 1 ? "s" : ""} in {currentDeptObj.code}
@@ -506,16 +513,28 @@ export function SemesterDuesTab({
             >
               Dispatch Channel
             </label>
-            <select
+            <Select
               id="reminder-channel-select"
+              ariaLabel="Dispatch Channel"
               value={reminderChannel}
-              onChange={(e) => setReminderChannel(e.target.value as "all" | "sms" | "email")}
-              className="w-full min-h-[40px] px-3 py-2 rounded-xl bg-canvas border border-line text-xs font-semibold text-fg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-            >
-              <option value="all">Multichannel (SMS Gateway + Student Portal In-App + Email)</option>
-              <option value="sms">SMS Gateway Only (Urgent Overdue Notice)</option>
-              <option value="email">Institutional Email Notification</option>
-            </select>
+              onChange={(val) => setReminderChannel(val as "all" | "sms" | "email")}
+              options={[
+                {
+                  value: "all",
+                  label: "Multichannel (SMS Gateway + Student Portal In-App + Email)",
+                },
+                {
+                  value: "sms",
+                  label: "SMS Gateway Only (Urgent Overdue Notice)",
+                },
+                {
+                  value: "email",
+                  label: "Institutional Email Notification",
+                },
+              ]}
+              size="md"
+              variant="surface2"
+            />
           </div>
 
           {/* Student Recipient List */}
@@ -577,7 +596,7 @@ export function SemesterDuesTab({
             <label className="block text-xs font-semibold text-fg-muted mb-1.5">
               Adjustment Operation
             </label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-1 p-1 rounded-xl bg-surface-2 border border-line">
               <button
                 type="button"
                 onClick={() => {
@@ -585,10 +604,10 @@ export function SemesterDuesTab({
                   setAdjLabel("Late Semester Registration Surcharge");
                   setAdjCategory("Late Fine");
                 }}
-                className={`py-2 px-3 rounded-xl text-xs font-semibold border transition-colors cursor-pointer ${
+                className={`py-2 px-3 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
                   adjType === "custom_fee"
-                    ? "bg-brand text-on-brand border-brand"
-                    : "bg-canvas text-fg-muted border-line hover:text-fg"
+                    ? "bg-surface text-fg font-semibold border border-line/80 shadow-2xs"
+                    : "text-fg-muted hover:text-fg"
                 }`}
               >
                 Issue Fee / Fine (+)
@@ -600,10 +619,10 @@ export function SemesterDuesTab({
                   setAdjLabel("Merit-Based Tuition Waiver (20%)");
                   setAdjCategory("Tuition");
                 }}
-                className={`py-2 px-3 rounded-xl text-xs font-semibold border transition-colors cursor-pointer ${
+                className={`py-2 px-3 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
                   adjType === "waiver"
-                    ? "bg-brand text-on-brand border-brand"
-                    : "bg-canvas text-fg-muted border-line hover:text-fg"
+                    ? "bg-surface text-fg font-semibold border border-line/80 shadow-2xs"
+                    : "text-fg-muted hover:text-fg"
                 }`}
               >
                 Apply Tuition Waiver (-)
@@ -616,16 +635,20 @@ export function SemesterDuesTab({
             <label htmlFor="adj-student-select" className="block text-xs font-semibold text-fg-muted mb-1">
               Beneficiary / Student
             </label>
-            <select
+            <Select
               id="adj-student-select"
+              ariaLabel="Beneficiary Student"
               value={adjStudentId}
-              onChange={(e) => setAdjStudentId(e.target.value)}
-              className="w-full min-h-[40px] px-3 py-2 rounded-xl bg-canvas border border-line text-xs font-semibold text-fg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-            >
-              <option value={CANONICAL_STUDENT.studentId}>
-                {CANONICAL_STUDENT.name} ({CANONICAL_STUDENT.studentId}) • {CANONICAL_STUDENT.departmentName}
-              </option>
-            </select>
+              onChange={setAdjStudentId}
+              options={[
+                {
+                  value: CANONICAL_STUDENT.studentId,
+                  label: `${CANONICAL_STUDENT.name} (${CANONICAL_STUDENT.studentId}) • ${CANONICAL_STUDENT.departmentName}`,
+                },
+              ]}
+              size="md"
+              variant="surface2"
+            />
           </div>
 
           {/* Category */}
@@ -634,19 +657,22 @@ export function SemesterDuesTab({
               <label htmlFor="adj-category-select" className="block text-xs font-semibold text-fg-muted mb-1">
                 Classification Category
               </label>
-              <select
+              <Select
                 id="adj-category-select"
+                ariaLabel="Classification Category"
                 value={adjCategory}
-                onChange={(e) => setAdjCategory(e.target.value as FeeCategory)}
-                className="w-full min-h-[40px] px-3 py-2 rounded-xl bg-canvas border border-line text-xs font-semibold text-fg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
-              >
-                <option value="Late Fine">Late Fine / Penalty</option>
-                <option value="Lab">Lab &amp; Sessional Equipment Fee</option>
-                <option value="Library">Library &amp; Resource Access</option>
-                <option value="Exam">Exam / Retake Fee</option>
-                <option value="Tuition">Special Tuition Adjustment</option>
-                <option value="Transport">Campus Shuttle / Transport</option>
-              </select>
+                onChange={(val) => setAdjCategory(val as FeeCategory)}
+                options={[
+                  { value: "Late Fine", label: "Late Fine / Penalty" },
+                  { value: "Lab", label: "Lab & Sessional Equipment Fee" },
+                  { value: "Library", label: "Library & Resource Access" },
+                  { value: "Exam", label: "Exam / Retake Fee" },
+                  { value: "Tuition", label: "Special Tuition Adjustment" },
+                  { value: "Transport", label: "Campus Shuttle / Transport" },
+                ]}
+                size="md"
+                variant="surface2"
+              />
             </div>
           )}
 
