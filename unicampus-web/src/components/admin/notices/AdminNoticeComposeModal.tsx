@@ -1,5 +1,7 @@
 "use client";
 
+import { Select } from "@/components/ui/Select";
+
 import React from "react";
 import { X, Lock, Pin, Upload, Paperclip } from "lucide-react";
 import type { Notice, NoticeTargetRole, Department } from "@/types/admin";
@@ -106,18 +108,21 @@ export function AdminNoticeComposeModal({
               >
                 Category
               </label>
-              <select
+              <Select
                 id="admin-notice-category"
+                ariaLabel="Category"
                 value={formCategory}
-                onChange={(e) => onCategoryChange(e.target.value)}
-                className="w-full min-h-[44px] px-3.5 py-2 rounded-xl bg-canvas border border-line text-fg text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand cursor-pointer"
-              >
-                <option value="Academics">Academics</option>
-                <option value="Administrative">Administrative</option>
-                <option value="Exams">Exams</option>
-                <option value="Events">Events</option>
-                <option value="Emergency">Emergency</option>
-              </select>
+                onChange={onCategoryChange}
+                options={[
+                  { value: "Academics", label: "Academics" },
+                  { value: "Administrative", label: "Administrative" },
+                  { value: "Exams", label: "Exams" },
+                  { value: "Events", label: "Events" },
+                  { value: "Emergency", label: "Emergency" },
+                ]}
+                size="md"
+                variant="surface2"
+              />
             </div>
 
             <div>
@@ -127,18 +132,19 @@ export function AdminNoticeComposeModal({
               >
                 Target Audience
               </label>
-              <select
+              <Select
                 id="admin-notice-target-role"
+                ariaLabel="Target Audience"
                 value={formTargetRole}
-                onChange={(e) =>
-                  onTargetRoleChange(e.target.value as NoticeTargetRole)
-                }
-                className="w-full min-h-[44px] px-3.5 py-2 rounded-xl bg-canvas border border-line text-fg text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand cursor-pointer"
-              >
-                <option value="all">Everyone (All Campus)</option>
-                <option value="student">Students Only</option>
-                <option value="teacher">Faculty Only</option>
-              </select>
+                onChange={(val) => onTargetRoleChange(val as NoticeTargetRole)}
+                options={[
+                  { value: "all", label: "Everyone (All Campus)" },
+                  { value: "student", label: "Students Only" },
+                  { value: "teacher", label: "Faculty Only" },
+                ]}
+                size="md"
+                variant="surface2"
+              />
             </div>
           </div>
 
@@ -159,19 +165,21 @@ export function AdminNoticeComposeModal({
                   <span>{adminDepartmentName || "Department"} (Governed)</span>
                 </div>
               ) : (
-                <select
+                <Select
                   id="admin-notice-dept-scope"
+                  ariaLabel="Target Department Scope"
                   value={formDeptId}
-                  onChange={(e) => onDeptIdChange(e.target.value)}
-                  className="w-full min-h-[44px] px-3.5 py-2 rounded-xl bg-canvas border border-line text-fg text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand cursor-pointer"
-                >
-                  <option value="">Campus Wide (All Departments)</option>
-                  {departments.map((dept) => (
-                    <option key={dept.id} value={dept.id}>
-                      {dept.name} ({dept.code})
-                    </option>
-                  ))}
-                </select>
+                  onChange={onDeptIdChange}
+                  options={[
+                    { value: "", label: "Campus Wide (All Departments)" },
+                    ...departments.map((dept) => ({
+                      value: dept.id,
+                      label: `${dept.name} (${dept.code})`,
+                    })),
+                  ]}
+                  size="md"
+                  variant="surface2"
+                />
               )}
             </div>
 

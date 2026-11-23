@@ -138,9 +138,12 @@ export function AcademicIdCard({
       setLatestRequest(idCardService.getLatestRequest(academicId));
     };
     sync();
+    void idCardService.hydrateFromSupabase().then(sync);
+    const unsubRealtime = idCardService.subscribeRealtime();
     window.addEventListener(ID_CARD_REQUESTS_EVENT, sync);
     window.addEventListener("storage", sync);
     return () => {
+      unsubRealtime();
       window.removeEventListener(ID_CARD_REQUESTS_EVENT, sync);
       window.removeEventListener("storage", sync);
     };

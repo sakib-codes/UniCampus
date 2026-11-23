@@ -1,5 +1,7 @@
 "use client";
 
+import { Select } from "@/components/ui/Select";
+
 import React, { useEffect, useState } from "react";
 import {
   Plus,
@@ -238,35 +240,38 @@ export default function TeacherAssignmentsPage() {
               <label htmlFor="asg-course" className="text-xs font-semibold text-fg block mb-1">
                 Course
               </label>
-              <select
+              <Select
                 id="asg-course"
+                ariaLabel="Course"
                 value={courseCode}
-                onChange={(e) => setCourseCode(e.target.value)}
-                className="w-full min-h-[42px] px-3 py-2 rounded-xl bg-surface-2 border border-line text-xs text-fg cursor-pointer"
-              >
-                {CANONICAL_COURSES_LIST.map((c) => (
-                  <option key={c.code} value={c.code}>
-                    {c.code}
-                  </option>
-                ))}
-              </select>
+                onChange={setCourseCode}
+                options={CANONICAL_COURSES_LIST.map((c) => ({
+                  value: c.code,
+                  label: c.code,
+                }))}
+                size="md"
+                variant="surface2"
+              />
             </div>
             <div>
               <label htmlFor="asg-type" className="text-xs font-semibold text-fg block mb-1">
                 Task Type
               </label>
-              <select
+              <Select
                 id="asg-type"
+                ariaLabel="Task Type"
                 value={type}
-                onChange={(e) =>
-                  setType(e.target.value as "Assignment" | "Lab Report" | "Project Milestone")
+                onChange={(val) =>
+                  setType(val as "Assignment" | "Lab Report" | "Project Milestone")
                 }
-                className="w-full min-h-[42px] px-3 py-2 rounded-xl bg-surface-2 border border-line text-xs text-fg cursor-pointer"
-              >
-                <option value="Assignment">Assignment</option>
-                <option value="Lab Report">Lab Report</option>
-                <option value="Project Milestone">Project Milestone</option>
-              </select>
+                options={[
+                  { value: "Assignment", label: "Assignment" },
+                  { value: "Lab Report", label: "Lab Report" },
+                  { value: "Project Milestone", label: "Project Milestone" },
+                ]}
+                size="md"
+                variant="surface2"
+              />
             </div>
           </div>
 

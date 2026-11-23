@@ -3,11 +3,12 @@
 import React, { useEffect, useState } from "react";
 import { CheckCircle2, CreditCard, Eye, Printer } from "lucide-react";
 import { Badge, Button, EmptyState, Modal } from "@/components/ui";
+import { Select } from "@/components/ui/Select";
 import { AcademicIdCard } from "@/components/common/AcademicIdCard";
 import {
   getIdCardStatusLabel,
-  getIdCardStatusVariant,
   ID_CARD_REQUESTS_EVENT,
+  ID_CARD_STATUS_OPTIONS,
   idCardService,
   type IdCardRequest,
   type IdCardWorkflowStatus,
@@ -34,9 +35,12 @@ export function IdCardPrintQueue({
       setRequests(idCardService.getAllRequests(deptFilter));
     };
     sync();
+    void idCardService.hydrateFromSupabase().then(sync);
+    const unsubRealtime = idCardService.subscribeRealtime();
     window.addEventListener(ID_CARD_REQUESTS_EVENT, sync);
     window.addEventListener("storage", sync);
     return () => {
+      unsubRealtime();
       window.removeEventListener(ID_CARD_REQUESTS_EVENT, sync);
       window.removeEventListener("storage", sync);
     };
@@ -122,9 +126,18 @@ export function IdCardPrintQueue({
                     )}
                   </td>
                   <td className="py-3.5 px-4 whitespace-nowrap">
-                    <Badge variant={getIdCardStatusVariant(req.status)}>
-                      {getIdCardStatusLabel(req.status)}
-                    </Badge>
+                    <div className="w-44">
+                      <Select
+                        ariaLabel={`Update status for ${req.fullName}`}
+                        value={req.status}
+                        onChange={(val) =>
+                          handleAdvanceStatus(req, val as IdCardWorkflowStatus)
+                        }
+                        options={ID_CARD_STATUS_OPTIONS}
+                        size="sm"
+                        variant="surface2"
+                      />
+                    </div>
                   </td>
                   <td className="py-3.5 px-4 text-right whitespace-nowrap">
                     <div className="inline-flex items-center gap-1.5">

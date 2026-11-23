@@ -1,5 +1,7 @@
 "use client";
 
+import { Select } from "@/components/ui/Select";
+
 import React from "react";
 import Link from "next/link";
 import { QrCode, Send } from "lucide-react";
@@ -118,18 +120,15 @@ export function TeacherDashboardModals({
             >
               Target Enrolled Section
             </label>
-            <select
+            <Select
               id="announcement-section"
+              ariaLabel="Target Enrolled Section"
               value={announcementSection}
-              onChange={(e) => onAnnouncementSectionChange(e.target.value)}
-              className="w-full h-11 px-3 bg-surface-2 border border-line rounded-xl text-xs text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus:border-brand"
-            >
-              {ANNOUNCEMENT_SECTION_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              onChange={onAnnouncementSectionChange}
+              options={ANNOUNCEMENT_SECTION_OPTIONS}
+              size="md"
+              variant="surface2"
+            />
           </div>
 
           <div>

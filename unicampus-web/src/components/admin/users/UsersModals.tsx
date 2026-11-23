@@ -1,5 +1,7 @@
 "use client";
 
+import { Select } from "@/components/ui/Select";
+
 import React from "react";
 import { UserPlus, Upload, Shield, X, FileSpreadsheet, Download } from "lucide-react";
 import { Button } from "@/components/ui";
@@ -147,20 +149,23 @@ export function UsersModals({
                   >
                     Role Privilege
                   </label>
-                  <select
+                  <Select
                     id="invite-user-role"
+                    ariaLabel="Role Privilege"
                     value={inviteRole}
-                    onChange={(e) =>
-                      onInviteRoleChange(
-                        e.target.value as "student" | "teacher" | "admin"
-                      )
+                    onChange={(val) =>
+                      onInviteRoleChange(val as "student" | "teacher" | "admin")
                     }
-                    className="w-full min-h-[44px] bg-surface-2 border border-line focus:border-brand rounded-xl px-3.5 py-2 text-xs text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand cursor-pointer"
-                  >
-                    <option value="student">Student</option>
-                    <option value="teacher">Teacher / Faculty</option>
-                    {!isDeptAdmin && <option value="admin">Administrator</option>}
-                  </select>
+                    options={[
+                      { value: "student", label: "Student" },
+                      { value: "teacher", label: "Teacher / Faculty" },
+                      ...(!isDeptAdmin
+                        ? [{ value: "admin", label: "Administrator" }]
+                        : []),
+                    ]}
+                    size="md"
+                    variant="surface2"
+                  />
                 </div>
 
                 <div>
@@ -170,23 +175,27 @@ export function UsersModals({
                   >
                     Department
                   </label>
-                  <select
+                  <Select
                     id="invite-user-dept"
+                    ariaLabel="Department"
                     value={inviteDept}
                     disabled={isDeptAdmin}
-                    onChange={(e) => onInviteDeptChange(e.target.value as DeptKey)}
-                    className="w-full min-h-[44px] bg-surface-2 border border-line focus:border-brand rounded-xl px-3.5 py-2 text-xs text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    {CANONICAL_DEPARTMENTS.map((d) => {
-                      const key = d.code.toLowerCase() as DeptKey;
-                      return (
-                        <option key={d.id} value={key}>
-                          {DEPT_META[key].shortLabel}
-                        </option>
-                      );
-                    })}
-                    {!isDeptAdmin && <option value="it">Central Administration</option>}
-                  </select>
+                    onChange={(val) => onInviteDeptChange(val as DeptKey)}
+                    options={[
+                      ...CANONICAL_DEPARTMENTS.map((d) => {
+                        const key = d.code.toLowerCase() as DeptKey;
+                        return {
+                          value: key,
+                          label: DEPT_META[key].shortLabel,
+                        };
+                      }),
+                      ...(!isDeptAdmin
+                        ? [{ value: "it", label: "Central Administration" }]
+                        : []),
+                    ]}
+                    size="md"
+                    variant="surface2"
+                  />
                 </div>
               </div>
 
