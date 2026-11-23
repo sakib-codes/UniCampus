@@ -21,7 +21,6 @@ import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 
 type PortalType = "student" | "faculty" | "admin";
-type AdminDeptOption = "super" | "dept-cse" | "dept-eee" | "dept-bba";
 
 const DEMO_CREDENTIALS: Record<PortalType, { id: string; password: string; label: string }> = {
   student: {
@@ -47,9 +46,8 @@ export default function LoginPage() {
 
   const isLiveMode = supabaseSyncBridge.isLive();
   const [activePortal, setActivePortal] = useState<PortalType>("student");
-  const [selectedAdminDept, setSelectedAdminDept] = useState<AdminDeptOption>("super");
-  const [emailOrId, setEmailOrId] = useState(isLiveMode ? "" : DEMO_CREDENTIALS.student.id);
-  const [password, setPassword] = useState(isLiveMode ? "" : DEMO_CREDENTIALS.student.password);
+  const [emailOrId, setEmailOrId] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -86,23 +84,13 @@ export default function LoginPage() {
     setActivePortal(portal);
     if (portal === "student") {
       setEmailOrId(DEMO_CREDENTIALS.student.id);
+      setPassword(DEMO_CREDENTIALS.student.password);
     } else if (portal === "faculty") {
       setEmailOrId(DEMO_CREDENTIALS.faculty.id);
+      setPassword(DEMO_CREDENTIALS.faculty.password);
     } else {
-      if (selectedAdminDept === "super") {
-        setEmailOrId("admin@unicampus.edu");
-      } else {
-        setEmailOrId(`${selectedAdminDept.replace("dept-", "")}.admin@unicampus.edu`);
-      }
-    }
-  };
-
-  const handleAdminDeptSelect = (dept: AdminDeptOption) => {
-    setSelectedAdminDept(dept);
-    if (dept === "super") {
-      setEmailOrId("admin@unicampus.edu");
-    } else {
-      setEmailOrId(`${dept.replace("dept-", "")}.admin@unicampus.edu`);
+      setEmailOrId(DEMO_CREDENTIALS.admin.id);
+      setPassword(DEMO_CREDENTIALS.admin.password);
     }
   };
 
@@ -215,10 +203,11 @@ export default function LoginPage() {
         loginAsFaculty();
         router.push("/teacher/dashboard");
       } else {
-        if (selectedAdminDept === "super") {
-          loginAsAdmin();
+        const deptMatch = trimmedId.match(/^(cse|eee|bba)\.admin@/i);
+        if (deptMatch) {
+          loginAsDeptAdmin(`dept-${deptMatch[1].toLowerCase()}`);
         } else {
-          loginAsDeptAdmin(selectedAdminDept);
+          loginAsAdmin();
         }
         router.push("/admin/dashboard");
       }
@@ -257,11 +246,7 @@ export default function LoginPage() {
         loginAsFaculty();
         router.push("/teacher/dashboard");
       } else {
-        if (selectedAdminDept === "super") {
-          loginAsAdmin();
-        } else {
-          loginAsDeptAdmin(selectedAdminDept);
-        }
+        loginAsAdmin();
         router.push("/admin/dashboard");
       }
     }, 400);
@@ -294,9 +279,6 @@ export default function LoginPage() {
             <h1 className="text-xl sm:text-2xl font-semibold text-fg tracking-tight">
               Sign in to your portal
             </h1>
-            <p className="text-xs sm:text-sm text-fg-muted">
-              Sign in with your University ID or institutional email.
-            </p>
           </div>
 
           {/* Demo Quick-Fill Switcher (offline sandbox only — hidden in live Supabase mode) */}
@@ -332,31 +314,6 @@ export default function LoginPage() {
                 );
               })}
             </div>
-
-            {/* Admin Department Sub-Selector (only when Admin selected) */}
-            {activePortal === "admin" && (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 pt-0.5">
-                {[
-                  { id: "super", label: "Central Admin" },
-                  { id: "dept-cse", label: "CSE Admin" },
-                  { id: "dept-eee", label: "EEE Admin" },
-                  { id: "dept-bba", label: "BBA Admin" },
-                ].map((dept) => (
-                  <button
-                    key={dept.id}
-                    type="button"
-                    onClick={() => handleAdminDeptSelect(dept.id as AdminDeptOption)}
-                    className={`h-9 px-2 rounded-lg text-[11px] font-semibold border flex items-center justify-center text-center transition-colors cursor-pointer whitespace-nowrap ${
-                      selectedAdminDept === dept.id
-                        ? "bg-brand-soft text-brand border-brand/40"
-                        : "bg-surface text-fg-muted border-line hover:text-fg"
-                    }`}
-                  >
-                    {dept.label}
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
           )}
 
@@ -364,15 +321,15 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
               <label htmlFor="login-identifier" className="text-xs font-semibold text-fg block">
-                University ID or Institutional Email
+                {isLiveMode ? "Institutional Email" : "University ID or Institutional Email"}
               </label>
               <input
                 id="login-identifier"
-                type="text"
+                type={isLiveMode ? "email" : "text"}
                 required
                 value={emailOrId}
                 onChange={(e) => setEmailOrId(e.target.value)}
-                placeholder="211-15-4424 or name@unicampus.edu"
+                placeholder={isLiveMode ? "you@unicampus.com" : "211-15-4424 or name@unicampus.edu"}
                 className="w-full h-11 px-3.5 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors"
               />
             </div>
@@ -394,7 +351,7 @@ export default function LoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
+                  placeholder="Enter your password"
                   className="w-full h-11 pl-3.5 pr-11 rounded-xl bg-surface border border-line text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition-colors font-sans"
                 />
                 <button
@@ -457,12 +414,12 @@ export default function LoginPage() {
           </div>
 
           {/* SSO Options — Matched h-11 & rounded-xl */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className={isLiveMode ? "grid grid-cols-1" : "grid grid-cols-2 gap-3"}>
             <button
               type="button"
               onClick={() => handleSSOLogin("google")}
               disabled={isLoading}
-              className="h-11 px-3 rounded-xl bg-surface hover:bg-surface-2 border border-line text-xs font-semibold text-fg flex items-center justify-center gap-2 transition-colors cursor-pointer whitespace-nowrap"
+              className="w-full h-11 px-3.5 rounded-xl bg-surface hover:bg-surface-2 border border-line text-sm font-medium text-fg flex items-center justify-center gap-2.5 transition-colors cursor-pointer whitespace-nowrap"
             >
               <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                 <path
@@ -482,23 +439,25 @@ export default function LoginPage() {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                 />
               </svg>
-              <span>Google</span>
+              <span>{isLiveMode ? "Continue with Google" : "Google"}</span>
             </button>
 
-            <button
-              type="button"
-              onClick={() => handleSSOLogin("microsoft")}
-              disabled={isLoading}
-              className="h-11 px-3 rounded-xl bg-surface hover:bg-surface-2 border border-line text-xs font-semibold text-fg flex items-center justify-center gap-2 transition-colors cursor-pointer whitespace-nowrap"
-            >
-              <svg className="w-4 h-4 shrink-0" viewBox="0 0 23 23">
-                <path fill="#f35325" d="M1 1h10v10H1z" />
-                <path fill="#81bc06" d="M12 1h10v10H12z" />
-                <path fill="#05a6f0" d="M1 12h10v10H1z" />
-                <path fill="#ffba08" d="M12 12h10v10H12z" />
-              </svg>
-              <span>Microsoft</span>
-            </button>
+            {!isLiveMode && (
+              <button
+                type="button"
+                onClick={() => handleSSOLogin("microsoft")}
+                disabled={isLoading}
+                className="w-full h-11 px-3.5 rounded-xl bg-surface hover:bg-surface-2 border border-line text-sm font-medium text-fg flex items-center justify-center gap-2.5 transition-colors cursor-pointer whitespace-nowrap"
+              >
+                <svg className="w-4 h-4 shrink-0" viewBox="0 0 23 23">
+                  <path fill="#f35325" d="M1 1h10v10H1z" />
+                  <path fill="#81bc06" d="M12 1h10v10H12z" />
+                  <path fill="#05a6f0" d="M1 12h10v10H1z" />
+                  <path fill="#ffba08" d="M12 12h10v10H12z" />
+                </svg>
+                <span>Microsoft</span>
+              </button>
+            )}
           </div>
 
           <div className="pt-1 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 text-center text-xs text-fg-muted">
